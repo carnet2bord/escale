@@ -1,9 +1,12 @@
+import Link from 'next/link';
+
 import { Header } from '@/app/_components/Header';
 import { analyserAffectation } from '@/lib/domain/conflits';
 import { dateFr } from '@/lib/domain/dates';
 import { relaisActif } from '@/lib/domain/types';
 import { chargerSnapshot } from '@/lib/data';
 import { nomComplet } from '@/lib/format';
+import { CalendrierPlanning } from './CalendrierPlanning';
 import { majStatut, supprimerAffectation } from './actions';
 
 export const dynamic = 'force-dynamic';
@@ -22,7 +25,13 @@ const COULEUR_STATUT: Record<string, string> = {
   annule: '#8a8f94',
 };
 
-export default async function Planning() {
+export default async function Planning({
+  searchParams,
+}: {
+  searchParams: Promise<{ vue?: string }>;
+}) {
+  const { vue } = await searchParams;
+  const calendrier = vue === 'calendrier';
   const snap = await chargerSnapshot();
   const accById = new Map(snap.accueillants.map((a) => [a.id, a]));
   const enfById = new Map(snap.enfants.map((e) => [e.id, e]));
@@ -60,9 +69,34 @@ export default async function Planning() {
       <Header actif="/planning" />
       <div className="contenu">
         <h1>Planning des relais</h1>
-        <p style={{ color: 'var(--gris)' }}>{affs.length} relais enregistré(s).</p>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
+          <Link
+            href="/planning"
+            className={calendrier ? 'bouton-secondaire' : 'bouton'}
+            style={{ padding: '6px 14px' }}
+          >
+            Liste
+          </Link>
+          <Link
+            href="/planning?vue=calendrier"
+            className={calendrier ? 'bouton' : 'bouton-secondaire'}
+            style={{ padding: '6px 14px' }}
+          >
+            Calendrier
+          </Link>
+          <span style={{ color: 'var(--gris)', marginLeft: 8 }}>
+            {affs.length} relais enregistré(s).
+          </span>
+        </div>
 
-        {lignes.length === 0 ? (
+        {calendrier ? (
+          <CalendrierPlanning
+            accueillants={snap.accueillants.map((a) => ({ id: a.id, nom: nomComplet(a) }))}
+            enfants={snap.enfants.map((e) => ({ id: e.id, nom: nomComplet(e) }))}
+            affectations={snap.affectations}
+            solutions={snap.solutions}
+          />
+        ) : lignes.length === 0 ? (
           <p>Aucun relais. Utilisez la proposition automatique pour en créer.</p>
         ) : (
           <table className="liste">

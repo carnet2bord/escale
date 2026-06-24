@@ -29,3 +29,96 @@ export async function supprimerBesoin(formData: FormData) {
   if (r.error) throw new Error(r.error.message);
   revalidatePath(`/enfants/${enfantId}`);
 }
+
+// --- Incompatibilités enfant ↔ enfant ---
+
+export async function ajouterIncompatibilite(formData: FormData) {
+  const enfantId = Number(formData.get('enfantId'));
+  const autreId = Number(formData.get('autreId'));
+  if (!enfantId || !autreId || enfantId === autreId) return;
+  const db = supabaseAdmin();
+  // Évite le doublon dans un sens comme dans l'autre.
+  const existant = await db
+    .from('incompatibilites')
+    .select('id')
+    .or(
+      `and(enfant_a_id.eq.${enfantId},enfant_b_id.eq.${autreId}),and(enfant_a_id.eq.${autreId},enfant_b_id.eq.${enfantId})`,
+    )
+    .limit(1);
+  if (existant.error) throw new Error(existant.error.message);
+  if ((existant.data ?? []).length === 0) {
+    const r = await db
+      .from('incompatibilites')
+      .insert({ enfant_a_id: enfantId, enfant_b_id: autreId });
+    if (r.error) throw new Error(r.error.message);
+  }
+  revalidatePath(`/enfants/${enfantId}`);
+}
+
+export async function supprimerIncompatibilite(formData: FormData) {
+  const id = Number(formData.get('id'));
+  const enfantId = Number(formData.get('enfantId'));
+  if (!id) return;
+  const r = await supabaseAdmin().from('incompatibilites').delete().eq('id', id);
+  if (r.error) throw new Error(r.error.message);
+  revalidatePath(`/enfants/${enfantId}`);
+}
+
+// --- Préférences d'accueil (favori / à éviter) ---
+
+export async function ajouterPreference(formData: FormData) {
+  const enfantId = Number(formData.get('enfantId'));
+  const accueillantId = Number(formData.get('accueillantId'));
+  const type = String(formData.get('type') ?? '').trim();
+  if (!enfantId || !accueillantId || (type !== 'favori' && type !== 'exclu')) return;
+  const db = supabaseAdmin();
+  // Un seul choix par couple (favori OU exclu) : on remplace l'existant.
+  const del = await db
+    .from('preferences_accueil')
+    .delete()
+    .eq('enfant_id', enfantId)
+    .eq('accueillant_id', accueillantId);
+  if (del.error) throw new Error(del.error.message);
+  const r = await db
+    .from('preferences_accueil')
+    .insert({ enfant_id: enfantId, accueillant_id: accueillantId, type });
+  if (r.error) throw new Error(r.error.message);
+  revalidatePath(`/enfants/${enfantId}`);
+}
+
+export async function supprimerPreference(formData: FormData) {
+  const id = Number(formData.get('id'));
+  const enfantId = Number(formData.get('enfantId'));
+  if (!id) return;
+  const r = await supabaseAdmin().from('preferences_accueil').delete().eq('id', id);
+  if (r.error) throw new Error(r.error.message);
+  revalidatePath(`/enfants/${enfantId}`);
+}
+
+// --- Solutions alternatives (colonie / tiers / autre) ---
+
+export async function ajouterSolution(formData: FormData) {
+  const enfantId = Number(formData.get('enfantId'));
+  const debut = txt(formData.get('debut'));
+  const fin = txt(formData.get('fin'));
+  const type = String(formData.get('type') ?? '').trim();
+  if (!enfantId || !debut || !fin || !type) return;
+  const r = await supabaseAdmin().from('solutions_alternatives').insert({
+    enfant_id: enfantId,
+    debut,
+    fin,
+    type,
+    details: txt(formData.get('details')),
+  });
+  if (r.error) throw new Error(r.error.message);
+  revalidatePath(`/enfants/${enfantId}`);
+}
+
+export async function supprimerSolution(formData: FormData) {
+  const id = Number(formData.get('id'));
+  const enfantId = Number(formData.get('enfantId'));
+  if (!id) return;
+  const r = await supabaseAdmin().from('solutions_alternatives').delete().eq('id', id);
+  if (r.error) throw new Error(r.error.message);
+  revalidatePath(`/enfants/${enfantId}`);
+}
