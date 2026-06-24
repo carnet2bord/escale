@@ -164,8 +164,17 @@ export default async function Planning({
                       </ul>
                     )}
                   </td>
-                  <td>
-                    <form action={supprimerAffectation}>
+                  <td style={{ whiteSpace: 'nowrap' }}>
+                    <a
+                      href={`/api/pdf/fiche/${a.id}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      title="Fiche de liaison (PDF)"
+                    >
+                      Fiche
+                    </a>
+                    {'  '}
+                    <form action={supprimerAffectation} style={{ display: 'inline' }}>
                       <input type="hidden" name="id" value={a.id} />
                       <button className="lien-deco" type="submit" title="Supprimer">
                         ✕

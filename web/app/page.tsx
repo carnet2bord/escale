@@ -1,29 +1,9 @@
 import { Header } from './_components/Header';
 import { chargerSnapshot } from '@/lib/data';
-import { couverturesEnfant } from '@/lib/domain/proposition';
-import { jour } from '@/lib/domain/dates';
 import { relaisActif } from '@/lib/domain/types';
+import { couvertureBesoins } from '@/lib/stats';
 
 export const dynamic = 'force-dynamic';
-
-function couverture(s: Awaited<ReturnType<typeof chargerSnapshot>>) {
-  let total = 0;
-  let couverts = 0;
-  for (const b of s.besoins) {
-    if (jour(b.fin).getTime() < jour(b.debut).getTime()) continue;
-    const cov = couverturesEnfant(b.enfantId, s.affectations, s.solutions);
-    let d = jour(b.debut);
-    const f = jour(b.fin);
-    while (d.getTime() <= f.getTime()) {
-      total++;
-      if (cov.some((c) => d.getTime() >= jour(c[0]).getTime() && d.getTime() <= jour(c[1]).getTime())) {
-        couverts++;
-      }
-      d = new Date(d.getTime() + 86400000);
-    }
-  }
-  return { total, couverts, pct: total === 0 ? 100 : Math.round((couverts * 100) / total) };
-}
 
 export default async function DashboardPage() {
   let s: Awaited<ReturnType<typeof chargerSnapshot>> | null = null;
@@ -38,7 +18,14 @@ export default async function DashboardPage() {
     <>
       <Header actif="/" />
       <div className="contenu">
-        <h1>Tableau de bord</h1>
+        <div className="aligne-droite">
+          <h1>Tableau de bord</h1>
+          {s ? (
+            <a className="bouton" href="/api/pdf/bilan" target="_blank" rel="noreferrer">
+              Bilan PDF
+            </a>
+          ) : null}
+        </div>
         {erreur ? (
           <div className="banniere" style={{ background: '#fbeaea', color: '#b3261e' }}>
             Connexion à la base impossible : {erreur}. Vérifiez SUPABASE_URL /
@@ -67,7 +54,7 @@ export default async function DashboardPage() {
               </div>
             </div>
             {(() => {
-              const c = couverture(s!);
+              const c = couvertureBesoins(s!);
               return (
                 <div className="kpi">
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -83,11 +70,12 @@ export default async function DashboardPage() {
             })()}
           </>
         ) : null}
-        <div className="banniere">
-          Version web (fondation) — moteur de conflits et de proposition porté et
-          vérifié. Les écrans complets (accueillants, enfants, planning, documents)
-          arrivent dans les prochaines itérations.
-        </div>
+        {s ? (
+          <div className="banniere">
+            Données fictives uniquement tant que le DPO n&apos;a pas validé la
+            mise en ligne de données réelles.
+          </div>
+        ) : null}
       </div>
     </>
   );

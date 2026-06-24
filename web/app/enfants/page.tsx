@@ -47,6 +47,10 @@ export default async function EnfantsPage() {
                     <td>{age != null ? `${age} ans` : '—'}</td>
                     <td>{e.secteur ?? '—'}</td>
                     <td style={{ textAlign: 'right' }}>
+                      <a href={`/api/pdf/enfant/${e.id}`} target="_blank" rel="noreferrer">
+                        Parcours PDF
+                      </a>
+                      {'  ·  '}
                       <Link href={`/enfants/${e.id}`}>Modifier</Link>
                     </td>
                   </tr>

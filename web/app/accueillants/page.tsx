@@ -52,6 +52,10 @@ export default async function AccueillantsPage() {
                   <td>{restrictionLabel[a.restriction_sexe] ?? 'Mixte'}</td>
                   <td>{a.secteur ?? '—'}</td>
                   <td style={{ textAlign: 'right' }}>
+                    <a href={`/api/pdf/accueillant/${a.id}`} target="_blank" rel="noreferrer">
+                      Planning PDF
+                    </a>
+                    {'  ·  '}
                     <Link href={`/accueillants/${a.id}`}>Modifier</Link>
                   </td>
                 </tr>

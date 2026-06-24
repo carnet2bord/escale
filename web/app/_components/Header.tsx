@@ -8,6 +8,7 @@ const liens = [
   { href: '/enfants', label: 'Enfants' },
   { href: '/planning', label: 'Planning' },
   { href: '/proposition', label: 'Proposition' },
+  { href: '/parametres', label: 'Paramètres' },
   { href: '/apropos', label: 'À propos' },
 ];
 
