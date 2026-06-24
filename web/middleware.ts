@@ -16,6 +16,10 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  // Tout sauf les assets internes, le favicon, l'API de connexion, /login et /guide.
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|login|guide|api/connexion).*)'],
+  // Tout sauf les assets internes/statiques, le favicon, l'API de connexion,
+  // /login et /guide. (Les fichiers de public/ — logo, etc. — sont exclus via
+  // leur extension, sinon le middleware les redirige vers /login.)
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|login|guide|api/connexion|.*\\.(?:png|jpe?g|svg|ico|webp|gif|ttf|woff2?)$).*)',
+  ],
 };

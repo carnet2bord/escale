@@ -1,10 +1,12 @@
 :root {
   --teal: #156f6c;
-  --teal-clair: #eaf3f1;
+  --teal-clair: #e7f1ef;
   --texte: #1a1c1e;
   --gris: #5a6168;
-  --filet: #dde1e4;
-  --fond: #f6f8f8;
+  --filet: #e6e8eb;
+  --fond: #f6f7f8;
+  --surface: #ffffff;
+  --rayon: 14px;
 }
 
 * { box-sizing: border-box; }
@@ -18,60 +20,121 @@ body {
 
 a { color: var(--teal); }
 
-.barre {
+/* ---------- Coquille : barre latérale + contenu (façon app desktop) ---------- */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 248px;
+  height: 100vh;
+  background: var(--surface);
+  border-right: 1px solid var(--filet);
+  display: flex;
+  flex-direction: column;
+  padding: 22px 16px;
+  z-index: 10;
+}
+.sidebar-logo { padding: 8px 8px 4px; }
+.sidebar-logo img { height: 54px; width: auto; display: block; }
+.sidebar-version { font-size: 11px; color: var(--gris); padding: 4px 8px 16px; }
+
+.sidebar-nav { display: flex; flex-direction: column; gap: 4px; }
+.sidebar-nav a {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 16px 24px;
-  background: #fff;
-  border-bottom: 1px solid var(--filet);
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 11px;
+  text-decoration: none;
+  color: var(--texte);
+  font-weight: 600;
+  font-size: 14.5px;
 }
-.marque { font-size: 20px; font-weight: 700; color: var(--teal); }
-.contenu { max-width: 960px; margin: 0 auto; padding: 24px; }
+.sidebar-nav a:hover { background: #f0f2f3; }
+.sidebar-nav a.actif { background: var(--teal-clair); color: var(--teal); }
+.sidebar-nav a svg { width: 20px; height: 20px; flex-shrink: 0; }
 
+.sidebar-groupe {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--gris);
+  padding: 0 12px 6px;
+  margin-top: 18px;
+}
+.sidebar-bas { margin-top: auto; }
+.sidebar-bas .lien-deco { display: block; padding: 10px 12px; width: 100%; text-align: left; }
+
+.contenu { margin-left: 248px; max-width: 1040px; padding: 28px 32px; }
+
+/* ---------- En-têtes de page ---------- */
+h1 { font-size: 24px; font-weight: 700; margin: 0 0 18px; }
+h2 { font-size: 17px; font-weight: 600; }
+.marque { font-size: 20px; font-weight: 700; color: var(--teal); }
+.aligne-droite { display: flex; justify-content: space-between; align-items: center; }
+.aligne-droite h1 { margin-bottom: 0; }
+
+/* ---------- Cartes / KPI ---------- */
 .cartes { display: flex; flex-wrap: wrap; gap: 16px; }
 .carte {
   flex: 1 1 180px;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--filet);
-  border-radius: 12px;
+  border-radius: var(--rayon);
   padding: 18px;
 }
-.carte .valeur { font-size: 30px; font-weight: 700; }
+.carte .valeur { font-size: 30px; font-weight: 700; color: var(--teal); }
 .carte .libelle { color: var(--gris); font-size: 14px; margin-top: 2px; }
 
 .kpi {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--filet);
-  border-radius: 12px;
+  border-radius: var(--rayon);
   padding: 20px;
   margin-top: 24px;
 }
-.jauge { height: 10px; background: #e6e9eb; border-radius: 6px; overflow: hidden; margin: 12px 0 8px; }
+.jauge { height: 10px; background: #eceef0; border-radius: 6px; overflow: hidden; margin: 12px 0 8px; }
 .jauge > div { height: 100%; background: var(--teal); }
 
 .banniere {
   background: var(--teal-clair);
   color: var(--teal);
-  border-radius: 10px;
+  border-radius: var(--rayon);
   padding: 12px 16px;
   margin-top: 24px;
   font-size: 14px;
 }
 
+/* ---------- Boutons ---------- */
 .bouton {
   display: inline-block;
   background: var(--teal);
   color: #fff;
   border: none;
-  border-radius: 10px;
-  padding: 12px 18px;
-  font-size: 15px;
+  border-radius: 11px;
+  padding: 11px 18px;
+  font-size: 14.5px;
   font-weight: 600;
   cursor: pointer;
+  text-decoration: none;
 }
+.bouton:hover { filter: brightness(0.96); }
+.bouton-secondaire {
+  background: none;
+  border: 1px solid var(--filet);
+  border-radius: 11px;
+  padding: 10px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--texte);
+  text-decoration: none;
+}
+.bouton-danger { background: none; border: none; color: #b3261e; cursor: pointer; font-size: 14px; }
 .lien-deco { color: var(--gris); font-size: 14px; background: none; border: none; cursor: pointer; }
+.lien-deco:hover { color: var(--teal); }
 
+/* ---------- Connexion (plein écran, sans barre latérale) ---------- */
 .connexion {
   min-height: 100vh;
   display: flex;
@@ -82,45 +145,35 @@ a { color: var(--teal); }
 .connexion .boite {
   width: 100%;
   max-width: 360px;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--filet);
-  border-radius: 16px;
+  border-radius: 18px;
   padding: 32px;
   text-align: center;
 }
+.connexion .boite img { height: 48px; margin-bottom: 8px; }
 .champ {
   width: 100%;
   padding: 12px 14px;
   border: 1px solid var(--filet);
-  border-radius: 10px;
+  border-radius: 11px;
   font-size: 15px;
   margin: 12px 0;
 }
 .erreur { color: #b3261e; font-size: 14px; }
 
-.nav { display: flex; gap: 6px; margin-left: 20px; }
-.nav a {
-  padding: 8px 12px;
-  border-radius: 9px;
-  text-decoration: none;
-  color: var(--gris);
-  font-weight: 600;
-  font-size: 14px;
-}
-.nav a.actif { background: var(--teal-clair); color: var(--teal); }
-
-table.liste { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--filet); border-radius: 12px; overflow: hidden; }
+/* ---------- Tables ---------- */
+table.liste { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--filet); border-radius: var(--rayon); overflow: hidden; }
 table.liste th, table.liste td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--filet); font-size: 14px; }
-table.liste th { background: var(--teal-clair); color: var(--teal); }
+table.liste th { background: var(--teal-clair); color: var(--teal); font-weight: 600; }
 table.liste tr:last-child td { border-bottom: none; }
-.aligne-droite { display: flex; justify-content: space-between; align-items: center; }
-.form-bloc { background: #fff; border: 1px solid var(--filet); border-radius: 12px; padding: 20px; max-width: 640px; }
+
+/* ---------- Formulaires ---------- */
+.form-bloc { background: var(--surface); border: 1px solid var(--filet); border-radius: var(--rayon); padding: 20px; max-width: 760px; }
 .form-bloc label { display: block; font-size: 13px; color: var(--gris); margin: 12px 0 4px; }
 .form-bloc input, .form-bloc select, .form-bloc textarea {
-  width: 100%; padding: 10px 12px; border: 1px solid var(--filet); border-radius: 9px; font-size: 14px; font-family: inherit;
+  width: 100%; padding: 10px 12px; border: 1px solid var(--filet); border-radius: 10px; font-size: 14px; font-family: inherit; background: var(--surface);
 }
 .form-bloc .ligne { display: flex; gap: 12px; }
 .form-bloc .ligne > div { flex: 1; }
 .actions-form { display: flex; gap: 12px; align-items: center; margin-top: 20px; }
-.bouton-secondaire { background: none; border: 1px solid var(--filet); border-radius: 10px; padding: 11px 16px; font-size: 14px; cursor: pointer; color: var(--texte); text-decoration: none; }
-.bouton-danger { background: none; border: none; color: #b3261e; cursor: pointer; font-size: 14px; }

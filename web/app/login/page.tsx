@@ -9,8 +9,9 @@ export default async function LoginPage({
   return (
     <div className="connexion">
       <div className="boite">
-        <div className="marque">Escale</div>
-        <p style={{ color: 'var(--gris)', fontSize: 14 }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo-escale.png" alt="Escale" />
+        <p style={{ color: 'var(--gris)', fontSize: 14, marginTop: 0 }}>
           Coordonner les relais d&apos;accueil familial
         </p>
         <form action={connexion}>

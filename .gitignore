@@ -49,3 +49,6 @@ app.*.map.json
 *.sqlite-journal
 *.sqlite-wal
 escale-sauvegarde*.sqlite
+
+# Préversion locale (identifiants de test)
+.claude/launch.json
