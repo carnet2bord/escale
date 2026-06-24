@@ -1,11 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:provider/provider.dart';
 
 import '../data/database.dart';
 import '../domain/conflits.dart';
 import '../domain/dates.dart';
+import '../domain/pdf_export.dart';
+import 'apercu_pdf_page.dart';
 import 'export_pdf_page.dart';
 import 'proposition_page.dart';
 import 'widgets.dart';
@@ -329,6 +332,13 @@ class _PlanningPageState extends State<PlanningPage> {
                 child: _ItemAction(Icons.restore, 'Rétablir'),
               ),
             const PopupMenuItem(
+              value: 'fiche',
+              child: _ItemAction(
+                Icons.description_outlined,
+                'Fiche de liaison (PDF)',
+              ),
+            ),
+            const PopupMenuItem(
               value: 'dupliquer',
               child: _ItemAction(Icons.copy_all_outlined, 'Dupliquer'),
             ),
@@ -368,6 +378,38 @@ class _PlanningPageState extends State<PlanningPage> {
             enfantInitial: a.enfantId,
             accueillantInitial: a.accueillantId,
             periodeInitiale: DateTimeRange(start: a.debut, end: a.fin),
+          ),
+        ),
+      );
+      return;
+    }
+    if (v == 'fiche') {
+      final enfant = d.enfant(a.enfantId);
+      final accueillant = d.accueillant(a.accueillantId);
+      if (enfant == null || accueillant == null) return;
+      final reglages = await db.lireReglages();
+      final logo = (await rootBundle.load(
+        'assets/icon/logo_escale.png',
+      )).buffer.asUint8List();
+      if (!mounted) return;
+      final afHab = enfant.afHabituelId == null
+          ? null
+          : d.accueillant(enfant.afHabituelId!);
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => ApercuPdfPage(
+            titre: 'Fiche de liaison',
+            fichier: 'fiche-liaison-${enfant.nom.toLowerCase()}.pdf',
+            builder: (format) => genererPdfConvention(
+              structure: InfosStructure.depuisReglages(reglages),
+              logo: logo,
+              date: DateTime.now(),
+              enfant: enfant,
+              accueillant: accueillant,
+              afHabituel: afHab,
+              debut: a.debut,
+              fin: a.fin,
+            ),
           ),
         ),
       );

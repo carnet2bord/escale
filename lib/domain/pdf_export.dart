@@ -298,6 +298,219 @@ Future<Uint8List> genererPdfRelais({
   return doc.save();
 }
 
+// Fiche de liaison / convention d'un relais, à remettre à l'accueillant.
+Future<Uint8List> genererPdfConvention({
+  required InfosStructure structure,
+  required Uint8List logo,
+  required DateTime date,
+  required Enfant enfant,
+  required Accueillant accueillant,
+  Accueillant? afHabituel,
+  required DateTime debut,
+  required DateTime fin,
+  String? motif,
+}) async {
+  final doc = pw.Document(title: 'Escale — Fiche de liaison', author: 'Escale');
+  final logoImage = pw.MemoryImage(logo);
+  final age = ageAnnees(enfant.dateNaissance, a: debut);
+  final naiss = enfant.dateNaissance;
+
+  pw.Widget ligne(String label, String valeur) => pw.Padding(
+    padding: const pw.EdgeInsets.symmetric(vertical: 5),
+    child: pw.Row(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.SizedBox(
+          width: 170,
+          child: pw.Text(
+            label,
+            style: pw.TextStyle(fontSize: 10, color: _gris),
+          ),
+        ),
+        pw.Expanded(
+          child: pw.Text(
+            valeur,
+            style: pw.TextStyle(
+              fontSize: 11,
+              color: _texte,
+              fontWeight: pw.FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+
+  doc.addPage(
+    pw.Page(
+      pageFormat: PdfPageFormat.a4,
+      margin: const pw.EdgeInsets.fromLTRB(40, 40, 40, 40),
+      build: (ctx) => pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.center,
+            children: [
+              pw.Image(logoImage, height: 38),
+              if (structure.nom.isNotEmpty) ...[
+                pw.SizedBox(width: 14),
+                pw.Expanded(
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text(
+                        _safe(structure.nom),
+                        style: pw.TextStyle(
+                          fontSize: 11,
+                          fontWeight: pw.FontWeight.bold,
+                          color: _texte,
+                        ),
+                      ),
+                      if (structure.adresse.isNotEmpty)
+                        pw.Text(
+                          _safe(structure.adresse),
+                          maxLines: 2,
+                          style: pw.TextStyle(fontSize: 8, color: _gris),
+                        ),
+                    ],
+                  ),
+                ),
+              ] else
+                pw.Spacer(),
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.end,
+                children: [
+                  pw.Text(
+                    'Fiche de liaison',
+                    style: pw.TextStyle(
+                      fontSize: 18,
+                      fontWeight: pw.FontWeight.bold,
+                      color: _texte,
+                    ),
+                  ),
+                  pw.Text(
+                    'Relais d\'accueil',
+                    style: pw.TextStyle(fontSize: 11, color: _teal),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          pw.SizedBox(height: 8),
+          pw.Divider(color: _filet),
+          pw.SizedBox(height: 10),
+          _bloc('Enfant accueilli'),
+          ligne('Nom et prénom', _nom(enfant.nom, enfant.prenom)),
+          ligne('Sexe', enfant.sexe == sexeFille ? 'Fille' : 'Garçon'),
+          ligne(
+            'Date de naissance',
+            naiss == null
+                ? 'Non renseignée'
+                : '${dateLongueFr(naiss)}${age == null ? '' : ' ($age ans)'}',
+          ),
+          ligne(
+            'Assistant familial habituel',
+            afHabituel == null
+                ? 'Non renseigné'
+                : _nom(afHabituel.nom, afHabituel.prenom),
+          ),
+          pw.SizedBox(height: 14),
+          _bloc('Relais'),
+          ligne(
+            'Accueillant désigné',
+            _nom(accueillant.nom, accueillant.prenom),
+          ),
+          ligne(
+            'Capacité d\'accueil',
+            '${accueillant.nbPlaces} place(s) - ${_restrictionCourt(accueillant.restrictionSexe)}',
+          ),
+          ligne(
+            'Période',
+            '${periodeFr(debut, fin)}  (${nbJours(debut, fin)} jour(s))',
+          ),
+          if (motif != null && motif.trim().isNotEmpty)
+            ligne('Motif', _safe(motif.trim())),
+          pw.SizedBox(height: 18),
+          pw.Container(
+            padding: const pw.EdgeInsets.all(10),
+            decoration: pw.BoxDecoration(
+              color: _tealClair,
+              borderRadius: pw.BorderRadius.circular(6),
+            ),
+            child: pw.Text(
+              'Document à conserver par l\'accueillant pendant toute la durée du relais.',
+              style: pw.TextStyle(fontSize: 9, color: _teal),
+            ),
+          ),
+          pw.Spacer(),
+          pw.Row(
+            children: [
+              pw.Expanded(
+                child: _signature(
+                  'Le responsable du service',
+                  structure.signataire,
+                ),
+              ),
+              pw.SizedBox(width: 24),
+              pw.Expanded(
+                child: _signature(
+                  'L\'accueillant',
+                  _nom(accueillant.nom, accueillant.prenom),
+                ),
+              ),
+            ],
+          ),
+          pw.SizedBox(height: 10),
+          pw.Text(
+            'Édité le ${dateLongueFr(date)}'
+            '${structure.mention.isEmpty ? '' : ' - ${_safe(structure.mention)}'}',
+            style: pw.TextStyle(fontSize: 8, color: _gris),
+          ),
+        ],
+      ),
+    ),
+  );
+  return doc.save();
+}
+
+pw.Widget _bloc(String titre) => pw.Container(
+  width: double.infinity,
+  margin: const pw.EdgeInsets.only(bottom: 4),
+  padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+  decoration: pw.BoxDecoration(
+    color: _tealClair,
+    borderRadius: pw.BorderRadius.circular(6),
+  ),
+  child: pw.Text(
+    titre,
+    style: pw.TextStyle(
+      fontWeight: pw.FontWeight.bold,
+      fontSize: 11,
+      color: _teal,
+    ),
+  ),
+);
+
+pw.Widget _signature(String role, String nom) => pw.Column(
+  crossAxisAlignment: pw.CrossAxisAlignment.start,
+  children: [
+    pw.Text(role, style: pw.TextStyle(fontSize: 9, color: _gris)),
+    if (nom.isNotEmpty)
+      pw.Text(_safe(nom), style: pw.TextStyle(fontSize: 10, color: _texte)),
+    pw.SizedBox(height: 38),
+    pw.Container(
+      decoration: pw.BoxDecoration(
+        border: pw.Border(top: pw.BorderSide(color: _filet)),
+      ),
+      padding: const pw.EdgeInsets.only(top: 3),
+      child: pw.Text(
+        'Signature',
+        style: pw.TextStyle(fontSize: 8, color: _gris),
+      ),
+    ),
+  ],
+);
+
 pw.Widget _sectionAccueillant(Accueillant a) {
   return pw.Container(
     width: double.infinity,
