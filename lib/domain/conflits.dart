@@ -267,6 +267,46 @@ List<Conflit> analyserAffectation({
     );
   }
 
+  // 11. Secteur géographique différent (avertissement).
+  final secteurAcc = accueillant.secteur?.trim() ?? '';
+  final secteurEnf = enfant.secteur?.trim() ?? '';
+  if (secteurAcc.isNotEmpty &&
+      secteurEnf.isNotEmpty &&
+      secteurAcc.toLowerCase() != secteurEnf.toLowerCase()) {
+    conflits.add(
+      Conflit(
+        Severite.avertissement,
+        '${accueillant.nom} est sur le secteur « $secteurAcc », différent de '
+        'celui de ${_nomEnfant(enfant)} (« $secteurEnf »).',
+      ),
+    );
+  }
+
+  // 12. Plafond de jours d'accueil par an de l'accueillant (avertissement).
+  final plafond = accueillant.plafondJoursAn;
+  if (plafond != null) {
+    final annee = jour(debut).year;
+    var cumul = nbJours(debut, fin);
+    for (final a in affectations) {
+      if (a.id != affectationExclueId &&
+          relaisActif(a.statut) &&
+          a.accueillantId == accueillant.id &&
+          a.enfantId != enfant.id &&
+          jour(a.debut).year == annee) {
+        cumul += nbJours(a.debut, a.fin);
+      }
+    }
+    if (cumul > plafond) {
+      conflits.add(
+        Conflit(
+          Severite.avertissement,
+          'Plafond de jours dépassé pour ${accueillant.nom} : '
+          '$cumul / $plafond jour(s) en $annee.',
+        ),
+      );
+    }
+  }
+
   return conflits;
 }
 

@@ -68,6 +68,10 @@ class Accueillants extends Table {
   IntColumn get ageMax => integer().nullable()();
   // Échéance de l'agrément (avertissement si le relais dépasse cette date).
   DateTimeColumn get agrementEcheance => dateTime().nullable()();
+  // Plafond de jours d'accueil par an (avertissement si dépassé).
+  IntColumn get plafondJoursAn => integer().nullable()();
+  // Secteur géographique (libellé saisi, ex. « Secteur Nord »).
+  TextColumn get secteur => text().nullable()();
   TextColumn get notes => text().nullable()();
 }
 
@@ -105,6 +109,8 @@ class Enfants extends Table {
   TextColumn get sante => text().nullable()();
   // Personne(s) à prévenir en cas d'urgence (nom + téléphone).
   TextColumn get contactUrgence => text().nullable()();
+  // Secteur géographique de l'enfant (pour favoriser la proximité).
+  TextColumn get secteur => text().nullable()();
   TextColumn get notes => text().nullable()();
 }
 
@@ -238,7 +244,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -254,6 +260,11 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(accueillants, accueillants.ageMin);
         await m.addColumn(accueillants, accueillants.ageMax);
         await m.addColumn(accueillants, accueillants.agrementEcheance);
+      }
+      if (from < 7) {
+        await m.addColumn(accueillants, accueillants.plafondJoursAn);
+        await m.addColumn(accueillants, accueillants.secteur);
+        await m.addColumn(enfants, enfants.secteur);
       }
     },
     beforeOpen: (details) async {

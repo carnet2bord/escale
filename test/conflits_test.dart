@@ -9,6 +9,7 @@ Enfant enfant({
   int? afHabituelId,
   int? fratrieId,
   DateTime? naissance,
+  String? secteur,
 }) => Enfant(
   id: id,
   nom: nom,
@@ -17,6 +18,7 @@ Enfant enfant({
   dateNaissance: naissance,
   afHabituelId: afHabituelId,
   fratrieId: fratrieId,
+  secteur: secteur,
   notes: null,
 );
 
@@ -28,6 +30,8 @@ Accueillant accueillant({
   int? ageMin,
   int? ageMax,
   DateTime? agrementEcheance,
+  int? plafondJoursAn,
+  String? secteur,
 }) => Accueillant(
   id: id,
   nom: nom,
@@ -37,6 +41,8 @@ Accueillant accueillant({
   ageMin: ageMin,
   ageMax: ageMax,
   agrementEcheance: agrementEcheance,
+  plafondJoursAn: plafondJoursAn,
+  secteur: secteur,
   notes: null,
 );
 
@@ -434,6 +440,40 @@ void main() {
       accueillant: accueillant(agrementEcheance: d(2)),
       debut: d(1),
       fin: d(7),
+      affectations: const [],
+      disponibilites: const [],
+      indisponibilites: const [],
+      incompatibilites: const [],
+      enfants: [e],
+    );
+    expect(conflits.any((c) => c.estBloquant), isFalse);
+    expect(conflits.any((c) => c.severite == Severite.avertissement), isTrue);
+  });
+
+  test('secteur différent : avertissement non bloquant', () {
+    final e = enfant(secteur: 'Sud');
+    final conflits = analyserAffectation(
+      enfant: e,
+      accueillant: accueillant(secteur: 'Nord'),
+      debut: d(1),
+      fin: d(3),
+      affectations: const [],
+      disponibilites: const [],
+      indisponibilites: const [],
+      incompatibilites: const [],
+      enfants: [e],
+    );
+    expect(conflits.any((c) => c.estBloquant), isFalse);
+    expect(conflits.any((c) => c.severite == Severite.avertissement), isTrue);
+  });
+
+  test('plafond de jours dépassé : avertissement non bloquant', () {
+    final e = enfant();
+    final conflits = analyserAffectation(
+      enfant: e,
+      accueillant: accueillant(plafondJoursAn: 5),
+      debut: d(1),
+      fin: d(10),
       affectations: const [],
       disponibilites: const [],
       indisponibilites: const [],

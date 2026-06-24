@@ -211,6 +211,8 @@ class _AccueillantEditorState extends State<_AccueillantEditor> {
   late final TextEditingController _notes;
   late final TextEditingController _ageMin;
   late final TextEditingController _ageMax;
+  late final TextEditingController _plafond;
+  late final TextEditingController _secteur;
   DateTime? _agrementEcheance;
   late int _nbPlaces;
   late String _restriction;
@@ -226,6 +228,8 @@ class _AccueillantEditorState extends State<_AccueillantEditor> {
     _notes = TextEditingController(text: a?.notes ?? '');
     _ageMin = TextEditingController(text: a?.ageMin?.toString() ?? '');
     _ageMax = TextEditingController(text: a?.ageMax?.toString() ?? '');
+    _plafond = TextEditingController(text: a?.plafondJoursAn?.toString() ?? '');
+    _secteur = TextEditingController(text: a?.secteur ?? '');
     _agrementEcheance = a?.agrementEcheance;
     _nbPlaces = a?.nbPlaces ?? 1;
     _restriction = a?.restrictionSexe ?? restrictionAucune;
@@ -238,6 +242,8 @@ class _AccueillantEditorState extends State<_AccueillantEditor> {
     _notes.dispose();
     _ageMin.dispose();
     _ageMax.dispose();
+    _plafond.dispose();
+    _secteur.dispose();
     super.dispose();
   }
 
@@ -256,6 +262,10 @@ class _AccueillantEditorState extends State<_AccueillantEditor> {
               ageMin: Value(int.tryParse(_ageMin.text.trim())),
               ageMax: Value(int.tryParse(_ageMax.text.trim())),
               agrementEcheance: Value(_agrementEcheance),
+              plafondJoursAn: Value(int.tryParse(_plafond.text.trim())),
+              secteur: Value(
+                _secteur.text.trim().isEmpty ? null : _secteur.text.trim(),
+              ),
               notes: Value(
                 _notes.text.trim().isEmpty ? null : _notes.text.trim(),
               ),
@@ -272,6 +282,10 @@ class _AccueillantEditorState extends State<_AccueillantEditor> {
           ageMin: Value(int.tryParse(_ageMin.text.trim())),
           ageMax: Value(int.tryParse(_ageMax.text.trim())),
           agrementEcheance: Value(_agrementEcheance),
+          plafondJoursAn: Value(int.tryParse(_plafond.text.trim())),
+          secteur: Value(
+            _secteur.text.trim().isEmpty ? null : _secteur.text.trim(),
+          ),
           notes: Value(_notes.text.trim().isEmpty ? null : _notes.text.trim()),
         ),
       );
@@ -462,6 +476,31 @@ class _AccueillantEditorState extends State<_AccueillantEditor> {
                             ),
                           ],
                         ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _plafond,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                labelText: 'Plafond de jours / an',
+                                hintText: 'Optionnel',
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _secteur,
+                              decoration: const InputDecoration(
+                                labelText: 'Secteur',
+                                hintText: 'Ex. Secteur Nord',
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 16),
                       TextFormField(

@@ -273,12 +273,42 @@ ResultatProposition proposerAffectations({
         ? 1
         : 0;
 
+    // Même secteur que l'enfant privilégié (proximité).
+    int scoreSecteur(Accueillant a) {
+      final sa = a.secteur?.trim().toLowerCase() ?? '';
+      final se = c.enfant.secteur?.trim().toLowerCase() ?? '';
+      return (sa.isNotEmpty && sa == se) ? 1 : 0;
+    }
+
+    // Accueillant encore sous son plafond annuel (sinon dé-priorisé).
+    int souPlafond(Accueillant a) {
+      final plafond = a.plafondJoursAn;
+      if (plafond == null) return 1;
+      final annee = jour(c.debut).year;
+      var cumul = nbJours(c.debut, c.fin);
+      for (final x in affsActives) {
+        if (x.accueillantId == a.id && jour(x.debut).year == annee) {
+          cumul += nbJours(x.debut, x.fin);
+        }
+      }
+      for (final p in retenues) {
+        if (p.accueillant.id == a.id && jour(p.debut).year == annee) {
+          cumul += nbJours(p.debut, p.fin);
+        }
+      }
+      return cumul <= plafond ? 1 : 0;
+    }
+
     faisables.sort((a, b) {
-      // Accueillants favoris d'abord.
+      // Favoris d'abord, puis même secteur, fratrie réunie, sous plafond, charge.
       final fav = scoreFavori(b).compareTo(scoreFavori(a));
       if (fav != 0) return fav;
+      final sect = scoreSecteur(b).compareTo(scoreSecteur(a));
+      if (sect != 0) return sect;
       final f = scoreFratrie(b).compareTo(scoreFratrie(a));
       if (f != 0) return f;
+      final pla = souPlafond(b).compareTo(souPlafond(a));
+      if (pla != 0) return pla;
       return charge(a).compareTo(charge(b));
     });
     return faisables;

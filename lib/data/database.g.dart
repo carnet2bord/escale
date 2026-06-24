@@ -99,6 +99,28 @@ class $AccueillantsTable extends Accueillants
         type: DriftSqlType.dateTime,
         requiredDuringInsert: false,
       );
+  static const VerificationMeta _plafondJoursAnMeta = const VerificationMeta(
+    'plafondJoursAn',
+  );
+  @override
+  late final GeneratedColumn<int> plafondJoursAn = GeneratedColumn<int>(
+    'plafond_jours_an',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _secteurMeta = const VerificationMeta(
+    'secteur',
+  );
+  @override
+  late final GeneratedColumn<String> secteur = GeneratedColumn<String>(
+    'secteur',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _notesMeta = const VerificationMeta('notes');
   @override
   late final GeneratedColumn<String> notes = GeneratedColumn<String>(
@@ -118,6 +140,8 @@ class $AccueillantsTable extends Accueillants
     ageMin,
     ageMax,
     agrementEcheance,
+    plafondJoursAn,
+    secteur,
     notes,
   ];
   @override
@@ -185,6 +209,21 @@ class $AccueillantsTable extends Accueillants
         ),
       );
     }
+    if (data.containsKey('plafond_jours_an')) {
+      context.handle(
+        _plafondJoursAnMeta,
+        plafondJoursAn.isAcceptableOrUnknown(
+          data['plafond_jours_an']!,
+          _plafondJoursAnMeta,
+        ),
+      );
+    }
+    if (data.containsKey('secteur')) {
+      context.handle(
+        _secteurMeta,
+        secteur.isAcceptableOrUnknown(data['secteur']!, _secteurMeta),
+      );
+    }
     if (data.containsKey('notes')) {
       context.handle(
         _notesMeta,
@@ -232,6 +271,14 @@ class $AccueillantsTable extends Accueillants
         DriftSqlType.dateTime,
         data['${effectivePrefix}agrement_echeance'],
       ),
+      plafondJoursAn: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}plafond_jours_an'],
+      ),
+      secteur: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}secteur'],
+      ),
       notes: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
@@ -254,6 +301,8 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
   final int? ageMin;
   final int? ageMax;
   final DateTime? agrementEcheance;
+  final int? plafondJoursAn;
+  final String? secteur;
   final String? notes;
   const Accueillant({
     required this.id,
@@ -264,6 +313,8 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
     this.ageMin,
     this.ageMax,
     this.agrementEcheance,
+    this.plafondJoursAn,
+    this.secteur,
     this.notes,
   });
   @override
@@ -282,6 +333,12 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
     }
     if (!nullToAbsent || agrementEcheance != null) {
       map['agrement_echeance'] = Variable<DateTime>(agrementEcheance);
+    }
+    if (!nullToAbsent || plafondJoursAn != null) {
+      map['plafond_jours_an'] = Variable<int>(plafondJoursAn);
+    }
+    if (!nullToAbsent || secteur != null) {
+      map['secteur'] = Variable<String>(secteur);
     }
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
@@ -305,6 +362,12 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
       agrementEcheance: agrementEcheance == null && nullToAbsent
           ? const Value.absent()
           : Value(agrementEcheance),
+      plafondJoursAn: plafondJoursAn == null && nullToAbsent
+          ? const Value.absent()
+          : Value(plafondJoursAn),
+      secteur: secteur == null && nullToAbsent
+          ? const Value.absent()
+          : Value(secteur),
       notes: notes == null && nullToAbsent
           ? const Value.absent()
           : Value(notes),
@@ -327,6 +390,8 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
       agrementEcheance: serializer.fromJson<DateTime?>(
         json['agrementEcheance'],
       ),
+      plafondJoursAn: serializer.fromJson<int?>(json['plafondJoursAn']),
+      secteur: serializer.fromJson<String?>(json['secteur']),
       notes: serializer.fromJson<String?>(json['notes']),
     );
   }
@@ -342,6 +407,8 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
       'ageMin': serializer.toJson<int?>(ageMin),
       'ageMax': serializer.toJson<int?>(ageMax),
       'agrementEcheance': serializer.toJson<DateTime?>(agrementEcheance),
+      'plafondJoursAn': serializer.toJson<int?>(plafondJoursAn),
+      'secteur': serializer.toJson<String?>(secteur),
       'notes': serializer.toJson<String?>(notes),
     };
   }
@@ -355,6 +422,8 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
     Value<int?> ageMin = const Value.absent(),
     Value<int?> ageMax = const Value.absent(),
     Value<DateTime?> agrementEcheance = const Value.absent(),
+    Value<int?> plafondJoursAn = const Value.absent(),
+    Value<String?> secteur = const Value.absent(),
     Value<String?> notes = const Value.absent(),
   }) => Accueillant(
     id: id ?? this.id,
@@ -367,6 +436,10 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
     agrementEcheance: agrementEcheance.present
         ? agrementEcheance.value
         : this.agrementEcheance,
+    plafondJoursAn: plafondJoursAn.present
+        ? plafondJoursAn.value
+        : this.plafondJoursAn,
+    secteur: secteur.present ? secteur.value : this.secteur,
     notes: notes.present ? notes.value : this.notes,
   );
   Accueillant copyWithCompanion(AccueillantsCompanion data) {
@@ -383,6 +456,10 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
       agrementEcheance: data.agrementEcheance.present
           ? data.agrementEcheance.value
           : this.agrementEcheance,
+      plafondJoursAn: data.plafondJoursAn.present
+          ? data.plafondJoursAn.value
+          : this.plafondJoursAn,
+      secteur: data.secteur.present ? data.secteur.value : this.secteur,
       notes: data.notes.present ? data.notes.value : this.notes,
     );
   }
@@ -398,6 +475,8 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
           ..write('ageMin: $ageMin, ')
           ..write('ageMax: $ageMax, ')
           ..write('agrementEcheance: $agrementEcheance, ')
+          ..write('plafondJoursAn: $plafondJoursAn, ')
+          ..write('secteur: $secteur, ')
           ..write('notes: $notes')
           ..write(')'))
         .toString();
@@ -413,6 +492,8 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
     ageMin,
     ageMax,
     agrementEcheance,
+    plafondJoursAn,
+    secteur,
     notes,
   );
   @override
@@ -427,6 +508,8 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
           other.ageMin == this.ageMin &&
           other.ageMax == this.ageMax &&
           other.agrementEcheance == this.agrementEcheance &&
+          other.plafondJoursAn == this.plafondJoursAn &&
+          other.secteur == this.secteur &&
           other.notes == this.notes);
 }
 
@@ -439,6 +522,8 @@ class AccueillantsCompanion extends UpdateCompanion<Accueillant> {
   final Value<int?> ageMin;
   final Value<int?> ageMax;
   final Value<DateTime?> agrementEcheance;
+  final Value<int?> plafondJoursAn;
+  final Value<String?> secteur;
   final Value<String?> notes;
   const AccueillantsCompanion({
     this.id = const Value.absent(),
@@ -449,6 +534,8 @@ class AccueillantsCompanion extends UpdateCompanion<Accueillant> {
     this.ageMin = const Value.absent(),
     this.ageMax = const Value.absent(),
     this.agrementEcheance = const Value.absent(),
+    this.plafondJoursAn = const Value.absent(),
+    this.secteur = const Value.absent(),
     this.notes = const Value.absent(),
   });
   AccueillantsCompanion.insert({
@@ -460,6 +547,8 @@ class AccueillantsCompanion extends UpdateCompanion<Accueillant> {
     this.ageMin = const Value.absent(),
     this.ageMax = const Value.absent(),
     this.agrementEcheance = const Value.absent(),
+    this.plafondJoursAn = const Value.absent(),
+    this.secteur = const Value.absent(),
     this.notes = const Value.absent(),
   }) : nom = Value(nom);
   static Insertable<Accueillant> custom({
@@ -471,6 +560,8 @@ class AccueillantsCompanion extends UpdateCompanion<Accueillant> {
     Expression<int>? ageMin,
     Expression<int>? ageMax,
     Expression<DateTime>? agrementEcheance,
+    Expression<int>? plafondJoursAn,
+    Expression<String>? secteur,
     Expression<String>? notes,
   }) {
     return RawValuesInsertable({
@@ -482,6 +573,8 @@ class AccueillantsCompanion extends UpdateCompanion<Accueillant> {
       if (ageMin != null) 'age_min': ageMin,
       if (ageMax != null) 'age_max': ageMax,
       if (agrementEcheance != null) 'agrement_echeance': agrementEcheance,
+      if (plafondJoursAn != null) 'plafond_jours_an': plafondJoursAn,
+      if (secteur != null) 'secteur': secteur,
       if (notes != null) 'notes': notes,
     });
   }
@@ -495,6 +588,8 @@ class AccueillantsCompanion extends UpdateCompanion<Accueillant> {
     Value<int?>? ageMin,
     Value<int?>? ageMax,
     Value<DateTime?>? agrementEcheance,
+    Value<int?>? plafondJoursAn,
+    Value<String?>? secteur,
     Value<String?>? notes,
   }) {
     return AccueillantsCompanion(
@@ -506,6 +601,8 @@ class AccueillantsCompanion extends UpdateCompanion<Accueillant> {
       ageMin: ageMin ?? this.ageMin,
       ageMax: ageMax ?? this.ageMax,
       agrementEcheance: agrementEcheance ?? this.agrementEcheance,
+      plafondJoursAn: plafondJoursAn ?? this.plafondJoursAn,
+      secteur: secteur ?? this.secteur,
       notes: notes ?? this.notes,
     );
   }
@@ -537,6 +634,12 @@ class AccueillantsCompanion extends UpdateCompanion<Accueillant> {
     if (agrementEcheance.present) {
       map['agrement_echeance'] = Variable<DateTime>(agrementEcheance.value);
     }
+    if (plafondJoursAn.present) {
+      map['plafond_jours_an'] = Variable<int>(plafondJoursAn.value);
+    }
+    if (secteur.present) {
+      map['secteur'] = Variable<String>(secteur.value);
+    }
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
@@ -554,6 +657,8 @@ class AccueillantsCompanion extends UpdateCompanion<Accueillant> {
           ..write('ageMin: $ageMin, ')
           ..write('ageMax: $ageMax, ')
           ..write('agrementEcheance: $agrementEcheance, ')
+          ..write('plafondJoursAn: $plafondJoursAn, ')
+          ..write('secteur: $secteur, ')
           ..write('notes: $notes')
           ..write(')'))
         .toString();
@@ -925,6 +1030,17 @@ class $EnfantsTable extends Enfants with TableInfo<$EnfantsTable, Enfant> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _secteurMeta = const VerificationMeta(
+    'secteur',
+  );
+  @override
+  late final GeneratedColumn<String> secteur = GeneratedColumn<String>(
+    'secteur',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _notesMeta = const VerificationMeta('notes');
   @override
   late final GeneratedColumn<String> notes = GeneratedColumn<String>(
@@ -945,6 +1061,7 @@ class $EnfantsTable extends Enfants with TableInfo<$EnfantsTable, Enfant> {
     fratrieId,
     sante,
     contactUrgence,
+    secteur,
     notes,
   ];
   @override
@@ -1021,6 +1138,12 @@ class $EnfantsTable extends Enfants with TableInfo<$EnfantsTable, Enfant> {
         ),
       );
     }
+    if (data.containsKey('secteur')) {
+      context.handle(
+        _secteurMeta,
+        secteur.isAcceptableOrUnknown(data['secteur']!, _secteurMeta),
+      );
+    }
     if (data.containsKey('notes')) {
       context.handle(
         _notesMeta,
@@ -1072,6 +1195,10 @@ class $EnfantsTable extends Enfants with TableInfo<$EnfantsTable, Enfant> {
         DriftSqlType.string,
         data['${effectivePrefix}contact_urgence'],
       ),
+      secteur: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}secteur'],
+      ),
       notes: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
@@ -1095,6 +1222,7 @@ class Enfant extends DataClass implements Insertable<Enfant> {
   final int? fratrieId;
   final String? sante;
   final String? contactUrgence;
+  final String? secteur;
   final String? notes;
   const Enfant({
     required this.id,
@@ -1106,6 +1234,7 @@ class Enfant extends DataClass implements Insertable<Enfant> {
     this.fratrieId,
     this.sante,
     this.contactUrgence,
+    this.secteur,
     this.notes,
   });
   @override
@@ -1129,6 +1258,9 @@ class Enfant extends DataClass implements Insertable<Enfant> {
     }
     if (!nullToAbsent || contactUrgence != null) {
       map['contact_urgence'] = Variable<String>(contactUrgence);
+    }
+    if (!nullToAbsent || secteur != null) {
+      map['secteur'] = Variable<String>(secteur);
     }
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
@@ -1157,6 +1289,9 @@ class Enfant extends DataClass implements Insertable<Enfant> {
       contactUrgence: contactUrgence == null && nullToAbsent
           ? const Value.absent()
           : Value(contactUrgence),
+      secteur: secteur == null && nullToAbsent
+          ? const Value.absent()
+          : Value(secteur),
       notes: notes == null && nullToAbsent
           ? const Value.absent()
           : Value(notes),
@@ -1178,6 +1313,7 @@ class Enfant extends DataClass implements Insertable<Enfant> {
       fratrieId: serializer.fromJson<int?>(json['fratrieId']),
       sante: serializer.fromJson<String?>(json['sante']),
       contactUrgence: serializer.fromJson<String?>(json['contactUrgence']),
+      secteur: serializer.fromJson<String?>(json['secteur']),
       notes: serializer.fromJson<String?>(json['notes']),
     );
   }
@@ -1194,6 +1330,7 @@ class Enfant extends DataClass implements Insertable<Enfant> {
       'fratrieId': serializer.toJson<int?>(fratrieId),
       'sante': serializer.toJson<String?>(sante),
       'contactUrgence': serializer.toJson<String?>(contactUrgence),
+      'secteur': serializer.toJson<String?>(secteur),
       'notes': serializer.toJson<String?>(notes),
     };
   }
@@ -1208,6 +1345,7 @@ class Enfant extends DataClass implements Insertable<Enfant> {
     Value<int?> fratrieId = const Value.absent(),
     Value<String?> sante = const Value.absent(),
     Value<String?> contactUrgence = const Value.absent(),
+    Value<String?> secteur = const Value.absent(),
     Value<String?> notes = const Value.absent(),
   }) => Enfant(
     id: id ?? this.id,
@@ -1223,6 +1361,7 @@ class Enfant extends DataClass implements Insertable<Enfant> {
     contactUrgence: contactUrgence.present
         ? contactUrgence.value
         : this.contactUrgence,
+    secteur: secteur.present ? secteur.value : this.secteur,
     notes: notes.present ? notes.value : this.notes,
   );
   Enfant copyWithCompanion(EnfantsCompanion data) {
@@ -1242,6 +1381,7 @@ class Enfant extends DataClass implements Insertable<Enfant> {
       contactUrgence: data.contactUrgence.present
           ? data.contactUrgence.value
           : this.contactUrgence,
+      secteur: data.secteur.present ? data.secteur.value : this.secteur,
       notes: data.notes.present ? data.notes.value : this.notes,
     );
   }
@@ -1258,6 +1398,7 @@ class Enfant extends DataClass implements Insertable<Enfant> {
           ..write('fratrieId: $fratrieId, ')
           ..write('sante: $sante, ')
           ..write('contactUrgence: $contactUrgence, ')
+          ..write('secteur: $secteur, ')
           ..write('notes: $notes')
           ..write(')'))
         .toString();
@@ -1274,6 +1415,7 @@ class Enfant extends DataClass implements Insertable<Enfant> {
     fratrieId,
     sante,
     contactUrgence,
+    secteur,
     notes,
   );
   @override
@@ -1289,6 +1431,7 @@ class Enfant extends DataClass implements Insertable<Enfant> {
           other.fratrieId == this.fratrieId &&
           other.sante == this.sante &&
           other.contactUrgence == this.contactUrgence &&
+          other.secteur == this.secteur &&
           other.notes == this.notes);
 }
 
@@ -1302,6 +1445,7 @@ class EnfantsCompanion extends UpdateCompanion<Enfant> {
   final Value<int?> fratrieId;
   final Value<String?> sante;
   final Value<String?> contactUrgence;
+  final Value<String?> secteur;
   final Value<String?> notes;
   const EnfantsCompanion({
     this.id = const Value.absent(),
@@ -1313,6 +1457,7 @@ class EnfantsCompanion extends UpdateCompanion<Enfant> {
     this.fratrieId = const Value.absent(),
     this.sante = const Value.absent(),
     this.contactUrgence = const Value.absent(),
+    this.secteur = const Value.absent(),
     this.notes = const Value.absent(),
   });
   EnfantsCompanion.insert({
@@ -1325,6 +1470,7 @@ class EnfantsCompanion extends UpdateCompanion<Enfant> {
     this.fratrieId = const Value.absent(),
     this.sante = const Value.absent(),
     this.contactUrgence = const Value.absent(),
+    this.secteur = const Value.absent(),
     this.notes = const Value.absent(),
   }) : nom = Value(nom);
   static Insertable<Enfant> custom({
@@ -1337,6 +1483,7 @@ class EnfantsCompanion extends UpdateCompanion<Enfant> {
     Expression<int>? fratrieId,
     Expression<String>? sante,
     Expression<String>? contactUrgence,
+    Expression<String>? secteur,
     Expression<String>? notes,
   }) {
     return RawValuesInsertable({
@@ -1349,6 +1496,7 @@ class EnfantsCompanion extends UpdateCompanion<Enfant> {
       if (fratrieId != null) 'fratrie_id': fratrieId,
       if (sante != null) 'sante': sante,
       if (contactUrgence != null) 'contact_urgence': contactUrgence,
+      if (secteur != null) 'secteur': secteur,
       if (notes != null) 'notes': notes,
     });
   }
@@ -1363,6 +1511,7 @@ class EnfantsCompanion extends UpdateCompanion<Enfant> {
     Value<int?>? fratrieId,
     Value<String?>? sante,
     Value<String?>? contactUrgence,
+    Value<String?>? secteur,
     Value<String?>? notes,
   }) {
     return EnfantsCompanion(
@@ -1375,6 +1524,7 @@ class EnfantsCompanion extends UpdateCompanion<Enfant> {
       fratrieId: fratrieId ?? this.fratrieId,
       sante: sante ?? this.sante,
       contactUrgence: contactUrgence ?? this.contactUrgence,
+      secteur: secteur ?? this.secteur,
       notes: notes ?? this.notes,
     );
   }
@@ -1409,6 +1559,9 @@ class EnfantsCompanion extends UpdateCompanion<Enfant> {
     if (contactUrgence.present) {
       map['contact_urgence'] = Variable<String>(contactUrgence.value);
     }
+    if (secteur.present) {
+      map['secteur'] = Variable<String>(secteur.value);
+    }
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
@@ -1427,6 +1580,7 @@ class EnfantsCompanion extends UpdateCompanion<Enfant> {
           ..write('fratrieId: $fratrieId, ')
           ..write('sante: $sante, ')
           ..write('contactUrgence: $contactUrgence, ')
+          ..write('secteur: $secteur, ')
           ..write('notes: $notes')
           ..write(')'))
         .toString();
@@ -4201,6 +4355,8 @@ typedef $$AccueillantsTableCreateCompanionBuilder =
       Value<int?> ageMin,
       Value<int?> ageMax,
       Value<DateTime?> agrementEcheance,
+      Value<int?> plafondJoursAn,
+      Value<String?> secteur,
       Value<String?> notes,
     });
 typedef $$AccueillantsTableUpdateCompanionBuilder =
@@ -4213,6 +4369,8 @@ typedef $$AccueillantsTableUpdateCompanionBuilder =
       Value<int?> ageMin,
       Value<int?> ageMax,
       Value<DateTime?> agrementEcheance,
+      Value<int?> plafondJoursAn,
+      Value<String?> secteur,
       Value<String?> notes,
     });
 
@@ -4370,6 +4528,16 @@ class $$AccueillantsTableFilterComposer
 
   ColumnFilters<DateTime> get agrementEcheance => $composableBuilder(
     column: $table.agrementEcheance,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get plafondJoursAn => $composableBuilder(
+    column: $table.plafondJoursAn,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get secteur => $composableBuilder(
+    column: $table.secteur,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4554,6 +4722,16 @@ class $$AccueillantsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get plafondJoursAn => $composableBuilder(
+    column: $table.plafondJoursAn,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get secteur => $composableBuilder(
+    column: $table.secteur,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get notes => $composableBuilder(
     column: $table.notes,
     builder: (column) => ColumnOrderings(column),
@@ -4596,6 +4774,14 @@ class $$AccueillantsTableAnnotationComposer
     column: $table.agrementEcheance,
     builder: (column) => column,
   );
+
+  GeneratedColumn<int> get plafondJoursAn => $composableBuilder(
+    column: $table.plafondJoursAn,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get secteur =>
+      $composableBuilder(column: $table.secteur, builder: (column) => column);
 
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
@@ -4770,6 +4956,8 @@ class $$AccueillantsTableTableManager
                 Value<int?> ageMin = const Value.absent(),
                 Value<int?> ageMax = const Value.absent(),
                 Value<DateTime?> agrementEcheance = const Value.absent(),
+                Value<int?> plafondJoursAn = const Value.absent(),
+                Value<String?> secteur = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
               }) => AccueillantsCompanion(
                 id: id,
@@ -4780,6 +4968,8 @@ class $$AccueillantsTableTableManager
                 ageMin: ageMin,
                 ageMax: ageMax,
                 agrementEcheance: agrementEcheance,
+                plafondJoursAn: plafondJoursAn,
+                secteur: secteur,
                 notes: notes,
               ),
           createCompanionCallback:
@@ -4792,6 +4982,8 @@ class $$AccueillantsTableTableManager
                 Value<int?> ageMin = const Value.absent(),
                 Value<int?> ageMax = const Value.absent(),
                 Value<DateTime?> agrementEcheance = const Value.absent(),
+                Value<int?> plafondJoursAn = const Value.absent(),
+                Value<String?> secteur = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
               }) => AccueillantsCompanion.insert(
                 id: id,
@@ -4802,6 +4994,8 @@ class $$AccueillantsTableTableManager
                 ageMin: ageMin,
                 ageMax: ageMax,
                 agrementEcheance: agrementEcheance,
+                plafondJoursAn: plafondJoursAn,
+                secteur: secteur,
                 notes: notes,
               ),
           withReferenceMapper: (p0) => p0
@@ -5228,6 +5422,7 @@ typedef $$EnfantsTableCreateCompanionBuilder =
       Value<int?> fratrieId,
       Value<String?> sante,
       Value<String?> contactUrgence,
+      Value<String?> secteur,
       Value<String?> notes,
     });
 typedef $$EnfantsTableUpdateCompanionBuilder =
@@ -5241,6 +5436,7 @@ typedef $$EnfantsTableUpdateCompanionBuilder =
       Value<int?> fratrieId,
       Value<String?> sante,
       Value<String?> contactUrgence,
+      Value<String?> secteur,
       Value<String?> notes,
     });
 
@@ -5406,6 +5602,11 @@ class $$EnfantsTableFilterComposer
 
   ColumnFilters<String> get contactUrgence => $composableBuilder(
     column: $table.contactUrgence,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get secteur => $composableBuilder(
+    column: $table.secteur,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5606,6 +5807,11 @@ class $$EnfantsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get secteur => $composableBuilder(
+    column: $table.secteur,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get notes => $composableBuilder(
     column: $table.notes,
     builder: (column) => ColumnOrderings(column),
@@ -5691,6 +5897,9 @@ class $$EnfantsTableAnnotationComposer
     column: $table.contactUrgence,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get secteur =>
+      $composableBuilder(column: $table.secteur, builder: (column) => column);
 
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
@@ -5888,6 +6097,7 @@ class $$EnfantsTableTableManager
                 Value<int?> fratrieId = const Value.absent(),
                 Value<String?> sante = const Value.absent(),
                 Value<String?> contactUrgence = const Value.absent(),
+                Value<String?> secteur = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
               }) => EnfantsCompanion(
                 id: id,
@@ -5899,6 +6109,7 @@ class $$EnfantsTableTableManager
                 fratrieId: fratrieId,
                 sante: sante,
                 contactUrgence: contactUrgence,
+                secteur: secteur,
                 notes: notes,
               ),
           createCompanionCallback:
@@ -5912,6 +6123,7 @@ class $$EnfantsTableTableManager
                 Value<int?> fratrieId = const Value.absent(),
                 Value<String?> sante = const Value.absent(),
                 Value<String?> contactUrgence = const Value.absent(),
+                Value<String?> secteur = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
               }) => EnfantsCompanion.insert(
                 id: id,
@@ -5923,6 +6135,7 @@ class $$EnfantsTableTableManager
                 fratrieId: fratrieId,
                 sante: sante,
                 contactUrgence: contactUrgence,
+                secteur: secteur,
                 notes: notes,
               ),
           withReferenceMapper: (p0) => p0

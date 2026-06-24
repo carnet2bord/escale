@@ -234,6 +234,7 @@ class _EnfantEditorState extends State<_EnfantEditor> {
   late final TextEditingController _notes;
   late final TextEditingController _sante;
   late final TextEditingController _contactUrgence;
+  late final TextEditingController _secteur;
   late String _sexe;
   DateTime? _naissance;
   int? _afHabituelId;
@@ -250,6 +251,7 @@ class _EnfantEditorState extends State<_EnfantEditor> {
     _notes = TextEditingController(text: e?.notes ?? '');
     _sante = TextEditingController(text: e?.sante ?? '');
     _contactUrgence = TextEditingController(text: e?.contactUrgence ?? '');
+    _secteur = TextEditingController(text: e?.secteur ?? '');
     _sexe = e?.sexe ?? sexeGarcon;
     _naissance = e?.dateNaissance;
     _afHabituelId = e?.afHabituelId;
@@ -263,6 +265,7 @@ class _EnfantEditorState extends State<_EnfantEditor> {
     _notes.dispose();
     _sante.dispose();
     _contactUrgence.dispose();
+    _secteur.dispose();
     super.dispose();
   }
 
@@ -288,6 +291,9 @@ class _EnfantEditorState extends State<_EnfantEditor> {
                     ? null
                     : _contactUrgence.text.trim(),
               ),
+              secteur: Value(
+                _secteur.text.trim().isEmpty ? null : _secteur.text.trim(),
+              ),
               notes: Value(
                 _notes.text.trim().isEmpty ? null : _notes.text.trim(),
               ),
@@ -308,6 +314,9 @@ class _EnfantEditorState extends State<_EnfantEditor> {
             _contactUrgence.text.trim().isEmpty
                 ? null
                 : _contactUrgence.text.trim(),
+          ),
+          secteur: Value(
+            _secteur.text.trim().isEmpty ? null : _secteur.text.trim(),
           ),
           notes: Value(_notes.text.trim().isEmpty ? null : _notes.text.trim()),
         ),
@@ -525,6 +534,14 @@ class _EnfantEditorState extends State<_EnfantEditor> {
                           labelText: 'Contact d\'urgence',
                           hintText:
                               'Nom et téléphone de la personne à prévenir',
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _secteur,
+                        decoration: const InputDecoration(
+                          labelText: 'Secteur',
+                          hintText: 'Ex. Secteur Nord (favorise la proximité)',
                         ),
                       ),
                       const SizedBox(height: 16),
