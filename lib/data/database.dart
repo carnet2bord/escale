@@ -357,6 +357,14 @@ class AppDatabase extends _$AppDatabase {
       (update(affectations)..where((t) => t.id.equals(id))).write(
         AffectationsCompanion(statut: Value(statut)),
       );
+
+  // Ré-insère une ligne supprimée (pour l'annulation « Annuler » après suppression).
+  Future<void> reinsererAffectation(Affectation a) =>
+      into(affectations).insert(a, mode: InsertMode.insertOrReplace);
+
+  Future<void> reinsererSolution(SolutionAlternative s) =>
+      into(solutionsAlternatives).insert(s, mode: InsertMode.insertOrReplace);
+
   Future<List<BesoinRelais>> tousBesoins() => select(besoinsRelais).get();
   Future<List<Incompatibilite>> toutesIncompatibilites() =>
       select(incompatibilites).get();

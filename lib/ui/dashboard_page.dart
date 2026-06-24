@@ -165,6 +165,34 @@ class _DashboardPageState extends State<DashboardPage> {
         );
   }
 
+  // Total des journées de besoin et combien sont assurées (KPI de couverture).
+  ({int total, int couverts}) _journees(_Snapshot s) {
+    var total = 0, couverts = 0;
+    for (final b in s.besoins) {
+      if (jour(b.fin).isBefore(jour(b.debut))) continue; // dates incohérentes
+      final cov = couverturesEnfant(b.enfantId, s.affectations, s.solutions);
+      var d = jour(b.debut);
+      final f = jour(b.fin);
+      while (!d.isAfter(f)) {
+        total++;
+        if (cov.any((c) => !d.isBefore(jour(c.$1)) && !d.isAfter(jour(c.$2)))) {
+          couverts++;
+        }
+        d = d.add(const Duration(days: 1));
+      }
+    }
+    return (total: total, couverts: couverts);
+  }
+
+  // Délai avant le début d'un besoin, en clair (urgence).
+  String _urgenceFr(DateTime debut) {
+    final jours = jour(debut).difference(jour(DateTime.now())).inDays;
+    if (jours < 0) return 'En retard';
+    if (jours == 0) return "Aujourd'hui";
+    if (jours == 1) return 'Demain';
+    return 'Dans $jours j';
+  }
+
   Couverture _couvertureBesoin(_Snapshot s, BesoinRelais b) {
     // Besoin aux dates incohérentes (fin avant début) : à signaler, pas à ignorer.
     if (jour(b.fin).isBefore(jour(b.debut))) return Couverture.incoherente;
@@ -234,6 +262,7 @@ class _DashboardPageState extends State<DashboardPage> {
           }
           final s = snap.data!;
           final parEnfant = {for (final e in s.enfants) e.id: e};
+          final parAcc = {for (final a in s.accueillants) a.id: a};
           final besoinsAProbleme =
               s.besoins
                   .map((b) => (b, _couvertureBesoin(s, b)))
@@ -241,6 +270,12 @@ class _DashboardPageState extends State<DashboardPage> {
                   .toList()
                 ..sort((a, b) => a.$1.debut.compareTo(b.$1.debut));
           final conflits = _conflitsBloquants(s);
+          // Relais proposés automatiquement, en attente de confirmation.
+          final aConfirmer =
+              s.affectations.where((a) => a.statut == statutPropose).toList()
+                ..sort((a, b) => a.debut.compareTo(b.debut));
+          final j = _journees(s);
+          final pct = j.total == 0 ? 100 : (j.couverts * 100 / j.total).round();
 
           return ListView(
             padding: const EdgeInsets.all(24),
@@ -276,6 +311,95 @@ class _DashboardPageState extends State<DashboardPage> {
                 ],
               ),
               const SizedBox(height: 32),
+              if (s.besoins.isNotEmpty) ...[
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Expanded(
+                              child: Text(
+                                'Couverture des besoins',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            Text(
+                              '$pct %',
+                              style: TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.w700,
+                                color: pct >= 100
+                                    ? Colors.green.shade600
+                                    : Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: LinearProgressIndicator(
+                            value: j.total == 0 ? 1 : j.couverts / j.total,
+                            minHeight: 10,
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.surfaceContainerHighest,
+                            color: pct >= 100
+                                ? Colors.green.shade600
+                                : Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '${j.couverts} / ${j.total} journées de besoin assurées',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
+              if (aConfirmer.isNotEmpty) ...[
+                const SectionTitle(
+                  'Relais à confirmer',
+                  sousTitre:
+                      'Propositions automatiques en attente de validation.',
+                ),
+                for (final a in aConfirmer)
+                  Card(
+                    child: ListTile(
+                      leading: Icon(
+                        Icons.schedule,
+                        color: Colors.orange.shade700,
+                      ),
+                      title: Text(() {
+                        final e = parEnfant[a.enfantId];
+                        final acc = parAcc[a.accueillantId];
+                        return '${e == null ? '?' : nomComplet(e.nom, e.prenom)}'
+                            '  →  '
+                            '${acc == null ? '?' : nomComplet(acc.nom, acc.prenom)}';
+                      }()),
+                      subtitle: Text(
+                        '${_urgenceFr(a.debut)} · ${periodeFr(a.debut, a.fin)}',
+                      ),
+                      trailing: FilledButton.tonalIcon(
+                        onPressed: () => context
+                            .read<AppDatabase>()
+                            .majStatutAffectation(a.id, statutConfirme),
+                        icon: const Icon(Icons.check, size: 18),
+                        label: const Text('Confirmer'),
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 24),
+              ],
               const SectionTitle(
                 'Besoins non couverts',
                 sousTitre:
@@ -311,7 +435,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       subtitle: Text(
                         cov == Couverture.incoherente
                             ? 'Dates incohérentes (fin avant début) : ${periodeFr(b.debut, b.fin)}'
-                            : periodeFr(b.debut, b.fin),
+                            : '${_urgenceFr(b.debut)} · ${periodeFr(b.debut, b.fin)}',
                       ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,

@@ -347,15 +347,17 @@ class _PlanningPageState extends State<PlanningPage> {
   Future<void> _actionRelais(_PlanningData d, Affectation a, String v) async {
     final db = context.read<AppDatabase>();
     if (v == 'supprimer') {
-      if (await confirmer(
-        context,
-        titre: 'Supprimer ce relais ?',
-        message: 'L\'affectation sera retirée du planning.',
-      )) {
-        await (db.delete(
-          db.affectations,
-        )..where((t) => t.id.equals(a.id))).go();
-      }
+      await (db.delete(db.affectations)..where((t) => t.id.equals(a.id))).go();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Relais supprimé.'),
+          action: SnackBarAction(
+            label: 'Annuler',
+            onPressed: () => db.reinsererAffectation(a),
+          ),
+        ),
+      );
       return;
     }
     if (v == 'dupliquer') {
@@ -394,15 +396,19 @@ class _PlanningPageState extends State<PlanningPage> {
           icon: const Icon(Icons.delete_outline),
           onPressed: () async {
             final db = context.read<AppDatabase>();
-            if (await confirmer(
-              context,
-              titre: 'Supprimer cette solution ?',
-              message: 'La solution alternative sera retirée.',
-            )) {
-              await (db.delete(
-                db.solutionsAlternatives,
-              )..where((t) => t.id.equals(sol.id))).go();
-            }
+            final messenger = ScaffoldMessenger.of(context);
+            await (db.delete(
+              db.solutionsAlternatives,
+            )..where((t) => t.id.equals(sol.id))).go();
+            messenger.showSnackBar(
+              SnackBar(
+                content: const Text('Solution supprimée.'),
+                action: SnackBarAction(
+                  label: 'Annuler',
+                  onPressed: () => db.reinsererSolution(sol),
+                ),
+              ),
+            );
           },
         ),
       ),
