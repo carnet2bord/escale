@@ -1,8 +1,12 @@
 // Modèles de documents PDF (rendu serveur via @react-pdf/renderer).
 // Les route handlers préparent les données ; ici on ne fait que la mise en page.
 
+import fs from 'node:fs';
+import path from 'node:path';
+
 import {
   Document,
+  Font,
   Page,
   StyleSheet,
   Text,
@@ -14,6 +18,28 @@ import React, { type ReactElement } from 'react';
 const TEAL = '#156f6c';
 const GRIS = '#5a6168';
 const FILET = '#dde1e4';
+
+// Police Unicode Inter (couvre latin étendu, vietnamien, cyrillique…). Repli
+// sur Helvetica (Latin-1) si les fichiers manquent dans le déploiement.
+const FONT_DIR = path.join(process.cwd(), 'public', 'fonts');
+const FONT_REGULAR = path.join(FONT_DIR, 'Inter-Regular.ttf');
+const FONT_BOLD = path.join(FONT_DIR, 'Inter-Bold.ttf');
+const policeOk = (() => {
+  try {
+    if (!fs.existsSync(FONT_REGULAR) || !fs.existsSync(FONT_BOLD)) return false;
+    Font.register({
+      family: 'Inter',
+      fonts: [
+        { src: FONT_REGULAR },
+        { src: FONT_BOLD, fontWeight: 'bold' },
+      ],
+    });
+    return true;
+  } catch {
+    return false;
+  }
+})();
+const FAMILLE = policeOk ? 'Inter' : 'Helvetica';
 
 // La police par défaut (Helvetica/WinAnsi) ne gère que le Latin-1. On remplace
 // la ponctuation typographique, puis on translittère les caractères hors
@@ -28,6 +54,7 @@ function safe(v: string | null | undefined): string {
     .replace(/[‘’]/g, "'")
     .replace(/[“”]/g, '"')
     .replace(/ /g, ' ');
+  if (policeOk) return base; // Inter gère l'Unicode, pas de translittération
   return Array.from(base)
     .map((ch) => {
       if (ch.charCodeAt(0) <= 0xff) return ch;
@@ -39,7 +66,7 @@ function safe(v: string | null | undefined): string {
 }
 
 const styles = StyleSheet.create({
-  page: { padding: 40, fontSize: 10, color: '#1a1c1e', fontFamily: 'Helvetica' },
+  page: { padding: 40, fontSize: 10, color: '#1a1c1e', fontFamily: FAMILLE },
   enTete: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -49,15 +76,15 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     marginBottom: 16,
   },
-  structureNom: { fontSize: 13, fontFamily: 'Helvetica-Bold', color: TEAL },
+  structureNom: { fontSize: 13, fontWeight: 'bold', color: TEAL },
   structureAdresse: { fontSize: 9, color: GRIS, marginTop: 2 },
-  marque: { fontSize: 11, fontFamily: 'Helvetica-Bold', color: TEAL },
-  titre: { fontSize: 16, fontFamily: 'Helvetica-Bold', marginBottom: 12 },
+  marque: { fontSize: 11, fontWeight: 'bold', color: TEAL },
+  titre: { fontSize: 16, fontWeight: 'bold', marginBottom: 12 },
   sousTitre: { fontSize: 9, color: GRIS, marginBottom: 14 },
   section: { marginBottom: 12 },
   sectionTitre: {
     fontSize: 11,
-    fontFamily: 'Helvetica-Bold',
+    fontWeight: 'bold',
     color: TEAL,
     marginBottom: 4,
   },
@@ -84,7 +111,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 4,
   },
-  th: { fontFamily: 'Helvetica-Bold', color: TEAL, fontSize: 9 },
+  th: { fontWeight: 'bold', color: TEAL, fontSize: 9 },
   signatures: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 30 },
   blocSignature: { width: '45%' },
   ligneSignature: {

@@ -33,6 +33,9 @@ export default async function LoginPage({
             Se connecter
           </button>
         </form>
+        <p style={{ marginTop: 16, fontSize: 13 }}>
+          <a href="/guide">Guide des testeurs</a>
+        </p>
       </div>
     </div>
   );
