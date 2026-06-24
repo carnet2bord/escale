@@ -416,15 +416,23 @@ class _PlanningPageState extends State<PlanningPage> {
   }
 
   Future<void> _proposer() async {
-    final n = await Navigator.of(
-      context,
-    ).push<int>(MaterialPageRoute(builder: (_) => const PropositionPage()));
-    if (!mounted) return;
-    if (n != null && n > 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$n relais ajouté(s) au planning.')),
-      );
-    }
+    final ids = await Navigator.of(context).push<List<int>>(
+      MaterialPageRoute(builder: (_) => const PropositionPage()),
+    );
+    if (!mounted || ids == null || ids.isEmpty) return;
+    final db = context.read<AppDatabase>();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          '${ids.length} relais proposé(s) — à confirmer dans le planning.',
+        ),
+        action: SnackBarAction(
+          label: 'Annuler',
+          onPressed: () =>
+              (db.delete(db.affectations)..where((t) => t.id.isIn(ids))).go(),
+        ),
+      ),
+    );
   }
 
   Future<void> _nouveauRelais() async {

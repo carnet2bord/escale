@@ -60,28 +60,30 @@ class _PropositionPageState extends State<PropositionPage> {
 
   Future<void> _appliquer(ResultatProposition r) async {
     final db = context.read<AppDatabase>();
-    var n = 0;
-    await db.batch((batch) {
+    // On insère une à une pour récupérer les id créés (permet l'annulation).
+    final ids = <int>[];
+    await db.transaction(() async {
       for (var i = 0; i < r.propositions.length; i++) {
         if (i < _selection.length && _selection[i]) {
           final p = r.propositions[i];
-          batch.insert(
-            db.affectations,
-            AffectationsCompanion.insert(
-              enfantId: p.enfant.id,
-              accueillantId: p.accueillant.id,
-              debut: p.debut,
-              fin: p.fin,
-              besoinId: Value(p.besoinId),
-              // Une proposition automatique reste « à confirmer » par défaut.
-              statut: const Value(statutPropose),
-            ),
-          );
-          n++;
+          final id = await db
+              .into(db.affectations)
+              .insert(
+                AffectationsCompanion.insert(
+                  enfantId: p.enfant.id,
+                  accueillantId: p.accueillant.id,
+                  debut: p.debut,
+                  fin: p.fin,
+                  besoinId: Value(p.besoinId),
+                  // Une proposition automatique reste « à confirmer » par défaut.
+                  statut: const Value(statutPropose),
+                ),
+              );
+          ids.add(id);
         }
       }
     });
-    if (mounted) Navigator.of(context).pop(n);
+    if (mounted) Navigator.of(context).pop(ids);
   }
 
   @override
