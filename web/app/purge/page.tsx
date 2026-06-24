@@ -1,7 +1,7 @@
 import { Header } from '@/app/_components/Header';
+import { dossiersClos } from '@/lib/cloture';
 import { chargerSnapshot } from '@/lib/data';
 import { dateFr, jour } from '@/lib/domain/dates';
-import { relaisActif } from '@/lib/domain/types';
 import { nomComplet } from '@/lib/format';
 import { anonymiserEnfants } from './actions';
 
@@ -14,23 +14,10 @@ export default async function PurgePage({
 }) {
   const sp = await searchParams;
   const s = await chargerSnapshot();
-  const aujourdhui = jour(new Date()).getTime();
+  const nomById = new Map(s.enfants.map((e) => [e.id, nomComplet(e)]));
 
-  // Un dossier est « clos » s'il a au moins une activité passée et aucune
-  // activité en cours ou à venir (besoin, relais actif, solution).
-  const closables = s.enfants
-    .map((e) => {
-      const fins: number[] = [];
-      for (const b of s.besoins) if (b.enfantId === e.id) fins.push(jour(b.fin).getTime());
-      for (const a of s.affectations)
-        if (a.enfantId === e.id && relaisActif(a.statut)) fins.push(jour(a.fin).getTime());
-      for (const so of s.solutions) if (so.enfantId === e.id) fins.push(jour(so.fin).getTime());
-      if (fins.length === 0) return null;
-      const derniere = Math.max(...fins);
-      if (derniere >= aujourdhui) return null;
-      return { id: e.id, nom: nomComplet(e), derniere };
-    })
-    .filter((x): x is { id: number; nom: string; derniere: number } => x !== null)
+  const closables = dossiersClos(s, jour(new Date()).getTime())
+    .map((d) => ({ id: d.id, nom: nomById.get(d.id) ?? `#${d.id}`, derniere: d.derniere }))
     .sort((a, b) => a.derniere - b.derniere);
 
   return (
@@ -52,6 +39,12 @@ export default async function PurgePage({
         ) : null}
         {sp.erreur === 'aucun' ? (
           <p className="erreur">Aucun dossier sélectionné.</p>
+        ) : null}
+        {sp.erreur === 'non_clos' ? (
+          <p className="erreur">
+            Les dossiers sélectionnés ne sont plus clos (une activité a été
+            ajoutée entre-temps). Rien n&apos;a été anonymisé.
+          </p>
         ) : null}
 
         {closables.length === 0 ? (

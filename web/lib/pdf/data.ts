@@ -118,9 +118,12 @@ export function planningAccueillantData(
     .sort((a, b) => a.debut.getTime() - b.debut.getTime())
     .map((a) => {
       const enf = enfById.get(a.enfantId);
-      const info = [STATUT[a.statut] ?? a.statut, a.transport ? `Transport : ${a.transport}` : '']
-        .filter(Boolean)
-        .join(' — ');
+      const transport = a.transport
+        ? anonyme
+          ? 'Transport organisé'
+          : `Transport : ${a.transport}`
+        : '';
+      const info = [STATUT[a.statut] ?? a.statut, transport].filter(Boolean).join(' — ');
       return {
         periode: periodeFr(a.debut, a.fin),
         lieu: enf ? nomOu(nomComplet(enf), anonyme) : '—',
@@ -148,13 +151,16 @@ export function planningEnfantData(
   const items: Item[] = [];
   for (const a of s.affectations.filter((x) => x.enfantId === enfId)) {
     const acc = accById.get(a.accueillantId);
+    const transport = a.transport
+      ? anonyme
+        ? 'Transport organisé'
+        : `Transport : ${a.transport}`
+      : '';
     items.push({
       debut: a.debut,
       periode: periodeFr(a.debut, a.fin),
       lieu: acc ? `Relais : ${nomOu(nomComplet(acc), anonyme)}` : 'Relais',
-      info: [STATUT[a.statut] ?? a.statut, a.transport ? `Transport : ${a.transport}` : '']
-        .filter(Boolean)
-        .join(' — '),
+      info: [STATUT[a.statut] ?? a.statut, transport].filter(Boolean).join(' — '),
     });
   }
   for (const sol of s.solutions.filter((x) => x.enfantId === enfId)) {
@@ -162,7 +168,8 @@ export function planningEnfantData(
       debut: sol.debut,
       periode: periodeFr(sol.debut, sol.fin),
       lieu: SOLUTION[sol.type] ?? sol.type,
-      info: sol.details ?? '',
+      // Le texte libre « détails » peut contenir des noms/coordonnées de tiers.
+      info: anonyme ? '' : sol.details ?? '',
     });
   }
   items.sort((a, b) => a.debut.getTime() - b.debut.getTime());

@@ -49,6 +49,9 @@ export default async function FratriesPage({
         </p>
 
         {erreur === 'nom' ? <p className="erreur">Le nom est obligatoire.</p> : null}
+        {erreur === 'doublon' ? (
+          <p className="erreur">Une fratrie porte déjà ce nom.</p>
+        ) : null}
 
         <div className="form-bloc" style={{ marginBottom: 16 }}>
           <h2 style={{ marginTop: 0 }}>Nouvelle fratrie</h2>

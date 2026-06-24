@@ -3,12 +3,14 @@
 import { redirect } from 'next/navigation';
 
 import { enObjets, parseCsv } from '@/lib/csv';
-import { cleNom, mapAccueillants, mapEnfants } from '@/lib/import';
+import { cleEnfant, cleNom, mapAccueillants, mapEnfants } from '@/lib/import';
 import { supabaseAdmin } from '@/lib/supabase';
+
+const TAILLE_MAX = 2_000_000; // 2 Mo : garde-fou anti-fichier géant
 
 async function lireFichier(formData: FormData): Promise<string | null> {
   const f = formData.get('fichier');
-  if (!(f instanceof File) || f.size === 0) return null;
+  if (!(f instanceof File) || f.size === 0 || f.size > TAILLE_MAX) return null;
   return await f.text();
 }
 
@@ -38,7 +40,7 @@ export async function importerAccueillants(formData: FormData) {
   }
   if (aInserer.length > 0) {
     const r = await db.from('accueillants').insert(aInserer);
-    if (r.error) throw new Error(r.error.message);
+    if (r.error) redirect('/import?erreur=insert');
   }
   redirect(`/import?type=accueillants&importes=${aInserer.length}&ignores=${ignores}`);
 }
@@ -53,13 +55,17 @@ export async function importerEnfants(formData: FormData) {
   const db = supabaseAdmin();
   const vus = new Set<string>();
   if (dedupe) {
-    const { data } = await db.from('enfants').select('nom, prenom');
-    for (const r of data ?? []) vus.add(cleNom({ nom: r.nom, prenom: r.prenom ?? '' }));
+    const { data } = await db.from('enfants').select('nom, prenom, date_naissance');
+    for (const r of data ?? []) {
+      vus.add(
+        cleEnfant({ nom: r.nom, prenom: r.prenom ?? '', date_naissance: r.date_naissance ?? null }),
+      );
+    }
   }
   const aInserer = [];
   let ignores = 0;
   for (const c of candidats) {
-    const k = cleNom(c);
+    const k = cleEnfant(c);
     if (dedupe && vus.has(k)) {
       ignores++;
       continue;
@@ -69,7 +75,7 @@ export async function importerEnfants(formData: FormData) {
   }
   if (aInserer.length > 0) {
     const r = await db.from('enfants').insert(aInserer);
-    if (r.error) throw new Error(r.error.message);
+    if (r.error) redirect('/import?erreur=insert');
   }
   redirect(`/import?type=enfants&importes=${aInserer.length}&ignores=${ignores}`);
 }

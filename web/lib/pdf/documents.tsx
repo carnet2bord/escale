@@ -15,17 +15,27 @@ const TEAL = '#156f6c';
 const GRIS = '#5a6168';
 const FILET = '#dde1e4';
 
-// La police par défaut (Helvetica/WinAnsi) ne gère pas certains caractères
-// typographiques → on les remplace pour éviter les « tofu ».
+// La police par défaut (Helvetica/WinAnsi) ne gère que le Latin-1. On remplace
+// la ponctuation typographique, puis on translittère les caractères hors
+// Latin-1 (ł, ş, vietnamien, cyrillique…) pour éviter les « tofu ».
+// Évolution possible : embarquer une police Unicode (Noto Sans) via Font.register.
 function safe(v: string | null | undefined): string {
   if (!v) return '';
-  return v
+  const base = v
     .replace(/[—–]/g, '-')
     .replace(/→/g, '->')
     .replace(/…/g, '...')
     .replace(/[‘’]/g, "'")
     .replace(/[“”]/g, '"')
     .replace(/ /g, ' ');
+  return Array.from(base)
+    .map((ch) => {
+      if (ch.charCodeAt(0) <= 0xff) return ch;
+      const decomp = ch.normalize('NFKD').replace(/[̀-ͯ]/g, '');
+      const garde = Array.from(decomp).filter((c) => c.charCodeAt(0) <= 0xff).join('');
+      return garde || '?';
+    })
+    .join('');
 }
 
 const styles = StyleSheet.create({
@@ -231,7 +241,7 @@ export interface BilanData {
   nbEnfants: number;
   nbAccueillants: number;
   nbRelais: number;
-  couverturePct: number;
+  couverturePct: number | null;
   couvertureTexte: string;
   charges: { nom: string; nbRelais: number; nbJours: number }[];
 }
@@ -249,7 +259,11 @@ export function Bilan({ d }: { d: BilanData }) {
           <Champ label="Relais planifiés" valeur={String(d.nbRelais)} />
           <Champ
             label="Couverture des besoins"
-            valeur={`${d.couverturePct} % (${d.couvertureTexte})`}
+            valeur={
+              d.couverturePct == null
+                ? 'Aucun besoin recensé'
+                : `${d.couverturePct} % (${d.couvertureTexte})`
+            }
           />
         </View>
 

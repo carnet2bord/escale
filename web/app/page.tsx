@@ -64,11 +64,15 @@ export default async function DashboardPage() {
                 <div className="kpi">
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <strong>Couverture des besoins</strong>
-                    <span style={{ fontSize: 24, fontWeight: 700, color: 'var(--teal)' }}>{c.pct} %</span>
+                    <span style={{ fontSize: 24, fontWeight: 700, color: 'var(--teal)' }}>
+                      {c.pct == null ? '—' : `${c.pct} %`}
+                    </span>
                   </div>
-                  <div className="jauge"><div style={{ width: `${c.pct}%` }} /></div>
+                  <div className="jauge"><div style={{ width: `${c.pct ?? 0}%` }} /></div>
                   <div style={{ color: 'var(--gris)', fontSize: 13 }}>
-                    {c.couverts} / {c.total} journées de besoin assurées
+                    {c.pct == null
+                      ? 'Aucun besoin recensé'
+                      : `${c.couverts} / ${c.total} journées de besoin assurées`}
                   </div>
                 </div>
               );

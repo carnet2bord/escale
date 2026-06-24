@@ -28,10 +28,12 @@ function decrire(action: string): string {
 }
 
 export default async function JournalPage() {
+  // Tri par id (bigserial monotone) : reflète l'ordre d'insertion réel, même
+  // pour des lignes d'une même transaction qui partagent le même horodatage.
   const { data, error } = await supabaseAdmin()
     .from('journal_audit')
     .select('*')
-    .order('horodatage', { ascending: false })
+    .order('id', { ascending: false })
     .limit(300);
 
   return (

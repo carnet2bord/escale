@@ -69,14 +69,16 @@ export function enObjets(rows: string[][]): Record<string, string>[] {
 }
 
 // Récupère une valeur par synonymes d'en-tête : correspondance exacte d'abord,
-// puis « contient ».
+// puis correspondance par MOT (jamais sur une sous-chaîne, pour éviter que
+// « prenom » réponde à la recherche de « nom »).
 export function champ(o: Record<string, string>, synonymes: string[]): string {
   for (const s of synonymes) {
     if (o[s] != null && o[s] !== '') return o[s];
   }
   for (const s of synonymes) {
     for (const k of Object.keys(o)) {
-      if (k.includes(s) && o[k] !== '') return o[k];
+      const mots = k.split(/[^a-z0-9]+/);
+      if (mots.includes(s) && o[k] !== '') return o[k];
     }
   }
   return '';

@@ -61,8 +61,10 @@ Ouvrir l'URL → saisir le mot de passe partagé → tableau de bord.
   déploiement multi-instances, prévoir un magasin partagé (Redis/DB).
 - Chiffrement au repos assuré par **PostgreSQL + l'hébergement HDS** (et le
   chiffrement disque du serveur), pas besoin de SQLCipher côté application.
-- Accès tracé : table `journal_audit` (à brancher dans les prochaines
-  itérations via triggers PostgreSQL).
+- Accès tracé : table `journal_audit` alimentée par des triggers PostgreSQL
+  (écritures). Limite à connaître : l'auth étant un mot de passe partagé, le
+  journal trace l'opération mais **pas l'acteur**, et les **lectures** ne sont
+  pas tracées — à discuter avec le DPO si l'exigence HDS l'impose.
 - Durée de conservation / purge : à mettre en place côté SQL (chantier web).
 
 ## Vérifier la logique métier

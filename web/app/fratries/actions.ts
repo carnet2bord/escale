@@ -14,6 +14,11 @@ export async function enregistrerFratrie(formData: FormData) {
   if (!REGROUPEMENTS.includes(regroupement)) regroupement = 'ensemble';
   if (!nom) redirect('/fratries?erreur=nom');
   const db = supabaseAdmin();
+  // Évite les fratries de même nom (ambiguës dans le select de la fiche enfant).
+  let doublon = db.from('fratries').select('id').ilike('nom', nom);
+  if (id) doublon = doublon.neq('id', id);
+  const { data: existant } = await doublon.limit(1);
+  if ((existant ?? []).length > 0) redirect('/fratries?erreur=doublon');
   const r = id
     ? await db.from('fratries').update({ nom, regroupement }).eq('id', id)
     : await db.from('fratries').insert({ nom, regroupement });

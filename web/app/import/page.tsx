@@ -27,7 +27,13 @@ export default async function ImportPage({
         </p>
 
         {sp.erreur === 'fichier' ? (
-          <p className="erreur">Aucun fichier sélectionné.</p>
+          <p className="erreur">Aucun fichier sélectionné, ou fichier trop volumineux (max 2 Mo).</p>
+        ) : null}
+        {sp.erreur === 'insert' ? (
+          <p className="erreur">
+            L&apos;import a échoué (données invalides). Vérifiez le format du
+            fichier et réessayez.
+          </p>
         ) : null}
         {sp.type ? (
           <p style={{ color: 'var(--teal)', fontWeight: 600 }}>

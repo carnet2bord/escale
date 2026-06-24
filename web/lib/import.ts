@@ -37,19 +37,28 @@ function sexe(v: string): string {
   return normaliser(v).startsWith('f') ? 'fille' : 'garcon';
 }
 
-// Accepte AAAA-MM-JJ, JJ/MM/AAAA, JJ-MM-AAAA → renvoie AAAA-MM-JJ ou null.
+// Construit AAAA-MM-JJ seulement si la date existe réellement (rejette 31/02,
+// 2020-13-40, etc.) via un aller-retour Date.
+function composer(a: number, mo: number, j: number): string | null {
+  if (!Number.isFinite(a) || !Number.isFinite(mo) || !Number.isFinite(j)) return null;
+  const d = new Date(Date.UTC(a, mo - 1, j));
+  if (d.getUTCFullYear() !== a || d.getUTCMonth() !== mo - 1 || d.getUTCDate() !== j) {
+    return null;
+  }
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${a}-${p(mo)}-${p(j)}`;
+}
+
+// Accepte AAAA-MM-JJ, JJ/MM/AAAA, JJ-MM-AAAA → renvoie AAAA-MM-JJ valide ou null.
 export function dateIso(v: string): string | null {
   const s = v.trim();
-  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (iso) return composer(Number(iso[1]), Number(iso[2]), Number(iso[3]));
   const m = s.match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{2,4})$/);
   if (m) {
-    const j = m[1].padStart(2, '0');
-    const mo = m[2].padStart(2, '0');
     let a = m[3];
     if (a.length === 2) a = (Number(a) > 50 ? '19' : '20') + a;
-    if (Number(mo) >= 1 && Number(mo) <= 12 && Number(j) >= 1 && Number(j) <= 31) {
-      return `${a}-${mo}-${j}`;
-    }
+    return composer(Number(a), Number(m[2]), Number(m[1]));
   }
   return null;
 }
@@ -99,3 +108,7 @@ export function mapEnfants(objs: Record<string, string>[]): RowEnfant[] {
 
 export const cleNom = (r: { nom: string; prenom: string }): string =>
   `${normaliser(r.nom)}|${normaliser(r.prenom)}`;
+
+// Pour les enfants, la date de naissance distingue les homonymes.
+export const cleEnfant = (r: { nom: string; prenom: string; date_naissance: string | null }): string =>
+  `${cleNom(r)}|${r.date_naissance ?? ''}`;

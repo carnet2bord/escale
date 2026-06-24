@@ -98,12 +98,16 @@ create table if not exists reglages (
 );
 
 -- Journal d'audit : trace des écritures sur les données sensibles.
+-- NB : l'auth étant un mot de passe partagé (clé service-role unique), le
+-- journal trace l'opération mais pas l'acteur ; les consultations (lectures)
+-- ne sont pas tracées. Limite à documenter avec le DPO.
 create table if not exists journal_audit (
   id        bigserial primary key,
   horodatage timestamptz not null default now(),
   action    text not null,
   details   text
 );
+create index if not exists idx_journal_audit_id on journal_audit (id desc);
 
 -- Fonction de journalisation générique (déclenchée APRÈS chaque écriture).
 -- Trace l'opération + la table + l'id de la ligne (pas le contenu, pour ne pas
