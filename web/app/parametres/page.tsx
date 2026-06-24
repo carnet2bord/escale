@@ -68,6 +68,10 @@ export default async function Parametres({
             </a>{' '}
             — document type à compléter avec votre DPO.
           </p>
+          <p>
+            <Link href="/purge">Purge des dossiers clos</Link> — anonymisation
+            irréversible des enfants dont les relais sont passés.
+          </p>
           <p style={{ marginBottom: 0, color: 'var(--gris)' }}>
             Les exports planning / parcours / bilan ont une variante{' '}
             <strong>anonymisée</strong> (initiales) pour un partage sans
