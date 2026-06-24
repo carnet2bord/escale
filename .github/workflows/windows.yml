@@ -1,0 +1,50 @@
+name: Build Windows
+
+# Construit l'exécutable Windows d'Escale sur une machine Windows dans le cloud.
+# Se lance à chaque push sur main, ou manuellement (onglet Actions → Run workflow).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.44.0
+          channel: stable
+          cache: true
+
+      - name: Activer le bureau Windows
+        run: flutter config --enable-windows-desktop
+
+      - name: Récupérer les dépendances
+        run: flutter pub get
+
+      - name: Compiler (release)
+        run: flutter build windows --release
+
+      - name: Empaqueter en .zip
+        shell: pwsh
+        run: |
+          $release = Get-ChildItem -Path build/windows -Recurse -Directory -Filter Release |
+            Where-Object { Test-Path (Join-Path $_.FullName 'Escale.exe') } |
+            Select-Object -First 1
+          if (-not $release) { throw "Dossier Release (contenant Escale.exe) introuvable." }
+          Write-Host "Dossier trouvé : $($release.FullName)"
+          Compress-Archive -Path "$($release.FullName)\*" -DestinationPath "Escale-windows.zip" -Force
+
+      - name: Publier l'artefact téléchargeable
+        uses: actions/upload-artifact@v4
+        with:
+          name: Escale-windows
+          path: Escale-windows.zip
+          if-no-files-found: error
