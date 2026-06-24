@@ -14,6 +14,28 @@ final _gris = PdfColor.fromInt(0xFF5A6168);
 final _texte = PdfColor.fromInt(0xFF1A1C1E);
 final _filet = PdfColor.fromInt(0xFFDDE1E4);
 
+// Identité de la structure, reprise dans les documents générés.
+class InfosStructure {
+  final String nom;
+  final String adresse;
+  final String signataire;
+  final String mention;
+  const InfosStructure({
+    this.nom = '',
+    this.adresse = '',
+    this.signataire = '',
+    this.mention = '',
+  });
+
+  factory InfosStructure.depuisReglages(Map<String, String> r) =>
+      InfosStructure(
+        nom: r[cleStructureNom] ?? '',
+        adresse: r[cleStructureAdresse] ?? '',
+        signataire: r[cleStructureSignataire] ?? '',
+        mention: r[cleStructureMention] ?? '',
+      );
+}
+
 String _nom(String nom, String prenom) => prenom.isEmpty ? nom : '$prenom $nom';
 
 String _restrictionCourt(String r) {
@@ -36,6 +58,7 @@ Future<Uint8List> genererPdfRelais({
   required Uint8List logo,
   required DateTime date,
   List<SolutionAlternative> solutions = const [],
+  InfosStructure structure = const InfosStructure(),
 }) async {
   final doc = pw.Document(
     title: 'Escale — Planning des relais',
@@ -113,7 +136,9 @@ Future<Uint8List> genererPdfRelais({
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           children: [
             pw.Text(
-              'Escale — Coordonner les relais',
+              structure.mention.isNotEmpty
+                  ? structure.mention
+                  : 'Escale — Coordonner les relais',
               style: pw.TextStyle(fontSize: 8, color: _gris),
             ),
             pw.Text(
@@ -129,7 +154,31 @@ Future<Uint8List> genererPdfRelais({
           crossAxisAlignment: pw.CrossAxisAlignment.center,
           children: [
             pw.Image(logoImage, height: 42),
-            pw.Spacer(),
+            if (structure.nom.isNotEmpty) ...[
+              pw.SizedBox(width: 14),
+              pw.Expanded(
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(
+                      structure.nom,
+                      style: pw.TextStyle(
+                        fontSize: 11,
+                        fontWeight: pw.FontWeight.bold,
+                        color: _texte,
+                      ),
+                    ),
+                    if (structure.adresse.isNotEmpty)
+                      pw.Text(
+                        structure.adresse,
+                        maxLines: 2,
+                        style: pw.TextStyle(fontSize: 8, color: _gris),
+                      ),
+                  ],
+                ),
+              ),
+            ] else
+              pw.Spacer(),
             pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.end,
               children: [

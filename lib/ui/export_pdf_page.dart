@@ -15,6 +15,7 @@ class _Donnees {
   final List<BesoinRelais> besoins;
   final List<SolutionAlternative> solutions;
   final Uint8List logo;
+  final InfosStructure structure;
   _Donnees(
     this.enfants,
     this.accueillants,
@@ -22,6 +23,7 @@ class _Donnees {
     this.besoins,
     this.solutions,
     this.logo,
+    this.structure,
   );
 }
 
@@ -50,6 +52,7 @@ class _ExportPdfPageState extends State<ExportPdfPage> {
       db.tousBesoins(),
       db.toutesSolutions(),
     ]);
+    final reglages = await db.lireReglages();
     final logo = (await rootBundle.load(
       'assets/icon/logo_escale.png',
     )).buffer.asUint8List();
@@ -60,6 +63,7 @@ class _ExportPdfPageState extends State<ExportPdfPage> {
       res[3] as List<BesoinRelais>,
       res[4] as List<SolutionAlternative>,
       logo,
+      InfosStructure.depuisReglages(reglages),
     );
   }
 
@@ -86,6 +90,7 @@ class _ExportPdfPageState extends State<ExportPdfPage> {
               solutions: d.solutions,
               logo: d.logo,
               date: DateTime.now(),
+              structure: d.structure,
             ),
             canChangePageFormat: false,
             canChangeOrientation: false,

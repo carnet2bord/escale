@@ -39,6 +39,12 @@ const String statutAnnule = 'annule'; // annulé — n'occupe plus de place
 // Un relais annulé ne compte ni dans la couverture, ni dans l'occupation/conflits.
 bool relaisActif(String statut) => statut != statutAnnule;
 
+// Clés de réglages (table Reglages) — identité de la structure pour les documents.
+const String cleStructureNom = 'structure.nom';
+const String cleStructureAdresse = 'structure.adresse';
+const String cleStructureSignataire = 'structure.signataire';
+const String cleStructureMention = 'structure.mention';
+
 // Les assistants familiaux qui peuvent accueillir des enfants en relais.
 @DataClassName('Accueillant')
 class Accueillants extends Table {
@@ -173,6 +179,15 @@ class SolutionsAlternatives extends Table {
   TextColumn get details => text().nullable()();
 }
 
+// Réglages de l'application (clé/valeur) : identité de la structure, etc.
+@DataClassName('Reglage')
+class Reglages extends Table {
+  TextColumn get cle => text()();
+  TextColumn get valeur => text().withDefault(const Constant(''))();
+  @override
+  Set<Column> get primaryKey => {cle};
+}
+
 @DriftDatabase(
   tables: [
     Accueillants,
@@ -185,6 +200,7 @@ class SolutionsAlternatives extends Table {
     Incompatibilites,
     PreferencesAccueil,
     SolutionsAlternatives,
+    Reglages,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -206,7 +222,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -215,6 +231,7 @@ class AppDatabase extends _$AppDatabase {
       if (from < 2) await m.createTable(preferencesAccueil);
       if (from < 3) await m.createTable(solutionsAlternatives);
       if (from < 4) await m.addColumn(affectations, affectations.statut);
+      if (from < 5) await m.createTable(reglages);
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
@@ -243,9 +260,12 @@ class AppDatabase extends _$AppDatabase {
       final inc = await source.select(source.incompatibilites).get();
       final prefs = await source.select(source.preferencesAccueil).get();
       final sols = await source.select(source.solutionsAlternatives).get();
+      final regs = await source.select(source.reglages).get();
       await transaction(() async {
         await viderTout();
+        await delete(reglages).go();
         await batch((b) {
+          b.insertAll(reglages, regs.map((e) => e.toCompanion(false)));
           b.insertAll(accueillants, acc.map((e) => e.toCompanion(false)));
           b.insertAll(fratries, fra.map((e) => e.toCompanion(false)));
           b.insertAll(enfants, enf.map((e) => e.toCompanion(false)));
@@ -364,6 +384,18 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> reinsererSolution(SolutionAlternative s) =>
       into(solutionsAlternatives).insert(s, mode: InsertMode.insertOrReplace);
+
+  // --- Réglages (clé/valeur) ---
+  Future<Map<String, String>> lireReglages() async {
+    final rows = await select(reglages).get();
+    return {for (final r in rows) r.cle: r.valeur};
+  }
+
+  Future<void> ecrireReglage(String cle, String valeur) =>
+      into(reglages).insert(
+        Reglage(cle: cle, valeur: valeur),
+        mode: InsertMode.insertOrReplace,
+      );
 
   Future<List<BesoinRelais>> tousBesoins() => select(besoinsRelais).get();
   Future<List<Incompatibilite>> toutesIncompatibilites() =>

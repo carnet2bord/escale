@@ -10,6 +10,7 @@ import 'dashboard_page.dart';
 import 'enfants_page.dart';
 import 'import_excel_page.dart';
 import 'logo.dart';
+import 'parametres_page.dart';
 import 'planning_page.dart';
 import 'theme_controller.dart';
 import 'widgets.dart';
@@ -125,6 +126,10 @@ class _AppShellState extends State<AppShell> {
 
   void _outil(String v) {
     switch (v) {
+      case 'parametres':
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const ParametresStructurePage()),
+        );
       case 'demo':
         _chargerDemo();
       case 'sauver':
@@ -293,6 +298,14 @@ class _Sidebar extends StatelessWidget {
                     icon: const Icon(Icons.more_horiz),
                     onSelected: onOutil,
                     itemBuilder: (_) => const [
+                      PopupMenuItem(
+                        value: 'parametres',
+                        child: _ItemMenu(
+                          Icons.tune,
+                          'Paramètres de la structure',
+                        ),
+                      ),
+                      PopupMenuDivider(),
                       PopupMenuItem(
                         value: 'demo',
                         child: _ItemMenu(
