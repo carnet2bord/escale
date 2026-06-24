@@ -6,6 +6,7 @@ const liens = [
   { href: '/', label: 'Tableau de bord' },
   { href: '/accueillants', label: 'Accueillants' },
   { href: '/enfants', label: 'Enfants' },
+  { href: '/apropos', label: 'À propos' },
 ];
 
 export function Header({ actif }: { actif?: string }) {

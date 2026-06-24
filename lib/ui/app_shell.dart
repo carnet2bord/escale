@@ -9,6 +9,7 @@ import '../data/excel_import.dart';
 import '../domain/pdf_export.dart';
 import 'accueillants_page.dart';
 import 'apercu_pdf_page.dart';
+import 'apropos_page.dart';
 import 'dashboard_page.dart';
 import 'enfants_page.dart';
 import 'import_excel_page.dart';
@@ -163,6 +164,10 @@ class _AppShellState extends State<AppShell> {
         _supprimerDoublons();
       case 'vider':
         _vider();
+      case 'apropos':
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const AproposPage()));
     }
   }
 
@@ -285,9 +290,16 @@ class _Sidebar extends StatelessWidget {
             // Logo
             Padding(
               padding: const EdgeInsets.fromLTRB(22, 30, 22, 26),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: LogoLockup(height: 78),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  LogoLockup(height: 78),
+                  const SizedBox(height: 6),
+                  Text(
+                    'v$versionEscale',
+                    style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
+                  ),
+                ],
               ),
             ),
             // Navigation
@@ -407,6 +419,14 @@ class _Sidebar extends StatelessWidget {
                         child: _ItemMenu(
                           Icons.delete_sweep_outlined,
                           'Vider les données',
+                        ),
+                      ),
+                      PopupMenuDivider(),
+                      PopupMenuItem(
+                        value: 'apropos',
+                        child: _ItemMenu(
+                          Icons.info_outline,
+                          'À propos / versions',
                         ),
                       ),
                     ],
