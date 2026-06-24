@@ -97,3 +97,30 @@ a { color: var(--teal); }
   margin: 12px 0;
 }
 .erreur { color: #b3261e; font-size: 14px; }
+
+.nav { display: flex; gap: 6px; margin-left: 20px; }
+.nav a {
+  padding: 8px 12px;
+  border-radius: 9px;
+  text-decoration: none;
+  color: var(--gris);
+  font-weight: 600;
+  font-size: 14px;
+}
+.nav a.actif { background: var(--teal-clair); color: var(--teal); }
+
+table.liste { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--filet); border-radius: 12px; overflow: hidden; }
+table.liste th, table.liste td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--filet); font-size: 14px; }
+table.liste th { background: var(--teal-clair); color: var(--teal); }
+table.liste tr:last-child td { border-bottom: none; }
+.aligne-droite { display: flex; justify-content: space-between; align-items: center; }
+.form-bloc { background: #fff; border: 1px solid var(--filet); border-radius: 12px; padding: 20px; max-width: 640px; }
+.form-bloc label { display: block; font-size: 13px; color: var(--gris); margin: 12px 0 4px; }
+.form-bloc input, .form-bloc select, .form-bloc textarea {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--filet); border-radius: 9px; font-size: 14px; font-family: inherit;
+}
+.form-bloc .ligne { display: flex; gap: 12px; }
+.form-bloc .ligne > div { flex: 1; }
+.actions-form { display: flex; gap: 12px; align-items: center; margin-top: 20px; }
+.bouton-secondaire { background: none; border: 1px solid var(--filet); border-radius: 10px; padding: 11px 16px; font-size: 14px; cursor: pointer; color: var(--texte); text-decoration: none; }
+.bouton-danger { background: none; border: none; color: #b3261e; cursor: pointer; font-size: 14px; }

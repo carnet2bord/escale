@@ -1,4 +1,4 @@
-import { deconnexion } from './actions';
+import { Header } from './_components/Header';
 import { chargerSnapshot } from '@/lib/data';
 import { couverturesEnfant } from '@/lib/domain/proposition';
 import { jour } from '@/lib/domain/dates';
@@ -36,12 +36,7 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <div className="barre">
-        <div className="marque">Escale</div>
-        <form action={deconnexion}>
-          <button className="lien-deco" type="submit">Se déconnecter</button>
-        </form>
-      </div>
+      <Header actif="/" />
       <div className="contenu">
         <h1>Tableau de bord</h1>
         {erreur ? (
