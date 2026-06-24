@@ -36,7 +36,21 @@ class InfosStructure {
       );
 }
 
-String _nom(String nom, String prenom) => prenom.isEmpty ? nom : '$prenom $nom';
+// Remplace les caractères non gérés par la police PDF standard (évite les « tofu »).
+String _safe(String s) => s
+    .replaceAll('—', '-')
+    .replaceAll('–', '-')
+    .replaceAll('→', '->')
+    .replaceAll('…', '...')
+    .replaceAll('’', "'")
+    .replaceAll('‘', "'")
+    .replaceAll('“', '"')
+    .replaceAll('”', '"')
+    .replaceAll(' ', ' ')
+    .replaceAll(' ', ' ');
+
+String _nom(String nom, String prenom) =>
+    _safe(prenom.isEmpty ? nom : '$prenom $nom');
 
 String _restrictionCourt(String r) {
   switch (r) {
@@ -137,8 +151,8 @@ Future<Uint8List> genererPdfRelais({
           children: [
             pw.Text(
               structure.mention.isNotEmpty
-                  ? structure.mention
-                  : 'Escale — Coordonner les relais',
+                  ? _safe(structure.mention)
+                  : 'Escale - Coordonner les relais',
               style: pw.TextStyle(fontSize: 8, color: _gris),
             ),
             pw.Text(
@@ -161,7 +175,7 @@ Future<Uint8List> genererPdfRelais({
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
                     pw.Text(
-                      structure.nom,
+                      _safe(structure.nom),
                       style: pw.TextStyle(
                         fontSize: 11,
                         fontWeight: pw.FontWeight.bold,
@@ -170,7 +184,7 @@ Future<Uint8List> genererPdfRelais({
                     ),
                     if (structure.adresse.isNotEmpty)
                       pw.Text(
-                        structure.adresse,
+                        _safe(structure.adresse),
                         maxLines: 2,
                         style: pw.TextStyle(fontSize: 8, color: _gris),
                       ),
