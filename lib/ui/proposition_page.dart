@@ -9,7 +9,19 @@ import 'widgets.dart';
 
 class _Donnees {
   final ResultatProposition resultat;
-  _Donnees(this.resultat);
+  final Map<int, Enfant> enfants;
+  final Map<int, Accueillant> accueillants;
+  final List<PreferenceAccueil> preferences;
+  final List<Fratrie> fratries;
+  final List<Affectation> affectations;
+  _Donnees(
+    this.resultat, {
+    required this.enfants,
+    required this.accueillants,
+    required this.preferences,
+    required this.fratries,
+    required this.affectations,
+  });
 
   static Future<_Donnees> calculer(AppDatabase db) async {
     final res = await Future.wait([
@@ -24,19 +36,77 @@ class _Donnees {
       db.toutesPreferences(),
       db.toutesSolutions(),
     ]);
+    final enfants = res[0] as List<Enfant>;
+    final accueillants = res[1] as List<Accueillant>;
+    final affectations = res[2] as List<Affectation>;
+    final fratries = res[7] as List<Fratrie>;
+    final preferences = res[8] as List<PreferenceAccueil>;
     final resultat = proposerAffectations(
-      enfants: res[0] as List<Enfant>,
-      accueillants: res[1] as List<Accueillant>,
-      affectationsExistantes: res[2] as List<Affectation>,
+      enfants: enfants,
+      accueillants: accueillants,
+      affectationsExistantes: affectations,
       besoins: res[3] as List<BesoinRelais>,
       dispos: res[4] as List<DisponibiliteAccueil>,
       indispos: res[5] as List<Indisponibilite>,
       incompatibilites: res[6] as List<Incompatibilite>,
-      fratries: res[7] as List<Fratrie>,
-      preferences: res[8] as List<PreferenceAccueil>,
+      fratries: fratries,
+      preferences: preferences,
       solutions: res[9] as List<SolutionAlternative>,
     );
-    return _Donnees(resultat);
+    return _Donnees(
+      resultat,
+      enfants: {for (final e in enfants) e.id: e},
+      accueillants: {for (final a in accueillants) a.id: a},
+      preferences: preferences,
+      fratries: fratries,
+      affectations: affectations,
+    );
+  }
+
+  // Raisons pour lesquelles cet accueillant est proposé pour cet enfant.
+  List<String> raisons(Proposition p) {
+    final tags = <String>[];
+    final acc = accueillants[p.accueillant.id];
+    final enf = enfants[p.enfant.id];
+    if (acc == null || enf == null) return tags;
+    if (preferences.any(
+      (x) =>
+          x.enfantId == p.enfant.id &&
+          x.accueillantId == p.accueillant.id &&
+          x.type == prefFavori,
+    )) {
+      tags.add('Favori');
+    }
+    final sa = acc.secteur?.trim().toLowerCase() ?? '';
+    final se = enf.secteur?.trim().toLowerCase() ?? '';
+    if (sa.isNotEmpty && sa == se) tags.add('Même secteur');
+    if (enf.fratrieId != null &&
+        fratries.any(
+          (f) =>
+              f.id == enf.fratrieId && f.regroupement == regroupementEnsemble,
+        )) {
+      final freres = enfants.values
+          .where((e) => e.fratrieId == enf.fratrieId && e.id != enf.id)
+          .map((e) => e.id)
+          .toSet();
+      final reuni =
+          resultat.propositions.any(
+            (q) =>
+                q != p &&
+                q.accueillant.id == p.accueillant.id &&
+                freres.contains(q.enfant.id) &&
+                periodesSeChevauchent(p.debut, p.fin, q.debut, q.fin),
+          ) ||
+          affectations.any(
+            (x) =>
+                x.accueillantId == p.accueillant.id &&
+                relaisActif(x.statut) &&
+                freres.contains(x.enfantId) &&
+                periodesSeChevauchent(p.debut, p.fin, x.debut, x.fin),
+          );
+      if (reuni) tags.add('Fratrie réunie');
+    }
+    return tags;
   }
 }
 
@@ -108,7 +178,8 @@ class _PropositionPageState extends State<PropositionPage> {
               ),
             );
           }
-          final r = snap.data!.resultat;
+          final d = snap.data!;
+          final r = d.resultat;
           if (!_selectionInit) {
             _selection = List<bool>.filled(r.propositions.length, true);
             _selectionInit = true;
@@ -173,6 +244,7 @@ class _PropositionPageState extends State<PropositionPage> {
                       for (var i = 0; i < r.propositions.length; i++)
                         _LigneProposition(
                           p: r.propositions[i],
+                          raisons: d.raisons(r.propositions[i]),
                           coche: i < _selection.length && _selection[i],
                           onChange: (v) =>
                               setState(() => _selection[i] = v ?? false),
@@ -238,28 +310,49 @@ class _PropositionPageState extends State<PropositionPage> {
 
 class _LigneProposition extends StatelessWidget {
   final Proposition p;
+  final List<String> raisons;
   final bool coche;
   final ValueChanged<bool?> onChange;
   const _LigneProposition({
     required this.p,
+    required this.raisons,
     required this.coche,
     required this.onChange,
   });
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Card(
       child: CheckboxListTile(
         value: coche,
         onChanged: onChange,
         controlAffinity: ListTileControlAffinity.leading,
+        isThreeLine: raisons.isNotEmpty,
         title: Text(
           '${nomComplet(p.enfant.nom, p.enfant.prenom)}'
           '  →  '
           '${nomComplet(p.accueillant.nom, p.accueillant.prenom)}',
         ),
-        subtitle: Text(
-          '${periodeFr(p.debut, p.fin)} · ${nbJours(p.debut, p.fin)} jour(s)',
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${periodeFr(p.debut, p.fin)} · ${nbJours(p.debut, p.fin)} jour(s)',
+            ),
+            if (raisons.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    for (final r in raisons)
+                      Pastille(r, couleur: cs.primary, icone: Icons.check),
+                  ],
+                ),
+              ),
+          ],
         ),
       ),
     );
