@@ -69,6 +69,36 @@ class $AccueillantsTable extends Accueillants
     requiredDuringInsert: false,
     defaultValue: const Constant(restrictionAucune),
   );
+  static const VerificationMeta _ageMinMeta = const VerificationMeta('ageMin');
+  @override
+  late final GeneratedColumn<int> ageMin = GeneratedColumn<int>(
+    'age_min',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _ageMaxMeta = const VerificationMeta('ageMax');
+  @override
+  late final GeneratedColumn<int> ageMax = GeneratedColumn<int>(
+    'age_max',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _agrementEcheanceMeta = const VerificationMeta(
+    'agrementEcheance',
+  );
+  @override
+  late final GeneratedColumn<DateTime> agrementEcheance =
+      GeneratedColumn<DateTime>(
+        'agrement_echeance',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _notesMeta = const VerificationMeta('notes');
   @override
   late final GeneratedColumn<String> notes = GeneratedColumn<String>(
@@ -85,6 +115,9 @@ class $AccueillantsTable extends Accueillants
     prenom,
     nbPlaces,
     restrictionSexe,
+    ageMin,
+    ageMax,
+    agrementEcheance,
     notes,
   ];
   @override
@@ -131,6 +164,27 @@ class $AccueillantsTable extends Accueillants
         ),
       );
     }
+    if (data.containsKey('age_min')) {
+      context.handle(
+        _ageMinMeta,
+        ageMin.isAcceptableOrUnknown(data['age_min']!, _ageMinMeta),
+      );
+    }
+    if (data.containsKey('age_max')) {
+      context.handle(
+        _ageMaxMeta,
+        ageMax.isAcceptableOrUnknown(data['age_max']!, _ageMaxMeta),
+      );
+    }
+    if (data.containsKey('agrement_echeance')) {
+      context.handle(
+        _agrementEcheanceMeta,
+        agrementEcheance.isAcceptableOrUnknown(
+          data['agrement_echeance']!,
+          _agrementEcheanceMeta,
+        ),
+      );
+    }
     if (data.containsKey('notes')) {
       context.handle(
         _notesMeta,
@@ -166,6 +220,18 @@ class $AccueillantsTable extends Accueillants
         DriftSqlType.string,
         data['${effectivePrefix}restriction_sexe'],
       )!,
+      ageMin: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}age_min'],
+      ),
+      ageMax: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}age_max'],
+      ),
+      agrementEcheance: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}agrement_echeance'],
+      ),
       notes: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
@@ -185,6 +251,9 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
   final String prenom;
   final int nbPlaces;
   final String restrictionSexe;
+  final int? ageMin;
+  final int? ageMax;
+  final DateTime? agrementEcheance;
   final String? notes;
   const Accueillant({
     required this.id,
@@ -192,6 +261,9 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
     required this.prenom,
     required this.nbPlaces,
     required this.restrictionSexe,
+    this.ageMin,
+    this.ageMax,
+    this.agrementEcheance,
     this.notes,
   });
   @override
@@ -202,6 +274,15 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
     map['prenom'] = Variable<String>(prenom);
     map['nb_places'] = Variable<int>(nbPlaces);
     map['restriction_sexe'] = Variable<String>(restrictionSexe);
+    if (!nullToAbsent || ageMin != null) {
+      map['age_min'] = Variable<int>(ageMin);
+    }
+    if (!nullToAbsent || ageMax != null) {
+      map['age_max'] = Variable<int>(ageMax);
+    }
+    if (!nullToAbsent || agrementEcheance != null) {
+      map['agrement_echeance'] = Variable<DateTime>(agrementEcheance);
+    }
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
     }
@@ -215,6 +296,15 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
       prenom: Value(prenom),
       nbPlaces: Value(nbPlaces),
       restrictionSexe: Value(restrictionSexe),
+      ageMin: ageMin == null && nullToAbsent
+          ? const Value.absent()
+          : Value(ageMin),
+      ageMax: ageMax == null && nullToAbsent
+          ? const Value.absent()
+          : Value(ageMax),
+      agrementEcheance: agrementEcheance == null && nullToAbsent
+          ? const Value.absent()
+          : Value(agrementEcheance),
       notes: notes == null && nullToAbsent
           ? const Value.absent()
           : Value(notes),
@@ -232,6 +322,11 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
       prenom: serializer.fromJson<String>(json['prenom']),
       nbPlaces: serializer.fromJson<int>(json['nbPlaces']),
       restrictionSexe: serializer.fromJson<String>(json['restrictionSexe']),
+      ageMin: serializer.fromJson<int?>(json['ageMin']),
+      ageMax: serializer.fromJson<int?>(json['ageMax']),
+      agrementEcheance: serializer.fromJson<DateTime?>(
+        json['agrementEcheance'],
+      ),
       notes: serializer.fromJson<String?>(json['notes']),
     );
   }
@@ -244,6 +339,9 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
       'prenom': serializer.toJson<String>(prenom),
       'nbPlaces': serializer.toJson<int>(nbPlaces),
       'restrictionSexe': serializer.toJson<String>(restrictionSexe),
+      'ageMin': serializer.toJson<int?>(ageMin),
+      'ageMax': serializer.toJson<int?>(ageMax),
+      'agrementEcheance': serializer.toJson<DateTime?>(agrementEcheance),
       'notes': serializer.toJson<String?>(notes),
     };
   }
@@ -254,6 +352,9 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
     String? prenom,
     int? nbPlaces,
     String? restrictionSexe,
+    Value<int?> ageMin = const Value.absent(),
+    Value<int?> ageMax = const Value.absent(),
+    Value<DateTime?> agrementEcheance = const Value.absent(),
     Value<String?> notes = const Value.absent(),
   }) => Accueillant(
     id: id ?? this.id,
@@ -261,6 +362,11 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
     prenom: prenom ?? this.prenom,
     nbPlaces: nbPlaces ?? this.nbPlaces,
     restrictionSexe: restrictionSexe ?? this.restrictionSexe,
+    ageMin: ageMin.present ? ageMin.value : this.ageMin,
+    ageMax: ageMax.present ? ageMax.value : this.ageMax,
+    agrementEcheance: agrementEcheance.present
+        ? agrementEcheance.value
+        : this.agrementEcheance,
     notes: notes.present ? notes.value : this.notes,
   );
   Accueillant copyWithCompanion(AccueillantsCompanion data) {
@@ -272,6 +378,11 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
       restrictionSexe: data.restrictionSexe.present
           ? data.restrictionSexe.value
           : this.restrictionSexe,
+      ageMin: data.ageMin.present ? data.ageMin.value : this.ageMin,
+      ageMax: data.ageMax.present ? data.ageMax.value : this.ageMax,
+      agrementEcheance: data.agrementEcheance.present
+          ? data.agrementEcheance.value
+          : this.agrementEcheance,
       notes: data.notes.present ? data.notes.value : this.notes,
     );
   }
@@ -284,14 +395,26 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
           ..write('prenom: $prenom, ')
           ..write('nbPlaces: $nbPlaces, ')
           ..write('restrictionSexe: $restrictionSexe, ')
+          ..write('ageMin: $ageMin, ')
+          ..write('ageMax: $ageMax, ')
+          ..write('agrementEcheance: $agrementEcheance, ')
           ..write('notes: $notes')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, nom, prenom, nbPlaces, restrictionSexe, notes);
+  int get hashCode => Object.hash(
+    id,
+    nom,
+    prenom,
+    nbPlaces,
+    restrictionSexe,
+    ageMin,
+    ageMax,
+    agrementEcheance,
+    notes,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -301,6 +424,9 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
           other.prenom == this.prenom &&
           other.nbPlaces == this.nbPlaces &&
           other.restrictionSexe == this.restrictionSexe &&
+          other.ageMin == this.ageMin &&
+          other.ageMax == this.ageMax &&
+          other.agrementEcheance == this.agrementEcheance &&
           other.notes == this.notes);
 }
 
@@ -310,6 +436,9 @@ class AccueillantsCompanion extends UpdateCompanion<Accueillant> {
   final Value<String> prenom;
   final Value<int> nbPlaces;
   final Value<String> restrictionSexe;
+  final Value<int?> ageMin;
+  final Value<int?> ageMax;
+  final Value<DateTime?> agrementEcheance;
   final Value<String?> notes;
   const AccueillantsCompanion({
     this.id = const Value.absent(),
@@ -317,6 +446,9 @@ class AccueillantsCompanion extends UpdateCompanion<Accueillant> {
     this.prenom = const Value.absent(),
     this.nbPlaces = const Value.absent(),
     this.restrictionSexe = const Value.absent(),
+    this.ageMin = const Value.absent(),
+    this.ageMax = const Value.absent(),
+    this.agrementEcheance = const Value.absent(),
     this.notes = const Value.absent(),
   });
   AccueillantsCompanion.insert({
@@ -325,6 +457,9 @@ class AccueillantsCompanion extends UpdateCompanion<Accueillant> {
     this.prenom = const Value.absent(),
     this.nbPlaces = const Value.absent(),
     this.restrictionSexe = const Value.absent(),
+    this.ageMin = const Value.absent(),
+    this.ageMax = const Value.absent(),
+    this.agrementEcheance = const Value.absent(),
     this.notes = const Value.absent(),
   }) : nom = Value(nom);
   static Insertable<Accueillant> custom({
@@ -333,6 +468,9 @@ class AccueillantsCompanion extends UpdateCompanion<Accueillant> {
     Expression<String>? prenom,
     Expression<int>? nbPlaces,
     Expression<String>? restrictionSexe,
+    Expression<int>? ageMin,
+    Expression<int>? ageMax,
+    Expression<DateTime>? agrementEcheance,
     Expression<String>? notes,
   }) {
     return RawValuesInsertable({
@@ -341,6 +479,9 @@ class AccueillantsCompanion extends UpdateCompanion<Accueillant> {
       if (prenom != null) 'prenom': prenom,
       if (nbPlaces != null) 'nb_places': nbPlaces,
       if (restrictionSexe != null) 'restriction_sexe': restrictionSexe,
+      if (ageMin != null) 'age_min': ageMin,
+      if (ageMax != null) 'age_max': ageMax,
+      if (agrementEcheance != null) 'agrement_echeance': agrementEcheance,
       if (notes != null) 'notes': notes,
     });
   }
@@ -351,6 +492,9 @@ class AccueillantsCompanion extends UpdateCompanion<Accueillant> {
     Value<String>? prenom,
     Value<int>? nbPlaces,
     Value<String>? restrictionSexe,
+    Value<int?>? ageMin,
+    Value<int?>? ageMax,
+    Value<DateTime?>? agrementEcheance,
     Value<String?>? notes,
   }) {
     return AccueillantsCompanion(
@@ -359,6 +503,9 @@ class AccueillantsCompanion extends UpdateCompanion<Accueillant> {
       prenom: prenom ?? this.prenom,
       nbPlaces: nbPlaces ?? this.nbPlaces,
       restrictionSexe: restrictionSexe ?? this.restrictionSexe,
+      ageMin: ageMin ?? this.ageMin,
+      ageMax: ageMax ?? this.ageMax,
+      agrementEcheance: agrementEcheance ?? this.agrementEcheance,
       notes: notes ?? this.notes,
     );
   }
@@ -381,6 +528,15 @@ class AccueillantsCompanion extends UpdateCompanion<Accueillant> {
     if (restrictionSexe.present) {
       map['restriction_sexe'] = Variable<String>(restrictionSexe.value);
     }
+    if (ageMin.present) {
+      map['age_min'] = Variable<int>(ageMin.value);
+    }
+    if (ageMax.present) {
+      map['age_max'] = Variable<int>(ageMax.value);
+    }
+    if (agrementEcheance.present) {
+      map['agrement_echeance'] = Variable<DateTime>(agrementEcheance.value);
+    }
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
@@ -395,6 +551,9 @@ class AccueillantsCompanion extends UpdateCompanion<Accueillant> {
           ..write('prenom: $prenom, ')
           ..write('nbPlaces: $nbPlaces, ')
           ..write('restrictionSexe: $restrictionSexe, ')
+          ..write('ageMin: $ageMin, ')
+          ..write('ageMax: $ageMax, ')
+          ..write('agrementEcheance: $agrementEcheance, ')
           ..write('notes: $notes')
           ..write(')'))
         .toString();
@@ -746,6 +905,26 @@ class $EnfantsTable extends Enfants with TableInfo<$EnfantsTable, Enfant> {
       'REFERENCES fratries (id) ON DELETE SET NULL',
     ),
   );
+  static const VerificationMeta _santeMeta = const VerificationMeta('sante');
+  @override
+  late final GeneratedColumn<String> sante = GeneratedColumn<String>(
+    'sante',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _contactUrgenceMeta = const VerificationMeta(
+    'contactUrgence',
+  );
+  @override
+  late final GeneratedColumn<String> contactUrgence = GeneratedColumn<String>(
+    'contact_urgence',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _notesMeta = const VerificationMeta('notes');
   @override
   late final GeneratedColumn<String> notes = GeneratedColumn<String>(
@@ -764,6 +943,8 @@ class $EnfantsTable extends Enfants with TableInfo<$EnfantsTable, Enfant> {
     dateNaissance,
     afHabituelId,
     fratrieId,
+    sante,
+    contactUrgence,
     notes,
   ];
   @override
@@ -825,6 +1006,21 @@ class $EnfantsTable extends Enfants with TableInfo<$EnfantsTable, Enfant> {
         fratrieId.isAcceptableOrUnknown(data['fratrie_id']!, _fratrieIdMeta),
       );
     }
+    if (data.containsKey('sante')) {
+      context.handle(
+        _santeMeta,
+        sante.isAcceptableOrUnknown(data['sante']!, _santeMeta),
+      );
+    }
+    if (data.containsKey('contact_urgence')) {
+      context.handle(
+        _contactUrgenceMeta,
+        contactUrgence.isAcceptableOrUnknown(
+          data['contact_urgence']!,
+          _contactUrgenceMeta,
+        ),
+      );
+    }
     if (data.containsKey('notes')) {
       context.handle(
         _notesMeta,
@@ -868,6 +1064,14 @@ class $EnfantsTable extends Enfants with TableInfo<$EnfantsTable, Enfant> {
         DriftSqlType.int,
         data['${effectivePrefix}fratrie_id'],
       ),
+      sante: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sante'],
+      ),
+      contactUrgence: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}contact_urgence'],
+      ),
       notes: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
@@ -889,6 +1093,8 @@ class Enfant extends DataClass implements Insertable<Enfant> {
   final DateTime? dateNaissance;
   final int? afHabituelId;
   final int? fratrieId;
+  final String? sante;
+  final String? contactUrgence;
   final String? notes;
   const Enfant({
     required this.id,
@@ -898,6 +1104,8 @@ class Enfant extends DataClass implements Insertable<Enfant> {
     this.dateNaissance,
     this.afHabituelId,
     this.fratrieId,
+    this.sante,
+    this.contactUrgence,
     this.notes,
   });
   @override
@@ -915,6 +1123,12 @@ class Enfant extends DataClass implements Insertable<Enfant> {
     }
     if (!nullToAbsent || fratrieId != null) {
       map['fratrie_id'] = Variable<int>(fratrieId);
+    }
+    if (!nullToAbsent || sante != null) {
+      map['sante'] = Variable<String>(sante);
+    }
+    if (!nullToAbsent || contactUrgence != null) {
+      map['contact_urgence'] = Variable<String>(contactUrgence);
     }
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
@@ -937,6 +1151,12 @@ class Enfant extends DataClass implements Insertable<Enfant> {
       fratrieId: fratrieId == null && nullToAbsent
           ? const Value.absent()
           : Value(fratrieId),
+      sante: sante == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sante),
+      contactUrgence: contactUrgence == null && nullToAbsent
+          ? const Value.absent()
+          : Value(contactUrgence),
       notes: notes == null && nullToAbsent
           ? const Value.absent()
           : Value(notes),
@@ -956,6 +1176,8 @@ class Enfant extends DataClass implements Insertable<Enfant> {
       dateNaissance: serializer.fromJson<DateTime?>(json['dateNaissance']),
       afHabituelId: serializer.fromJson<int?>(json['afHabituelId']),
       fratrieId: serializer.fromJson<int?>(json['fratrieId']),
+      sante: serializer.fromJson<String?>(json['sante']),
+      contactUrgence: serializer.fromJson<String?>(json['contactUrgence']),
       notes: serializer.fromJson<String?>(json['notes']),
     );
   }
@@ -970,6 +1192,8 @@ class Enfant extends DataClass implements Insertable<Enfant> {
       'dateNaissance': serializer.toJson<DateTime?>(dateNaissance),
       'afHabituelId': serializer.toJson<int?>(afHabituelId),
       'fratrieId': serializer.toJson<int?>(fratrieId),
+      'sante': serializer.toJson<String?>(sante),
+      'contactUrgence': serializer.toJson<String?>(contactUrgence),
       'notes': serializer.toJson<String?>(notes),
     };
   }
@@ -982,6 +1206,8 @@ class Enfant extends DataClass implements Insertable<Enfant> {
     Value<DateTime?> dateNaissance = const Value.absent(),
     Value<int?> afHabituelId = const Value.absent(),
     Value<int?> fratrieId = const Value.absent(),
+    Value<String?> sante = const Value.absent(),
+    Value<String?> contactUrgence = const Value.absent(),
     Value<String?> notes = const Value.absent(),
   }) => Enfant(
     id: id ?? this.id,
@@ -993,6 +1219,10 @@ class Enfant extends DataClass implements Insertable<Enfant> {
         : this.dateNaissance,
     afHabituelId: afHabituelId.present ? afHabituelId.value : this.afHabituelId,
     fratrieId: fratrieId.present ? fratrieId.value : this.fratrieId,
+    sante: sante.present ? sante.value : this.sante,
+    contactUrgence: contactUrgence.present
+        ? contactUrgence.value
+        : this.contactUrgence,
     notes: notes.present ? notes.value : this.notes,
   );
   Enfant copyWithCompanion(EnfantsCompanion data) {
@@ -1008,6 +1238,10 @@ class Enfant extends DataClass implements Insertable<Enfant> {
           ? data.afHabituelId.value
           : this.afHabituelId,
       fratrieId: data.fratrieId.present ? data.fratrieId.value : this.fratrieId,
+      sante: data.sante.present ? data.sante.value : this.sante,
+      contactUrgence: data.contactUrgence.present
+          ? data.contactUrgence.value
+          : this.contactUrgence,
       notes: data.notes.present ? data.notes.value : this.notes,
     );
   }
@@ -1022,6 +1256,8 @@ class Enfant extends DataClass implements Insertable<Enfant> {
           ..write('dateNaissance: $dateNaissance, ')
           ..write('afHabituelId: $afHabituelId, ')
           ..write('fratrieId: $fratrieId, ')
+          ..write('sante: $sante, ')
+          ..write('contactUrgence: $contactUrgence, ')
           ..write('notes: $notes')
           ..write(')'))
         .toString();
@@ -1036,6 +1272,8 @@ class Enfant extends DataClass implements Insertable<Enfant> {
     dateNaissance,
     afHabituelId,
     fratrieId,
+    sante,
+    contactUrgence,
     notes,
   );
   @override
@@ -1049,6 +1287,8 @@ class Enfant extends DataClass implements Insertable<Enfant> {
           other.dateNaissance == this.dateNaissance &&
           other.afHabituelId == this.afHabituelId &&
           other.fratrieId == this.fratrieId &&
+          other.sante == this.sante &&
+          other.contactUrgence == this.contactUrgence &&
           other.notes == this.notes);
 }
 
@@ -1060,6 +1300,8 @@ class EnfantsCompanion extends UpdateCompanion<Enfant> {
   final Value<DateTime?> dateNaissance;
   final Value<int?> afHabituelId;
   final Value<int?> fratrieId;
+  final Value<String?> sante;
+  final Value<String?> contactUrgence;
   final Value<String?> notes;
   const EnfantsCompanion({
     this.id = const Value.absent(),
@@ -1069,6 +1311,8 @@ class EnfantsCompanion extends UpdateCompanion<Enfant> {
     this.dateNaissance = const Value.absent(),
     this.afHabituelId = const Value.absent(),
     this.fratrieId = const Value.absent(),
+    this.sante = const Value.absent(),
+    this.contactUrgence = const Value.absent(),
     this.notes = const Value.absent(),
   });
   EnfantsCompanion.insert({
@@ -1079,6 +1323,8 @@ class EnfantsCompanion extends UpdateCompanion<Enfant> {
     this.dateNaissance = const Value.absent(),
     this.afHabituelId = const Value.absent(),
     this.fratrieId = const Value.absent(),
+    this.sante = const Value.absent(),
+    this.contactUrgence = const Value.absent(),
     this.notes = const Value.absent(),
   }) : nom = Value(nom);
   static Insertable<Enfant> custom({
@@ -1089,6 +1335,8 @@ class EnfantsCompanion extends UpdateCompanion<Enfant> {
     Expression<DateTime>? dateNaissance,
     Expression<int>? afHabituelId,
     Expression<int>? fratrieId,
+    Expression<String>? sante,
+    Expression<String>? contactUrgence,
     Expression<String>? notes,
   }) {
     return RawValuesInsertable({
@@ -1099,6 +1347,8 @@ class EnfantsCompanion extends UpdateCompanion<Enfant> {
       if (dateNaissance != null) 'date_naissance': dateNaissance,
       if (afHabituelId != null) 'af_habituel_id': afHabituelId,
       if (fratrieId != null) 'fratrie_id': fratrieId,
+      if (sante != null) 'sante': sante,
+      if (contactUrgence != null) 'contact_urgence': contactUrgence,
       if (notes != null) 'notes': notes,
     });
   }
@@ -1111,6 +1361,8 @@ class EnfantsCompanion extends UpdateCompanion<Enfant> {
     Value<DateTime?>? dateNaissance,
     Value<int?>? afHabituelId,
     Value<int?>? fratrieId,
+    Value<String?>? sante,
+    Value<String?>? contactUrgence,
     Value<String?>? notes,
   }) {
     return EnfantsCompanion(
@@ -1121,6 +1373,8 @@ class EnfantsCompanion extends UpdateCompanion<Enfant> {
       dateNaissance: dateNaissance ?? this.dateNaissance,
       afHabituelId: afHabituelId ?? this.afHabituelId,
       fratrieId: fratrieId ?? this.fratrieId,
+      sante: sante ?? this.sante,
+      contactUrgence: contactUrgence ?? this.contactUrgence,
       notes: notes ?? this.notes,
     );
   }
@@ -1149,6 +1403,12 @@ class EnfantsCompanion extends UpdateCompanion<Enfant> {
     if (fratrieId.present) {
       map['fratrie_id'] = Variable<int>(fratrieId.value);
     }
+    if (sante.present) {
+      map['sante'] = Variable<String>(sante.value);
+    }
+    if (contactUrgence.present) {
+      map['contact_urgence'] = Variable<String>(contactUrgence.value);
+    }
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
@@ -1165,6 +1425,8 @@ class EnfantsCompanion extends UpdateCompanion<Enfant> {
           ..write('dateNaissance: $dateNaissance, ')
           ..write('afHabituelId: $afHabituelId, ')
           ..write('fratrieId: $fratrieId, ')
+          ..write('sante: $sante, ')
+          ..write('contactUrgence: $contactUrgence, ')
           ..write('notes: $notes')
           ..write(')'))
         .toString();
@@ -3936,6 +4198,9 @@ typedef $$AccueillantsTableCreateCompanionBuilder =
       Value<String> prenom,
       Value<int> nbPlaces,
       Value<String> restrictionSexe,
+      Value<int?> ageMin,
+      Value<int?> ageMax,
+      Value<DateTime?> agrementEcheance,
       Value<String?> notes,
     });
 typedef $$AccueillantsTableUpdateCompanionBuilder =
@@ -3945,6 +4210,9 @@ typedef $$AccueillantsTableUpdateCompanionBuilder =
       Value<String> prenom,
       Value<int> nbPlaces,
       Value<String> restrictionSexe,
+      Value<int?> ageMin,
+      Value<int?> ageMax,
+      Value<DateTime?> agrementEcheance,
       Value<String?> notes,
     });
 
@@ -4087,6 +4355,21 @@ class $$AccueillantsTableFilterComposer
 
   ColumnFilters<String> get restrictionSexe => $composableBuilder(
     column: $table.restrictionSexe,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get ageMin => $composableBuilder(
+    column: $table.ageMin,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get ageMax => $composableBuilder(
+    column: $table.ageMax,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get agrementEcheance => $composableBuilder(
+    column: $table.agrementEcheance,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4256,6 +4539,21 @@ class $$AccueillantsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get ageMin => $composableBuilder(
+    column: $table.ageMin,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get ageMax => $composableBuilder(
+    column: $table.ageMax,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get agrementEcheance => $composableBuilder(
+    column: $table.agrementEcheance,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get notes => $composableBuilder(
     column: $table.notes,
     builder: (column) => ColumnOrderings(column),
@@ -4285,6 +4583,17 @@ class $$AccueillantsTableAnnotationComposer
 
   GeneratedColumn<String> get restrictionSexe => $composableBuilder(
     column: $table.restrictionSexe,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get ageMin =>
+      $composableBuilder(column: $table.ageMin, builder: (column) => column);
+
+  GeneratedColumn<int> get ageMax =>
+      $composableBuilder(column: $table.ageMax, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get agrementEcheance => $composableBuilder(
+    column: $table.agrementEcheance,
     builder: (column) => column,
   );
 
@@ -4458,6 +4767,9 @@ class $$AccueillantsTableTableManager
                 Value<String> prenom = const Value.absent(),
                 Value<int> nbPlaces = const Value.absent(),
                 Value<String> restrictionSexe = const Value.absent(),
+                Value<int?> ageMin = const Value.absent(),
+                Value<int?> ageMax = const Value.absent(),
+                Value<DateTime?> agrementEcheance = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
               }) => AccueillantsCompanion(
                 id: id,
@@ -4465,6 +4777,9 @@ class $$AccueillantsTableTableManager
                 prenom: prenom,
                 nbPlaces: nbPlaces,
                 restrictionSexe: restrictionSexe,
+                ageMin: ageMin,
+                ageMax: ageMax,
+                agrementEcheance: agrementEcheance,
                 notes: notes,
               ),
           createCompanionCallback:
@@ -4474,6 +4789,9 @@ class $$AccueillantsTableTableManager
                 Value<String> prenom = const Value.absent(),
                 Value<int> nbPlaces = const Value.absent(),
                 Value<String> restrictionSexe = const Value.absent(),
+                Value<int?> ageMin = const Value.absent(),
+                Value<int?> ageMax = const Value.absent(),
+                Value<DateTime?> agrementEcheance = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
               }) => AccueillantsCompanion.insert(
                 id: id,
@@ -4481,6 +4799,9 @@ class $$AccueillantsTableTableManager
                 prenom: prenom,
                 nbPlaces: nbPlaces,
                 restrictionSexe: restrictionSexe,
+                ageMin: ageMin,
+                ageMax: ageMax,
+                agrementEcheance: agrementEcheance,
                 notes: notes,
               ),
           withReferenceMapper: (p0) => p0
@@ -4905,6 +5226,8 @@ typedef $$EnfantsTableCreateCompanionBuilder =
       Value<DateTime?> dateNaissance,
       Value<int?> afHabituelId,
       Value<int?> fratrieId,
+      Value<String?> sante,
+      Value<String?> contactUrgence,
       Value<String?> notes,
     });
 typedef $$EnfantsTableUpdateCompanionBuilder =
@@ -4916,6 +5239,8 @@ typedef $$EnfantsTableUpdateCompanionBuilder =
       Value<DateTime?> dateNaissance,
       Value<int?> afHabituelId,
       Value<int?> fratrieId,
+      Value<String?> sante,
+      Value<String?> contactUrgence,
       Value<String?> notes,
     });
 
@@ -5071,6 +5396,16 @@ class $$EnfantsTableFilterComposer
 
   ColumnFilters<DateTime> get dateNaissance => $composableBuilder(
     column: $table.dateNaissance,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sante => $composableBuilder(
+    column: $table.sante,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get contactUrgence => $composableBuilder(
+    column: $table.contactUrgence,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5261,6 +5596,16 @@ class $$EnfantsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get sante => $composableBuilder(
+    column: $table.sante,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get contactUrgence => $composableBuilder(
+    column: $table.contactUrgence,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get notes => $composableBuilder(
     column: $table.notes,
     builder: (column) => ColumnOrderings(column),
@@ -5336,6 +5681,14 @@ class $$EnfantsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get dateNaissance => $composableBuilder(
     column: $table.dateNaissance,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sante =>
+      $composableBuilder(column: $table.sante, builder: (column) => column);
+
+  GeneratedColumn<String> get contactUrgence => $composableBuilder(
+    column: $table.contactUrgence,
     builder: (column) => column,
   );
 
@@ -5533,6 +5886,8 @@ class $$EnfantsTableTableManager
                 Value<DateTime?> dateNaissance = const Value.absent(),
                 Value<int?> afHabituelId = const Value.absent(),
                 Value<int?> fratrieId = const Value.absent(),
+                Value<String?> sante = const Value.absent(),
+                Value<String?> contactUrgence = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
               }) => EnfantsCompanion(
                 id: id,
@@ -5542,6 +5897,8 @@ class $$EnfantsTableTableManager
                 dateNaissance: dateNaissance,
                 afHabituelId: afHabituelId,
                 fratrieId: fratrieId,
+                sante: sante,
+                contactUrgence: contactUrgence,
                 notes: notes,
               ),
           createCompanionCallback:
@@ -5553,6 +5910,8 @@ class $$EnfantsTableTableManager
                 Value<DateTime?> dateNaissance = const Value.absent(),
                 Value<int?> afHabituelId = const Value.absent(),
                 Value<int?> fratrieId = const Value.absent(),
+                Value<String?> sante = const Value.absent(),
+                Value<String?> contactUrgence = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
               }) => EnfantsCompanion.insert(
                 id: id,
@@ -5562,6 +5921,8 @@ class $$EnfantsTableTableManager
                 dateNaissance: dateNaissance,
                 afHabituelId: afHabituelId,
                 fratrieId: fratrieId,
+                sante: sante,
+                contactUrgence: contactUrgence,
                 notes: notes,
               ),
           withReferenceMapper: (p0) => p0

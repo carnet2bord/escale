@@ -232,6 +232,8 @@ class _EnfantEditorState extends State<_EnfantEditor> {
   late final TextEditingController _nom;
   late final TextEditingController _prenom;
   late final TextEditingController _notes;
+  late final TextEditingController _sante;
+  late final TextEditingController _contactUrgence;
   late String _sexe;
   DateTime? _naissance;
   int? _afHabituelId;
@@ -246,6 +248,8 @@ class _EnfantEditorState extends State<_EnfantEditor> {
     _nom = TextEditingController(text: e?.nom ?? '');
     _prenom = TextEditingController(text: e?.prenom ?? '');
     _notes = TextEditingController(text: e?.notes ?? '');
+    _sante = TextEditingController(text: e?.sante ?? '');
+    _contactUrgence = TextEditingController(text: e?.contactUrgence ?? '');
     _sexe = e?.sexe ?? sexeGarcon;
     _naissance = e?.dateNaissance;
     _afHabituelId = e?.afHabituelId;
@@ -257,6 +261,8 @@ class _EnfantEditorState extends State<_EnfantEditor> {
     _nom.dispose();
     _prenom.dispose();
     _notes.dispose();
+    _sante.dispose();
+    _contactUrgence.dispose();
     super.dispose();
   }
 
@@ -274,6 +280,14 @@ class _EnfantEditorState extends State<_EnfantEditor> {
               dateNaissance: Value(_naissance),
               afHabituelId: Value(_afHabituelId),
               fratrieId: Value(_fratrieId),
+              sante: Value(
+                _sante.text.trim().isEmpty ? null : _sante.text.trim(),
+              ),
+              contactUrgence: Value(
+                _contactUrgence.text.trim().isEmpty
+                    ? null
+                    : _contactUrgence.text.trim(),
+              ),
               notes: Value(
                 _notes.text.trim().isEmpty ? null : _notes.text.trim(),
               ),
@@ -289,6 +303,12 @@ class _EnfantEditorState extends State<_EnfantEditor> {
           dateNaissance: Value(_naissance),
           afHabituelId: Value(_afHabituelId),
           fratrieId: Value(_fratrieId),
+          sante: Value(_sante.text.trim().isEmpty ? null : _sante.text.trim()),
+          contactUrgence: Value(
+            _contactUrgence.text.trim().isEmpty
+                ? null
+                : _contactUrgence.text.trim(),
+          ),
           notes: Value(_notes.text.trim().isEmpty ? null : _notes.text.trim()),
         ),
       );
@@ -497,6 +517,25 @@ class _EnfantEditorState extends State<_EnfantEditor> {
                             ],
                           );
                         },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _contactUrgence,
+                        decoration: const InputDecoration(
+                          labelText: 'Contact d\'urgence',
+                          hintText:
+                              'Nom et téléphone de la personne à prévenir',
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _sante,
+                        maxLines: 2,
+                        decoration: const InputDecoration(
+                          labelText: 'Santé (allergies, traitements, régime…)',
+                          helperText:
+                              'Donnée sensible — ne saisir que le strict nécessaire.',
+                        ),
                       ),
                       const SizedBox(height: 16),
                       TextFormField(

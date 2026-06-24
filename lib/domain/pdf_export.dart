@@ -414,6 +414,38 @@ Future<Uint8List> genererPdfConvention({
                 ? 'Non renseigné'
                 : _nom(afHabituel.nom, afHabituel.prenom),
           ),
+          if (enfant.contactUrgence != null &&
+              enfant.contactUrgence!.trim().isNotEmpty)
+            ligne('Contact d\'urgence', _safe(enfant.contactUrgence!.trim())),
+          if (enfant.sante != null && enfant.sante!.trim().isNotEmpty) ...[
+            pw.SizedBox(height: 8),
+            pw.Container(
+              width: double.infinity,
+              padding: const pw.EdgeInsets.all(10),
+              decoration: pw.BoxDecoration(
+                color: PdfColor.fromInt(0xFFFBEAEA),
+                borderRadius: pw.BorderRadius.circular(6),
+              ),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    'Santé - allergies / traitements',
+                    style: pw.TextStyle(
+                      fontWeight: pw.FontWeight.bold,
+                      fontSize: 10,
+                      color: PdfColor.fromInt(0xFFB3261E),
+                    ),
+                  ),
+                  pw.SizedBox(height: 3),
+                  pw.Text(
+                    _safe(enfant.sante!.trim()),
+                    style: pw.TextStyle(fontSize: 10, color: _texte),
+                  ),
+                ],
+              ),
+            ),
+          ],
           pw.SizedBox(height: 14),
           _bloc('Relais'),
           ligne(

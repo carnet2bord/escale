@@ -241,6 +241,32 @@ List<Conflit> analyserAffectation({
     }
   }
 
+  // 9. Tranche d'âge habituelle de l'accueillant (avertissement).
+  final age = ageAnnees(enfant.dateNaissance, a: debut);
+  if (age != null &&
+      ((accueillant.ageMin != null && age < accueillant.ageMin!) ||
+          (accueillant.ageMax != null && age > accueillant.ageMax!))) {
+    conflits.add(
+      Conflit(
+        Severite.avertissement,
+        '${_nomEnfant(enfant)} a $age ans, hors de la tranche d\'âge habituelle '
+        'de ${accueillant.nom}.',
+      ),
+    );
+  }
+
+  // 10. Échéance de l'agrément de l'accueillant (avertissement).
+  final echeance = accueillant.agrementEcheance;
+  if (echeance != null && jour(fin).isAfter(jour(echeance))) {
+    conflits.add(
+      Conflit(
+        Severite.avertissement,
+        'L\'agrément de ${accueillant.nom} expire le ${dateFr(echeance)}, '
+        'avant la fin du relais.',
+      ),
+    );
+  }
+
   return conflits;
 }
 

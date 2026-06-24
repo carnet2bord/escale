@@ -209,6 +209,9 @@ class _AccueillantEditorState extends State<_AccueillantEditor> {
   late final TextEditingController _nom;
   late final TextEditingController _prenom;
   late final TextEditingController _notes;
+  late final TextEditingController _ageMin;
+  late final TextEditingController _ageMax;
+  DateTime? _agrementEcheance;
   late int _nbPlaces;
   late String _restriction;
   int? _id;
@@ -221,6 +224,9 @@ class _AccueillantEditorState extends State<_AccueillantEditor> {
     _nom = TextEditingController(text: a?.nom ?? '');
     _prenom = TextEditingController(text: a?.prenom ?? '');
     _notes = TextEditingController(text: a?.notes ?? '');
+    _ageMin = TextEditingController(text: a?.ageMin?.toString() ?? '');
+    _ageMax = TextEditingController(text: a?.ageMax?.toString() ?? '');
+    _agrementEcheance = a?.agrementEcheance;
     _nbPlaces = a?.nbPlaces ?? 1;
     _restriction = a?.restrictionSexe ?? restrictionAucune;
   }
@@ -230,6 +236,8 @@ class _AccueillantEditorState extends State<_AccueillantEditor> {
     _nom.dispose();
     _prenom.dispose();
     _notes.dispose();
+    _ageMin.dispose();
+    _ageMax.dispose();
     super.dispose();
   }
 
@@ -245,6 +253,9 @@ class _AccueillantEditorState extends State<_AccueillantEditor> {
               prenom: Value(_prenom.text.trim()),
               nbPlaces: Value(_nbPlaces),
               restrictionSexe: Value(_restriction),
+              ageMin: Value(int.tryParse(_ageMin.text.trim())),
+              ageMax: Value(int.tryParse(_ageMax.text.trim())),
+              agrementEcheance: Value(_agrementEcheance),
               notes: Value(
                 _notes.text.trim().isEmpty ? null : _notes.text.trim(),
               ),
@@ -258,6 +269,9 @@ class _AccueillantEditorState extends State<_AccueillantEditor> {
           prenom: Value(_prenom.text.trim()),
           nbPlaces: Value(_nbPlaces),
           restrictionSexe: Value(_restriction),
+          ageMin: Value(int.tryParse(_ageMin.text.trim())),
+          ageMax: Value(int.tryParse(_ageMax.text.trim())),
+          agrementEcheance: Value(_agrementEcheance),
           notes: Value(_notes.text.trim().isEmpty ? null : _notes.text.trim()),
         ),
       );
@@ -381,6 +395,73 @@ class _AccueillantEditorState extends State<_AccueillantEditor> {
                             ),
                           ),
                         ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _ageMin,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                labelText: 'Âge min (ans)',
+                                hintText: 'Optionnel',
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _ageMax,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                labelText: 'Âge max (ans)',
+                                hintText: 'Optionnel',
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      InputDecorator(
+                        decoration: const InputDecoration(
+                          labelText: 'Échéance de l\'agrément',
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                _agrementEcheance == null
+                                    ? 'Non renseignée'
+                                    : dateFr(_agrementEcheance!),
+                              ),
+                            ),
+                            if (_agrementEcheance != null)
+                              IconButton(
+                                tooltip: 'Effacer',
+                                icon: const Icon(Icons.clear, size: 18),
+                                onPressed: () =>
+                                    setState(() => _agrementEcheance = null),
+                              ),
+                            TextButton.icon(
+                              onPressed: () async {
+                                final now = DateTime.now();
+                                final d = await showDatePicker(
+                                  context: context,
+                                  initialDate: _agrementEcheance ?? now,
+                                  firstDate: DateTime(now.year - 5),
+                                  lastDate: DateTime(now.year + 10),
+                                  locale: const Locale('fr', 'FR'),
+                                );
+                                if (d != null) {
+                                  setState(() => _agrementEcheance = d);
+                                }
+                              },
+                              icon: const Icon(Icons.event, size: 18),
+                              label: const Text('Choisir'),
+                            ),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 16),
                       TextFormField(

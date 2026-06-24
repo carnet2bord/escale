@@ -8,12 +8,13 @@ Enfant enfant({
   String sexe = sexeGarcon,
   int? afHabituelId,
   int? fratrieId,
+  DateTime? naissance,
 }) => Enfant(
   id: id,
   nom: nom,
   prenom: '',
   sexe: sexe,
-  dateNaissance: null,
+  dateNaissance: naissance,
   afHabituelId: afHabituelId,
   fratrieId: fratrieId,
   notes: null,
@@ -24,12 +25,18 @@ Accueillant accueillant({
   String nom = 'Martin',
   int nbPlaces = 1,
   String restriction = restrictionAucune,
+  int? ageMin,
+  int? ageMax,
+  DateTime? agrementEcheance,
 }) => Accueillant(
   id: id,
   nom: nom,
   prenom: '',
   nbPlaces: nbPlaces,
   restrictionSexe: restriction,
+  ageMin: ageMin,
+  ageMax: ageMax,
+  agrementEcheance: agrementEcheance,
   notes: null,
 );
 
@@ -401,6 +408,40 @@ void main() {
       ],
     );
     expect(conflits.any((c) => c.estBloquant), isTrue);
+  });
+
+  test('âge hors tranche : avertissement non bloquant', () {
+    final e = enfant(naissance: DateTime(2010, 1, 1));
+    final conflits = analyserAffectation(
+      enfant: e,
+      accueillant: accueillant(ageMin: 0, ageMax: 6),
+      debut: d(1),
+      fin: d(3),
+      affectations: const [],
+      disponibilites: const [],
+      indisponibilites: const [],
+      incompatibilites: const [],
+      enfants: [e],
+    );
+    expect(conflits.any((c) => c.estBloquant), isFalse);
+    expect(conflits.any((c) => c.severite == Severite.avertissement), isTrue);
+  });
+
+  test('agrément expiré avant la fin du relais : avertissement', () {
+    final e = enfant();
+    final conflits = analyserAffectation(
+      enfant: e,
+      accueillant: accueillant(agrementEcheance: d(2)),
+      debut: d(1),
+      fin: d(7),
+      affectations: const [],
+      disponibilites: const [],
+      indisponibilites: const [],
+      incompatibilites: const [],
+      enfants: [e],
+    );
+    expect(conflits.any((c) => c.estBloquant), isFalse);
+    expect(conflits.any((c) => c.severite == Severite.avertissement), isTrue);
   });
 
   test('un relais annulé n\'occupe pas de place', () {

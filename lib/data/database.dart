@@ -56,6 +56,11 @@ class Accueillants extends Table {
   // 'aucune' | 'garcon' | 'fille'
   TextColumn get restrictionSexe =>
       text().withDefault(const Constant(restrictionAucune))();
+  // Tranche d'âge acceptée (avertissement si l'enfant est hors plage).
+  IntColumn get ageMin => integer().nullable()();
+  IntColumn get ageMax => integer().nullable()();
+  // Échéance de l'agrément (avertissement si le relais dépasse cette date).
+  DateTimeColumn get agrementEcheance => dateTime().nullable()();
   TextColumn get notes => text().nullable()();
 }
 
@@ -89,6 +94,10 @@ class Enfants extends Table {
     #id,
     onDelete: KeyAction.setNull,
   )();
+  // Donnée sensible (santé) : allergies, traitements, régime, PAI…
+  TextColumn get sante => text().nullable()();
+  // Personne(s) à prévenir en cas d'urgence (nom + téléphone).
+  TextColumn get contactUrgence => text().nullable()();
   TextColumn get notes => text().nullable()();
 }
 
@@ -222,7 +231,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -232,6 +241,13 @@ class AppDatabase extends _$AppDatabase {
       if (from < 3) await m.createTable(solutionsAlternatives);
       if (from < 4) await m.addColumn(affectations, affectations.statut);
       if (from < 5) await m.createTable(reglages);
+      if (from < 6) {
+        await m.addColumn(enfants, enfants.sante);
+        await m.addColumn(enfants, enfants.contactUrgence);
+        await m.addColumn(accueillants, accueillants.ageMin);
+        await m.addColumn(accueillants, accueillants.ageMax);
+        await m.addColumn(accueillants, accueillants.agrementEcheance);
+      }
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
