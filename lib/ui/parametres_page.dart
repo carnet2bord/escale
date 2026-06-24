@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../data/database.dart';
+import 'verrou.dart';
 import 'widgets.dart';
 
 // Paramètres d'identité de la structure, repris en en-tête / pied des documents.
@@ -19,6 +20,7 @@ class _ParametresStructurePageState extends State<ParametresStructurePage> {
   final _signataire = TextEditingController();
   final _mention = TextEditingController();
   bool _charge = false;
+  bool _aMdp = false;
 
   @override
   void initState() {
@@ -32,7 +34,101 @@ class _ParametresStructurePageState extends State<ParametresStructurePage> {
     _adresse.text = r[cleStructureAdresse] ?? '';
     _signataire.text = r[cleStructureSignataire] ?? '';
     _mention.text = r[cleStructureMention] ?? '';
+    _aMdp = (r[cleSecuriteHash] ?? '').isNotEmpty;
     if (mounted) setState(() => _charge = true);
+  }
+
+  Future<void> _definirMotDePasse() async {
+    final db = context.read<AppDatabase>();
+    final verrou = context.read<VerrouController>();
+    final mdp = await _saisirMotDePasse();
+    if (mdp == null) return;
+    await db.definirMotDePasse(mdp);
+    await verrou.rafraichir();
+    if (!mounted) return;
+    setState(() => _aMdp = true);
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Mot de passe enregistré.')));
+  }
+
+  Future<void> _retirerMotDePasse() async {
+    final db = context.read<AppDatabase>();
+    final verrou = context.read<VerrouController>();
+    if (!await confirmer(
+      context,
+      titre: 'Retirer le mot de passe ?',
+      message: 'L\'application ne sera plus verrouillée au démarrage.',
+      confirmer: 'Retirer',
+    )) {
+      return;
+    }
+    await db.supprimerMotDePasse();
+    await verrou.rafraichir();
+    if (!mounted) return;
+    setState(() => _aMdp = false);
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Mot de passe retiré.')));
+  }
+
+  Future<String?> _saisirMotDePasse() {
+    final mdp = TextEditingController();
+    final conf = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocal) {
+          String? erreur;
+          void valider() {
+            if (mdp.text.length < 4) {
+              setLocal(() => erreur = '4 caractères minimum.');
+            } else if (mdp.text != conf.text) {
+              setLocal(
+                () => erreur = 'Les mots de passe ne correspondent pas.',
+              );
+            } else {
+              Navigator.pop(ctx, mdp.text);
+            }
+          }
+
+          return AlertDialog(
+            title: const Text('Mot de passe'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: mdp,
+                  obscureText: true,
+                  autofocus: true,
+                  decoration: const InputDecoration(labelText: 'Mot de passe'),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: conf,
+                  obscureText: true,
+                  onSubmitted: (_) => valider(),
+                  decoration: InputDecoration(
+                    labelText: 'Confirmer',
+                    errorText: erreur,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Annuler'),
+              ),
+              FilledButton(
+                onPressed: valider,
+                child: const Text('Enregistrer'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
 
   @override
@@ -96,6 +192,52 @@ class _ParametresStructurePageState extends State<ParametresStructurePage> {
                     icon: const Icon(Icons.save_outlined),
                     label: const Text('Enregistrer'),
                   ),
+                ),
+                const SizedBox(height: 28),
+                const SectionTitle(
+                  'Sécurité',
+                  sousTitre:
+                      'Protéger l\'accès à l\'application par un mot de passe '
+                      '(verrouillage au démarrage et après 10 min d\'inactivité).',
+                ),
+                Card(
+                  child: ListTile(
+                    leading: Icon(
+                      _aMdp ? Icons.lock_outline : Icons.lock_open_outlined,
+                      color: _aMdp
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                    title: Text(
+                      _aMdp
+                          ? 'Mot de passe actif'
+                          : 'Aucun mot de passe défini',
+                    ),
+                    subtitle: Text(
+                      _aMdp
+                          ? 'L\'application est verrouillée au démarrage.'
+                          : 'L\'accès n\'est pas protégé.',
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextButton(
+                          onPressed: _definirMotDePasse,
+                          child: Text(_aMdp ? 'Modifier' : 'Définir'),
+                        ),
+                        if (_aMdp)
+                          TextButton(
+                            onPressed: _retirerMotDePasse,
+                            child: const Text('Retirer'),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                const Astuce(
+                  'Le mot de passe protège l\'ouverture de l\'application mais '
+                  'ne chiffre pas le fichier de données. Pour une protection '
+                  'au repos, gardez le poste lui-même sécurisé.',
                 ),
               ],
             ),

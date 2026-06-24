@@ -13,6 +13,7 @@ import 'logo.dart';
 import 'parametres_page.dart';
 import 'planning_page.dart';
 import 'theme_controller.dart';
+import 'verrou.dart';
 import 'widgets.dart';
 
 class AppShell extends StatefulWidget {
@@ -130,6 +131,19 @@ class _AppShellState extends State<AppShell> {
         Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const ParametresStructurePage()),
         );
+      case 'verrouiller':
+        final v = context.read<VerrouController>();
+        if (v.protege) {
+          v.verrouiller();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Définissez d\'abord un mot de passe dans les Paramètres.',
+              ),
+            ),
+          );
+        }
       case 'demo':
         _chargerDemo();
       case 'sauver':
@@ -303,6 +317,13 @@ class _Sidebar extends StatelessWidget {
                         child: _ItemMenu(
                           Icons.tune,
                           'Paramètres de la structure',
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'verrouiller',
+                        child: _ItemMenu(
+                          Icons.lock_outline,
+                          'Verrouiller l\'application',
                         ),
                       ),
                       PopupMenuDivider(),

@@ -1,5 +1,8 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
+import 'package:crypto/crypto.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
@@ -44,6 +47,10 @@ const String cleStructureNom = 'structure.nom';
 const String cleStructureAdresse = 'structure.adresse';
 const String cleStructureSignataire = 'structure.signataire';
 const String cleStructureMention = 'structure.mention';
+
+// Verrouillage par mot de passe (sel + empreinte SHA-256, jamais le mot de passe).
+const String cleSecuriteSel = 'securite.sel';
+const String cleSecuriteHash = 'securite.hash';
 
 // Les assistants familiaux qui peuvent accueillir des enfants en relais.
 @DataClassName('Accueillant')
@@ -412,6 +419,37 @@ class AppDatabase extends _$AppDatabase {
         Reglage(cle: cle, valeur: valeur),
         mode: InsertMode.insertOrReplace,
       );
+
+  // --- Verrouillage par mot de passe (local) ---
+  String _hacher(String sel, String motDePasse) =>
+      sha256.convert(utf8.encode('$sel|$motDePasse')).toString();
+
+  Future<bool> aMotDePasse() async {
+    final r = await lireReglages();
+    return (r[cleSecuriteHash] ?? '').isNotEmpty;
+  }
+
+  Future<void> definirMotDePasse(String motDePasse) async {
+    final rnd = Random.secure();
+    final sel = List.generate(
+      16,
+      (_) => rnd.nextInt(256).toRadixString(16).padLeft(2, '0'),
+    ).join();
+    await ecrireReglage(cleSecuriteSel, sel);
+    await ecrireReglage(cleSecuriteHash, _hacher(sel, motDePasse));
+  }
+
+  Future<void> supprimerMotDePasse() async {
+    await ecrireReglage(cleSecuriteSel, '');
+    await ecrireReglage(cleSecuriteHash, '');
+  }
+
+  Future<bool> verifierMotDePasse(String motDePasse) async {
+    final r = await lireReglages();
+    final hash = r[cleSecuriteHash] ?? '';
+    if (hash.isEmpty) return true;
+    return _hacher(r[cleSecuriteSel] ?? '', motDePasse) == hash;
+  }
 
   Future<List<BesoinRelais>> tousBesoins() => select(besoinsRelais).get();
   Future<List<Incompatibilite>> toutesIncompatibilites() =>
