@@ -1,5 +1,5 @@
 // Version courante et auteur de l'application (partagé avec la version desktop).
-export const VERSION_ESCALE = '1.5.0';
+export const VERSION_ESCALE = '1.6.0';
 export const AUTEUR_ESCALE = 'Christopher Fortier';
 export const EMAIL_ESCALE = 'chris@carnet2bord.fr';
 
@@ -11,6 +11,16 @@ export interface VersionEscale {
 
 // Historique des versions, de la plus récente à la plus ancienne.
 export const CHANGELOG: VersionEscale[] = [
+  {
+    numero: '1.6.0',
+    titre: 'Distances & adresses',
+    points: [
+      'Adresse + coordonnées des accueillants et des enfants.',
+      'Calcul de la distance enfant ↔ relais (local).',
+      'Géocodage optionnel via la BAN (data.gouv.fr).',
+      'La proposition privilégie le relais le plus proche ; alerte « éloigné » (seuil réglable).',
+    ],
+  },
   {
     numero: '1.5.0',
     titre: 'Conformité & RGPD',

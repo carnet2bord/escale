@@ -121,6 +121,39 @@ class $AccueillantsTable extends Accueillants
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _adresseMeta = const VerificationMeta(
+    'adresse',
+  );
+  @override
+  late final GeneratedColumn<String> adresse = GeneratedColumn<String>(
+    'adresse',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _latitudeMeta = const VerificationMeta(
+    'latitude',
+  );
+  @override
+  late final GeneratedColumn<double> latitude = GeneratedColumn<double>(
+    'latitude',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _longitudeMeta = const VerificationMeta(
+    'longitude',
+  );
+  @override
+  late final GeneratedColumn<double> longitude = GeneratedColumn<double>(
+    'longitude',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _notesMeta = const VerificationMeta('notes');
   @override
   late final GeneratedColumn<String> notes = GeneratedColumn<String>(
@@ -142,6 +175,9 @@ class $AccueillantsTable extends Accueillants
     agrementEcheance,
     plafondJoursAn,
     secteur,
+    adresse,
+    latitude,
+    longitude,
     notes,
   ];
   @override
@@ -224,6 +260,24 @@ class $AccueillantsTable extends Accueillants
         secteur.isAcceptableOrUnknown(data['secteur']!, _secteurMeta),
       );
     }
+    if (data.containsKey('adresse')) {
+      context.handle(
+        _adresseMeta,
+        adresse.isAcceptableOrUnknown(data['adresse']!, _adresseMeta),
+      );
+    }
+    if (data.containsKey('latitude')) {
+      context.handle(
+        _latitudeMeta,
+        latitude.isAcceptableOrUnknown(data['latitude']!, _latitudeMeta),
+      );
+    }
+    if (data.containsKey('longitude')) {
+      context.handle(
+        _longitudeMeta,
+        longitude.isAcceptableOrUnknown(data['longitude']!, _longitudeMeta),
+      );
+    }
     if (data.containsKey('notes')) {
       context.handle(
         _notesMeta,
@@ -279,6 +333,18 @@ class $AccueillantsTable extends Accueillants
         DriftSqlType.string,
         data['${effectivePrefix}secteur'],
       ),
+      adresse: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}adresse'],
+      ),
+      latitude: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}latitude'],
+      ),
+      longitude: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}longitude'],
+      ),
       notes: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
@@ -303,6 +369,9 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
   final DateTime? agrementEcheance;
   final int? plafondJoursAn;
   final String? secteur;
+  final String? adresse;
+  final double? latitude;
+  final double? longitude;
   final String? notes;
   const Accueillant({
     required this.id,
@@ -315,6 +384,9 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
     this.agrementEcheance,
     this.plafondJoursAn,
     this.secteur,
+    this.adresse,
+    this.latitude,
+    this.longitude,
     this.notes,
   });
   @override
@@ -339,6 +411,15 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
     }
     if (!nullToAbsent || secteur != null) {
       map['secteur'] = Variable<String>(secteur);
+    }
+    if (!nullToAbsent || adresse != null) {
+      map['adresse'] = Variable<String>(adresse);
+    }
+    if (!nullToAbsent || latitude != null) {
+      map['latitude'] = Variable<double>(latitude);
+    }
+    if (!nullToAbsent || longitude != null) {
+      map['longitude'] = Variable<double>(longitude);
     }
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
@@ -368,6 +449,15 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
       secteur: secteur == null && nullToAbsent
           ? const Value.absent()
           : Value(secteur),
+      adresse: adresse == null && nullToAbsent
+          ? const Value.absent()
+          : Value(adresse),
+      latitude: latitude == null && nullToAbsent
+          ? const Value.absent()
+          : Value(latitude),
+      longitude: longitude == null && nullToAbsent
+          ? const Value.absent()
+          : Value(longitude),
       notes: notes == null && nullToAbsent
           ? const Value.absent()
           : Value(notes),
@@ -392,6 +482,9 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
       ),
       plafondJoursAn: serializer.fromJson<int?>(json['plafondJoursAn']),
       secteur: serializer.fromJson<String?>(json['secteur']),
+      adresse: serializer.fromJson<String?>(json['adresse']),
+      latitude: serializer.fromJson<double?>(json['latitude']),
+      longitude: serializer.fromJson<double?>(json['longitude']),
       notes: serializer.fromJson<String?>(json['notes']),
     );
   }
@@ -409,6 +502,9 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
       'agrementEcheance': serializer.toJson<DateTime?>(agrementEcheance),
       'plafondJoursAn': serializer.toJson<int?>(plafondJoursAn),
       'secteur': serializer.toJson<String?>(secteur),
+      'adresse': serializer.toJson<String?>(adresse),
+      'latitude': serializer.toJson<double?>(latitude),
+      'longitude': serializer.toJson<double?>(longitude),
       'notes': serializer.toJson<String?>(notes),
     };
   }
@@ -424,6 +520,9 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
     Value<DateTime?> agrementEcheance = const Value.absent(),
     Value<int?> plafondJoursAn = const Value.absent(),
     Value<String?> secteur = const Value.absent(),
+    Value<String?> adresse = const Value.absent(),
+    Value<double?> latitude = const Value.absent(),
+    Value<double?> longitude = const Value.absent(),
     Value<String?> notes = const Value.absent(),
   }) => Accueillant(
     id: id ?? this.id,
@@ -440,6 +539,9 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
         ? plafondJoursAn.value
         : this.plafondJoursAn,
     secteur: secteur.present ? secteur.value : this.secteur,
+    adresse: adresse.present ? adresse.value : this.adresse,
+    latitude: latitude.present ? latitude.value : this.latitude,
+    longitude: longitude.present ? longitude.value : this.longitude,
     notes: notes.present ? notes.value : this.notes,
   );
   Accueillant copyWithCompanion(AccueillantsCompanion data) {
@@ -460,6 +562,9 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
           ? data.plafondJoursAn.value
           : this.plafondJoursAn,
       secteur: data.secteur.present ? data.secteur.value : this.secteur,
+      adresse: data.adresse.present ? data.adresse.value : this.adresse,
+      latitude: data.latitude.present ? data.latitude.value : this.latitude,
+      longitude: data.longitude.present ? data.longitude.value : this.longitude,
       notes: data.notes.present ? data.notes.value : this.notes,
     );
   }
@@ -477,6 +582,9 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
           ..write('agrementEcheance: $agrementEcheance, ')
           ..write('plafondJoursAn: $plafondJoursAn, ')
           ..write('secteur: $secteur, ')
+          ..write('adresse: $adresse, ')
+          ..write('latitude: $latitude, ')
+          ..write('longitude: $longitude, ')
           ..write('notes: $notes')
           ..write(')'))
         .toString();
@@ -494,6 +602,9 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
     agrementEcheance,
     plafondJoursAn,
     secteur,
+    adresse,
+    latitude,
+    longitude,
     notes,
   );
   @override
@@ -510,6 +621,9 @@ class Accueillant extends DataClass implements Insertable<Accueillant> {
           other.agrementEcheance == this.agrementEcheance &&
           other.plafondJoursAn == this.plafondJoursAn &&
           other.secteur == this.secteur &&
+          other.adresse == this.adresse &&
+          other.latitude == this.latitude &&
+          other.longitude == this.longitude &&
           other.notes == this.notes);
 }
 
@@ -524,6 +638,9 @@ class AccueillantsCompanion extends UpdateCompanion<Accueillant> {
   final Value<DateTime?> agrementEcheance;
   final Value<int?> plafondJoursAn;
   final Value<String?> secteur;
+  final Value<String?> adresse;
+  final Value<double?> latitude;
+  final Value<double?> longitude;
   final Value<String?> notes;
   const AccueillantsCompanion({
     this.id = const Value.absent(),
@@ -536,6 +653,9 @@ class AccueillantsCompanion extends UpdateCompanion<Accueillant> {
     this.agrementEcheance = const Value.absent(),
     this.plafondJoursAn = const Value.absent(),
     this.secteur = const Value.absent(),
+    this.adresse = const Value.absent(),
+    this.latitude = const Value.absent(),
+    this.longitude = const Value.absent(),
     this.notes = const Value.absent(),
   });
   AccueillantsCompanion.insert({
@@ -549,6 +669,9 @@ class AccueillantsCompanion extends UpdateCompanion<Accueillant> {
     this.agrementEcheance = const Value.absent(),
     this.plafondJoursAn = const Value.absent(),
     this.secteur = const Value.absent(),
+    this.adresse = const Value.absent(),
+    this.latitude = const Value.absent(),
+    this.longitude = const Value.absent(),
     this.notes = const Value.absent(),
   }) : nom = Value(nom);
   static Insertable<Accueillant> custom({
@@ -562,6 +685,9 @@ class AccueillantsCompanion extends UpdateCompanion<Accueillant> {
     Expression<DateTime>? agrementEcheance,
     Expression<int>? plafondJoursAn,
     Expression<String>? secteur,
+    Expression<String>? adresse,
+    Expression<double>? latitude,
+    Expression<double>? longitude,
     Expression<String>? notes,
   }) {
     return RawValuesInsertable({
@@ -575,6 +701,9 @@ class AccueillantsCompanion extends UpdateCompanion<Accueillant> {
       if (agrementEcheance != null) 'agrement_echeance': agrementEcheance,
       if (plafondJoursAn != null) 'plafond_jours_an': plafondJoursAn,
       if (secteur != null) 'secteur': secteur,
+      if (adresse != null) 'adresse': adresse,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
       if (notes != null) 'notes': notes,
     });
   }
@@ -590,6 +719,9 @@ class AccueillantsCompanion extends UpdateCompanion<Accueillant> {
     Value<DateTime?>? agrementEcheance,
     Value<int?>? plafondJoursAn,
     Value<String?>? secteur,
+    Value<String?>? adresse,
+    Value<double?>? latitude,
+    Value<double?>? longitude,
     Value<String?>? notes,
   }) {
     return AccueillantsCompanion(
@@ -603,6 +735,9 @@ class AccueillantsCompanion extends UpdateCompanion<Accueillant> {
       agrementEcheance: agrementEcheance ?? this.agrementEcheance,
       plafondJoursAn: plafondJoursAn ?? this.plafondJoursAn,
       secteur: secteur ?? this.secteur,
+      adresse: adresse ?? this.adresse,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
       notes: notes ?? this.notes,
     );
   }
@@ -640,6 +775,15 @@ class AccueillantsCompanion extends UpdateCompanion<Accueillant> {
     if (secteur.present) {
       map['secteur'] = Variable<String>(secteur.value);
     }
+    if (adresse.present) {
+      map['adresse'] = Variable<String>(adresse.value);
+    }
+    if (latitude.present) {
+      map['latitude'] = Variable<double>(latitude.value);
+    }
+    if (longitude.present) {
+      map['longitude'] = Variable<double>(longitude.value);
+    }
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
@@ -659,6 +803,9 @@ class AccueillantsCompanion extends UpdateCompanion<Accueillant> {
           ..write('agrementEcheance: $agrementEcheance, ')
           ..write('plafondJoursAn: $plafondJoursAn, ')
           ..write('secteur: $secteur, ')
+          ..write('adresse: $adresse, ')
+          ..write('latitude: $latitude, ')
+          ..write('longitude: $longitude, ')
           ..write('notes: $notes')
           ..write(')'))
         .toString();
@@ -1041,6 +1188,39 @@ class $EnfantsTable extends Enfants with TableInfo<$EnfantsTable, Enfant> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _adresseMeta = const VerificationMeta(
+    'adresse',
+  );
+  @override
+  late final GeneratedColumn<String> adresse = GeneratedColumn<String>(
+    'adresse',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _latitudeMeta = const VerificationMeta(
+    'latitude',
+  );
+  @override
+  late final GeneratedColumn<double> latitude = GeneratedColumn<double>(
+    'latitude',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _longitudeMeta = const VerificationMeta(
+    'longitude',
+  );
+  @override
+  late final GeneratedColumn<double> longitude = GeneratedColumn<double>(
+    'longitude',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _notesMeta = const VerificationMeta('notes');
   @override
   late final GeneratedColumn<String> notes = GeneratedColumn<String>(
@@ -1062,6 +1242,9 @@ class $EnfantsTable extends Enfants with TableInfo<$EnfantsTable, Enfant> {
     sante,
     contactUrgence,
     secteur,
+    adresse,
+    latitude,
+    longitude,
     notes,
   ];
   @override
@@ -1144,6 +1327,24 @@ class $EnfantsTable extends Enfants with TableInfo<$EnfantsTable, Enfant> {
         secteur.isAcceptableOrUnknown(data['secteur']!, _secteurMeta),
       );
     }
+    if (data.containsKey('adresse')) {
+      context.handle(
+        _adresseMeta,
+        adresse.isAcceptableOrUnknown(data['adresse']!, _adresseMeta),
+      );
+    }
+    if (data.containsKey('latitude')) {
+      context.handle(
+        _latitudeMeta,
+        latitude.isAcceptableOrUnknown(data['latitude']!, _latitudeMeta),
+      );
+    }
+    if (data.containsKey('longitude')) {
+      context.handle(
+        _longitudeMeta,
+        longitude.isAcceptableOrUnknown(data['longitude']!, _longitudeMeta),
+      );
+    }
     if (data.containsKey('notes')) {
       context.handle(
         _notesMeta,
@@ -1199,6 +1400,18 @@ class $EnfantsTable extends Enfants with TableInfo<$EnfantsTable, Enfant> {
         DriftSqlType.string,
         data['${effectivePrefix}secteur'],
       ),
+      adresse: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}adresse'],
+      ),
+      latitude: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}latitude'],
+      ),
+      longitude: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}longitude'],
+      ),
       notes: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
@@ -1223,6 +1436,9 @@ class Enfant extends DataClass implements Insertable<Enfant> {
   final String? sante;
   final String? contactUrgence;
   final String? secteur;
+  final String? adresse;
+  final double? latitude;
+  final double? longitude;
   final String? notes;
   const Enfant({
     required this.id,
@@ -1235,6 +1451,9 @@ class Enfant extends DataClass implements Insertable<Enfant> {
     this.sante,
     this.contactUrgence,
     this.secteur,
+    this.adresse,
+    this.latitude,
+    this.longitude,
     this.notes,
   });
   @override
@@ -1261,6 +1480,15 @@ class Enfant extends DataClass implements Insertable<Enfant> {
     }
     if (!nullToAbsent || secteur != null) {
       map['secteur'] = Variable<String>(secteur);
+    }
+    if (!nullToAbsent || adresse != null) {
+      map['adresse'] = Variable<String>(adresse);
+    }
+    if (!nullToAbsent || latitude != null) {
+      map['latitude'] = Variable<double>(latitude);
+    }
+    if (!nullToAbsent || longitude != null) {
+      map['longitude'] = Variable<double>(longitude);
     }
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
@@ -1292,6 +1520,15 @@ class Enfant extends DataClass implements Insertable<Enfant> {
       secteur: secteur == null && nullToAbsent
           ? const Value.absent()
           : Value(secteur),
+      adresse: adresse == null && nullToAbsent
+          ? const Value.absent()
+          : Value(adresse),
+      latitude: latitude == null && nullToAbsent
+          ? const Value.absent()
+          : Value(latitude),
+      longitude: longitude == null && nullToAbsent
+          ? const Value.absent()
+          : Value(longitude),
       notes: notes == null && nullToAbsent
           ? const Value.absent()
           : Value(notes),
@@ -1314,6 +1551,9 @@ class Enfant extends DataClass implements Insertable<Enfant> {
       sante: serializer.fromJson<String?>(json['sante']),
       contactUrgence: serializer.fromJson<String?>(json['contactUrgence']),
       secteur: serializer.fromJson<String?>(json['secteur']),
+      adresse: serializer.fromJson<String?>(json['adresse']),
+      latitude: serializer.fromJson<double?>(json['latitude']),
+      longitude: serializer.fromJson<double?>(json['longitude']),
       notes: serializer.fromJson<String?>(json['notes']),
     );
   }
@@ -1331,6 +1571,9 @@ class Enfant extends DataClass implements Insertable<Enfant> {
       'sante': serializer.toJson<String?>(sante),
       'contactUrgence': serializer.toJson<String?>(contactUrgence),
       'secteur': serializer.toJson<String?>(secteur),
+      'adresse': serializer.toJson<String?>(adresse),
+      'latitude': serializer.toJson<double?>(latitude),
+      'longitude': serializer.toJson<double?>(longitude),
       'notes': serializer.toJson<String?>(notes),
     };
   }
@@ -1346,6 +1589,9 @@ class Enfant extends DataClass implements Insertable<Enfant> {
     Value<String?> sante = const Value.absent(),
     Value<String?> contactUrgence = const Value.absent(),
     Value<String?> secteur = const Value.absent(),
+    Value<String?> adresse = const Value.absent(),
+    Value<double?> latitude = const Value.absent(),
+    Value<double?> longitude = const Value.absent(),
     Value<String?> notes = const Value.absent(),
   }) => Enfant(
     id: id ?? this.id,
@@ -1362,6 +1608,9 @@ class Enfant extends DataClass implements Insertable<Enfant> {
         ? contactUrgence.value
         : this.contactUrgence,
     secteur: secteur.present ? secteur.value : this.secteur,
+    adresse: adresse.present ? adresse.value : this.adresse,
+    latitude: latitude.present ? latitude.value : this.latitude,
+    longitude: longitude.present ? longitude.value : this.longitude,
     notes: notes.present ? notes.value : this.notes,
   );
   Enfant copyWithCompanion(EnfantsCompanion data) {
@@ -1382,6 +1631,9 @@ class Enfant extends DataClass implements Insertable<Enfant> {
           ? data.contactUrgence.value
           : this.contactUrgence,
       secteur: data.secteur.present ? data.secteur.value : this.secteur,
+      adresse: data.adresse.present ? data.adresse.value : this.adresse,
+      latitude: data.latitude.present ? data.latitude.value : this.latitude,
+      longitude: data.longitude.present ? data.longitude.value : this.longitude,
       notes: data.notes.present ? data.notes.value : this.notes,
     );
   }
@@ -1399,6 +1651,9 @@ class Enfant extends DataClass implements Insertable<Enfant> {
           ..write('sante: $sante, ')
           ..write('contactUrgence: $contactUrgence, ')
           ..write('secteur: $secteur, ')
+          ..write('adresse: $adresse, ')
+          ..write('latitude: $latitude, ')
+          ..write('longitude: $longitude, ')
           ..write('notes: $notes')
           ..write(')'))
         .toString();
@@ -1416,6 +1671,9 @@ class Enfant extends DataClass implements Insertable<Enfant> {
     sante,
     contactUrgence,
     secteur,
+    adresse,
+    latitude,
+    longitude,
     notes,
   );
   @override
@@ -1432,6 +1690,9 @@ class Enfant extends DataClass implements Insertable<Enfant> {
           other.sante == this.sante &&
           other.contactUrgence == this.contactUrgence &&
           other.secteur == this.secteur &&
+          other.adresse == this.adresse &&
+          other.latitude == this.latitude &&
+          other.longitude == this.longitude &&
           other.notes == this.notes);
 }
 
@@ -1446,6 +1707,9 @@ class EnfantsCompanion extends UpdateCompanion<Enfant> {
   final Value<String?> sante;
   final Value<String?> contactUrgence;
   final Value<String?> secteur;
+  final Value<String?> adresse;
+  final Value<double?> latitude;
+  final Value<double?> longitude;
   final Value<String?> notes;
   const EnfantsCompanion({
     this.id = const Value.absent(),
@@ -1458,6 +1722,9 @@ class EnfantsCompanion extends UpdateCompanion<Enfant> {
     this.sante = const Value.absent(),
     this.contactUrgence = const Value.absent(),
     this.secteur = const Value.absent(),
+    this.adresse = const Value.absent(),
+    this.latitude = const Value.absent(),
+    this.longitude = const Value.absent(),
     this.notes = const Value.absent(),
   });
   EnfantsCompanion.insert({
@@ -1471,6 +1738,9 @@ class EnfantsCompanion extends UpdateCompanion<Enfant> {
     this.sante = const Value.absent(),
     this.contactUrgence = const Value.absent(),
     this.secteur = const Value.absent(),
+    this.adresse = const Value.absent(),
+    this.latitude = const Value.absent(),
+    this.longitude = const Value.absent(),
     this.notes = const Value.absent(),
   }) : nom = Value(nom);
   static Insertable<Enfant> custom({
@@ -1484,6 +1754,9 @@ class EnfantsCompanion extends UpdateCompanion<Enfant> {
     Expression<String>? sante,
     Expression<String>? contactUrgence,
     Expression<String>? secteur,
+    Expression<String>? adresse,
+    Expression<double>? latitude,
+    Expression<double>? longitude,
     Expression<String>? notes,
   }) {
     return RawValuesInsertable({
@@ -1497,6 +1770,9 @@ class EnfantsCompanion extends UpdateCompanion<Enfant> {
       if (sante != null) 'sante': sante,
       if (contactUrgence != null) 'contact_urgence': contactUrgence,
       if (secteur != null) 'secteur': secteur,
+      if (adresse != null) 'adresse': adresse,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
       if (notes != null) 'notes': notes,
     });
   }
@@ -1512,6 +1788,9 @@ class EnfantsCompanion extends UpdateCompanion<Enfant> {
     Value<String?>? sante,
     Value<String?>? contactUrgence,
     Value<String?>? secteur,
+    Value<String?>? adresse,
+    Value<double?>? latitude,
+    Value<double?>? longitude,
     Value<String?>? notes,
   }) {
     return EnfantsCompanion(
@@ -1525,6 +1804,9 @@ class EnfantsCompanion extends UpdateCompanion<Enfant> {
       sante: sante ?? this.sante,
       contactUrgence: contactUrgence ?? this.contactUrgence,
       secteur: secteur ?? this.secteur,
+      adresse: adresse ?? this.adresse,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
       notes: notes ?? this.notes,
     );
   }
@@ -1562,6 +1844,15 @@ class EnfantsCompanion extends UpdateCompanion<Enfant> {
     if (secteur.present) {
       map['secteur'] = Variable<String>(secteur.value);
     }
+    if (adresse.present) {
+      map['adresse'] = Variable<String>(adresse.value);
+    }
+    if (latitude.present) {
+      map['latitude'] = Variable<double>(latitude.value);
+    }
+    if (longitude.present) {
+      map['longitude'] = Variable<double>(longitude.value);
+    }
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
@@ -1581,6 +1872,9 @@ class EnfantsCompanion extends UpdateCompanion<Enfant> {
           ..write('sante: $sante, ')
           ..write('contactUrgence: $contactUrgence, ')
           ..write('secteur: $secteur, ')
+          ..write('adresse: $adresse, ')
+          ..write('latitude: $latitude, ')
+          ..write('longitude: $longitude, ')
           ..write('notes: $notes')
           ..write(')'))
         .toString();
@@ -4413,6 +4707,9 @@ typedef $$AccueillantsTableCreateCompanionBuilder =
       Value<DateTime?> agrementEcheance,
       Value<int?> plafondJoursAn,
       Value<String?> secteur,
+      Value<String?> adresse,
+      Value<double?> latitude,
+      Value<double?> longitude,
       Value<String?> notes,
     });
 typedef $$AccueillantsTableUpdateCompanionBuilder =
@@ -4427,6 +4724,9 @@ typedef $$AccueillantsTableUpdateCompanionBuilder =
       Value<DateTime?> agrementEcheance,
       Value<int?> plafondJoursAn,
       Value<String?> secteur,
+      Value<String?> adresse,
+      Value<double?> latitude,
+      Value<double?> longitude,
       Value<String?> notes,
     });
 
@@ -4594,6 +4894,21 @@ class $$AccueillantsTableFilterComposer
 
   ColumnFilters<String> get secteur => $composableBuilder(
     column: $table.secteur,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get adresse => $composableBuilder(
+    column: $table.adresse,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get latitude => $composableBuilder(
+    column: $table.latitude,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get longitude => $composableBuilder(
+    column: $table.longitude,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4788,6 +5103,21 @@ class $$AccueillantsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get adresse => $composableBuilder(
+    column: $table.adresse,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get latitude => $composableBuilder(
+    column: $table.latitude,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get longitude => $composableBuilder(
+    column: $table.longitude,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get notes => $composableBuilder(
     column: $table.notes,
     builder: (column) => ColumnOrderings(column),
@@ -4838,6 +5168,15 @@ class $$AccueillantsTableAnnotationComposer
 
   GeneratedColumn<String> get secteur =>
       $composableBuilder(column: $table.secteur, builder: (column) => column);
+
+  GeneratedColumn<String> get adresse =>
+      $composableBuilder(column: $table.adresse, builder: (column) => column);
+
+  GeneratedColumn<double> get latitude =>
+      $composableBuilder(column: $table.latitude, builder: (column) => column);
+
+  GeneratedColumn<double> get longitude =>
+      $composableBuilder(column: $table.longitude, builder: (column) => column);
 
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
@@ -5014,6 +5353,9 @@ class $$AccueillantsTableTableManager
                 Value<DateTime?> agrementEcheance = const Value.absent(),
                 Value<int?> plafondJoursAn = const Value.absent(),
                 Value<String?> secteur = const Value.absent(),
+                Value<String?> adresse = const Value.absent(),
+                Value<double?> latitude = const Value.absent(),
+                Value<double?> longitude = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
               }) => AccueillantsCompanion(
                 id: id,
@@ -5026,6 +5368,9 @@ class $$AccueillantsTableTableManager
                 agrementEcheance: agrementEcheance,
                 plafondJoursAn: plafondJoursAn,
                 secteur: secteur,
+                adresse: adresse,
+                latitude: latitude,
+                longitude: longitude,
                 notes: notes,
               ),
           createCompanionCallback:
@@ -5040,6 +5385,9 @@ class $$AccueillantsTableTableManager
                 Value<DateTime?> agrementEcheance = const Value.absent(),
                 Value<int?> plafondJoursAn = const Value.absent(),
                 Value<String?> secteur = const Value.absent(),
+                Value<String?> adresse = const Value.absent(),
+                Value<double?> latitude = const Value.absent(),
+                Value<double?> longitude = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
               }) => AccueillantsCompanion.insert(
                 id: id,
@@ -5052,6 +5400,9 @@ class $$AccueillantsTableTableManager
                 agrementEcheance: agrementEcheance,
                 plafondJoursAn: plafondJoursAn,
                 secteur: secteur,
+                adresse: adresse,
+                latitude: latitude,
+                longitude: longitude,
                 notes: notes,
               ),
           withReferenceMapper: (p0) => p0
@@ -5479,6 +5830,9 @@ typedef $$EnfantsTableCreateCompanionBuilder =
       Value<String?> sante,
       Value<String?> contactUrgence,
       Value<String?> secteur,
+      Value<String?> adresse,
+      Value<double?> latitude,
+      Value<double?> longitude,
       Value<String?> notes,
     });
 typedef $$EnfantsTableUpdateCompanionBuilder =
@@ -5493,6 +5847,9 @@ typedef $$EnfantsTableUpdateCompanionBuilder =
       Value<String?> sante,
       Value<String?> contactUrgence,
       Value<String?> secteur,
+      Value<String?> adresse,
+      Value<double?> latitude,
+      Value<double?> longitude,
       Value<String?> notes,
     });
 
@@ -5663,6 +6020,21 @@ class $$EnfantsTableFilterComposer
 
   ColumnFilters<String> get secteur => $composableBuilder(
     column: $table.secteur,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get adresse => $composableBuilder(
+    column: $table.adresse,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get latitude => $composableBuilder(
+    column: $table.latitude,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get longitude => $composableBuilder(
+    column: $table.longitude,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5868,6 +6240,21 @@ class $$EnfantsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get adresse => $composableBuilder(
+    column: $table.adresse,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get latitude => $composableBuilder(
+    column: $table.latitude,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get longitude => $composableBuilder(
+    column: $table.longitude,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get notes => $composableBuilder(
     column: $table.notes,
     builder: (column) => ColumnOrderings(column),
@@ -5956,6 +6343,15 @@ class $$EnfantsTableAnnotationComposer
 
   GeneratedColumn<String> get secteur =>
       $composableBuilder(column: $table.secteur, builder: (column) => column);
+
+  GeneratedColumn<String> get adresse =>
+      $composableBuilder(column: $table.adresse, builder: (column) => column);
+
+  GeneratedColumn<double> get latitude =>
+      $composableBuilder(column: $table.latitude, builder: (column) => column);
+
+  GeneratedColumn<double> get longitude =>
+      $composableBuilder(column: $table.longitude, builder: (column) => column);
 
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
@@ -6154,6 +6550,9 @@ class $$EnfantsTableTableManager
                 Value<String?> sante = const Value.absent(),
                 Value<String?> contactUrgence = const Value.absent(),
                 Value<String?> secteur = const Value.absent(),
+                Value<String?> adresse = const Value.absent(),
+                Value<double?> latitude = const Value.absent(),
+                Value<double?> longitude = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
               }) => EnfantsCompanion(
                 id: id,
@@ -6166,6 +6565,9 @@ class $$EnfantsTableTableManager
                 sante: sante,
                 contactUrgence: contactUrgence,
                 secteur: secteur,
+                adresse: adresse,
+                latitude: latitude,
+                longitude: longitude,
                 notes: notes,
               ),
           createCompanionCallback:
@@ -6180,6 +6582,9 @@ class $$EnfantsTableTableManager
                 Value<String?> sante = const Value.absent(),
                 Value<String?> contactUrgence = const Value.absent(),
                 Value<String?> secteur = const Value.absent(),
+                Value<String?> adresse = const Value.absent(),
+                Value<double?> latitude = const Value.absent(),
+                Value<double?> longitude = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
               }) => EnfantsCompanion.insert(
                 id: id,
@@ -6192,6 +6597,9 @@ class $$EnfantsTableTableManager
                 sante: sante,
                 contactUrgence: contactUrgence,
                 secteur: secteur,
+                adresse: adresse,
+                latitude: latitude,
+                longitude: longitude,
                 notes: notes,
               ),
           withReferenceMapper: (p0) => p0

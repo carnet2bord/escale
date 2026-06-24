@@ -1,6 +1,7 @@
 import '../data/database.dart';
 import 'conflits.dart';
 import 'dates.dart';
+import 'distance.dart';
 
 // Une « cible » : une période à couvrir pour un enfant (un trou non encore assuré).
 class Cible {
@@ -309,6 +310,10 @@ ResultatProposition proposerAffectations({
       if (f != 0) return f;
       final pla = souPlafond(b).compareTo(souPlafond(a));
       if (pla != 0) return pla;
+      // Plus proche d'abord (si les deux adresses sont géolocalisées).
+      final da = distanceKm(c.enfant.latitude, c.enfant.longitude, a.latitude, a.longitude);
+      final db = distanceKm(c.enfant.latitude, c.enfant.longitude, b.latitude, b.longitude);
+      if (da != null && db != null && da != db) return da.compareTo(db);
       final ch = charge(a).compareTo(charge(b));
       if (ch != 0) return ch;
       return a.id.compareTo(b.id); // départage stable (parité avec le web)

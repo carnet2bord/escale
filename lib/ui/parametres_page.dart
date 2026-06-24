@@ -19,6 +19,7 @@ class _ParametresStructurePageState extends State<ParametresStructurePage> {
   final _adresse = TextEditingController();
   final _signataire = TextEditingController();
   final _mention = TextEditingController();
+  final _seuilDistance = TextEditingController();
   bool _charge = false;
   bool _aMdp = false;
 
@@ -34,6 +35,7 @@ class _ParametresStructurePageState extends State<ParametresStructurePage> {
     _adresse.text = r[cleStructureAdresse] ?? '';
     _signataire.text = r[cleStructureSignataire] ?? '';
     _mention.text = r[cleStructureMention] ?? '';
+    _seuilDistance.text = r[cleDistanceSeuil] ?? '';
     _aMdp = (r[cleSecuriteHash] ?? '').isNotEmpty;
     if (mounted) setState(() => _charge = true);
   }
@@ -137,6 +139,7 @@ class _ParametresStructurePageState extends State<ParametresStructurePage> {
     _adresse.dispose();
     _signataire.dispose();
     _mention.dispose();
+    _seuilDistance.dispose();
     super.dispose();
   }
 
@@ -146,6 +149,7 @@ class _ParametresStructurePageState extends State<ParametresStructurePage> {
     await db.ecrireReglage(cleStructureAdresse, _adresse.text.trim());
     await db.ecrireReglage(cleStructureSignataire, _signataire.text.trim());
     await db.ecrireReglage(cleStructureMention, _mention.text.trim());
+    await db.ecrireReglage(cleDistanceSeuil, _seuilDistance.text.trim());
     if (!mounted) return;
     ScaffoldMessenger.of(
       context,
@@ -183,6 +187,11 @@ class _ParametresStructurePageState extends State<ParametresStructurePage> {
                   'Mention de bas de page',
                   'Ex. Document confidentiel — usage interne',
                   2,
+                ),
+                _champ(
+                  _seuilDistance,
+                  'Seuil de distance (km)',
+                  'Alerte « relais éloigné » au-delà. Défaut : 30 km',
                 ),
                 const SizedBox(height: 20),
                 Align(

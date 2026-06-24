@@ -7,6 +7,7 @@ import '../data/database.dart';
 import '../domain/dates.dart';
 import '../domain/pdf_export.dart';
 import 'apercu_pdf_page.dart';
+import 'bloc_adresse.dart';
 import 'widgets.dart';
 
 class AccueillantsPage extends StatefulWidget {
@@ -213,6 +214,9 @@ class _AccueillantEditorState extends State<_AccueillantEditor> {
   late final TextEditingController _ageMax;
   late final TextEditingController _plafond;
   late final TextEditingController _secteur;
+  late final TextEditingController _adresse;
+  late final TextEditingController _latitude;
+  late final TextEditingController _longitude;
   DateTime? _agrementEcheance;
   late int _nbPlaces;
   late String _restriction;
@@ -230,6 +234,9 @@ class _AccueillantEditorState extends State<_AccueillantEditor> {
     _ageMax = TextEditingController(text: a?.ageMax?.toString() ?? '');
     _plafond = TextEditingController(text: a?.plafondJoursAn?.toString() ?? '');
     _secteur = TextEditingController(text: a?.secteur ?? '');
+    _adresse = TextEditingController(text: a?.adresse ?? '');
+    _latitude = TextEditingController(text: a?.latitude?.toString() ?? '');
+    _longitude = TextEditingController(text: a?.longitude?.toString() ?? '');
     _agrementEcheance = a?.agrementEcheance;
     _nbPlaces = a?.nbPlaces ?? 1;
     _restriction = a?.restrictionSexe ?? restrictionAucune;
@@ -244,8 +251,15 @@ class _AccueillantEditorState extends State<_AccueillantEditor> {
     _ageMax.dispose();
     _plafond.dispose();
     _secteur.dispose();
+    _adresse.dispose();
+    _latitude.dispose();
+    _longitude.dispose();
     super.dispose();
   }
+
+  // Parse une coordonnée (accepte la virgule décimale), ou null si invalide.
+  static double? _coord(TextEditingController c) =>
+      double.tryParse(c.text.trim().replaceAll(',', '.'));
 
   Future<void> _enregistrer() async {
     if (!_formKey.currentState!.validate()) return;
@@ -266,6 +280,11 @@ class _AccueillantEditorState extends State<_AccueillantEditor> {
               secteur: Value(
                 _secteur.text.trim().isEmpty ? null : _secteur.text.trim(),
               ),
+              adresse: Value(
+                _adresse.text.trim().isEmpty ? null : _adresse.text.trim(),
+              ),
+              latitude: Value(_coord(_latitude)),
+              longitude: Value(_coord(_longitude)),
               notes: Value(
                 _notes.text.trim().isEmpty ? null : _notes.text.trim(),
               ),
@@ -286,6 +305,11 @@ class _AccueillantEditorState extends State<_AccueillantEditor> {
           secteur: Value(
             _secteur.text.trim().isEmpty ? null : _secteur.text.trim(),
           ),
+          adresse: Value(
+            _adresse.text.trim().isEmpty ? null : _adresse.text.trim(),
+          ),
+          latitude: Value(_coord(_latitude)),
+          longitude: Value(_coord(_longitude)),
           notes: Value(_notes.text.trim().isEmpty ? null : _notes.text.trim()),
         ),
       );
@@ -509,6 +533,12 @@ class _AccueillantEditorState extends State<_AccueillantEditor> {
                         decoration: const InputDecoration(labelText: 'Notes'),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 16),
+                  BlocAdresse(
+                    adresse: _adresse,
+                    latitude: _latitude,
+                    longitude: _longitude,
                   ),
                   const SizedBox(height: 16),
                   if (_id == null)

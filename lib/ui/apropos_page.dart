@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'logo.dart';
 
 // Version courante et auteur de l'application.
-const String versionEscale = '1.5.0';
+const String versionEscale = '1.6.0';
 const String auteurEscale = 'Christopher Fortier';
 const String emailEscale = 'chris@carnet2bord.fr';
 
@@ -16,6 +16,12 @@ class VersionEscale {
 
 // Historique des versions (changelog), de la plus récente à la plus ancienne.
 const List<VersionEscale> changelogEscale = [
+  VersionEscale('1.6.0', 'Distances & adresses', [
+    'Adresse + coordonnées des accueillants et des enfants.',
+    'Calcul de la distance enfant ↔ relais (local).',
+    'Géocodage optionnel via la BAN (data.gouv.fr).',
+    'La proposition privilégie le relais le plus proche ; alerte « éloigné » (seuil réglable).',
+  ]),
   VersionEscale('1.5.0', 'Conformité & RGPD', [
     'Verrouillage de l\'application par mot de passe (+ auto-verrouillage).',
     'Anonymisation des exports (initiales).',

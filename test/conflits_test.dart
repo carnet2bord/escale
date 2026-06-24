@@ -10,6 +10,8 @@ Enfant enfant({
   int? fratrieId,
   DateTime? naissance,
   String? secteur,
+  double? latitude,
+  double? longitude,
 }) => Enfant(
   id: id,
   nom: nom,
@@ -19,6 +21,8 @@ Enfant enfant({
   afHabituelId: afHabituelId,
   fratrieId: fratrieId,
   secteur: secteur,
+  latitude: latitude,
+  longitude: longitude,
   notes: null,
 );
 
@@ -32,6 +36,8 @@ Accueillant accueillant({
   DateTime? agrementEcheance,
   int? plafondJoursAn,
   String? secteur,
+  double? latitude,
+  double? longitude,
 }) => Accueillant(
   id: id,
   nom: nom,
@@ -43,6 +49,8 @@ Accueillant accueillant({
   agrementEcheance: agrementEcheance,
   plafondJoursAn: plafondJoursAn,
   secteur: secteur,
+  latitude: latitude,
+  longitude: longitude,
   notes: null,
 );
 
@@ -482,6 +490,42 @@ void main() {
     );
     expect(conflits.any((c) => c.estBloquant), isFalse);
     expect(conflits.any((c) => c.severite == Severite.avertissement), isTrue);
+  });
+
+  test('relais éloigné : avertissement non bloquant', () {
+    // Paris ↔ Lyon ≈ 390 km.
+    final e = enfant(latitude: 48.8566, longitude: 2.3522);
+    final conflits = analyserAffectation(
+      enfant: e,
+      accueillant: accueillant(latitude: 45.7578, longitude: 4.832),
+      debut: d(1),
+      fin: d(3),
+      affectations: const [],
+      disponibilites: const [],
+      indisponibilites: const [],
+      incompatibilites: const [],
+      enfants: [e],
+      seuilDistanceKm: 30,
+    );
+    expect(conflits.any((c) => c.estBloquant), isFalse);
+    expect(conflits.any((c) => c.severite == Severite.avertissement), isTrue);
+  });
+
+  test('sans coordonnées : pas d\'avertissement d\'éloignement', () {
+    final e = enfant();
+    final conflits = analyserAffectation(
+      enfant: e,
+      accueillant: accueillant(),
+      debut: d(1),
+      fin: d(3),
+      affectations: const [],
+      disponibilites: const [],
+      indisponibilites: const [],
+      incompatibilites: const [],
+      enfants: [e],
+      seuilDistanceKm: 30,
+    );
+    expect(conflits.any((c) => c.severite == Severite.avertissement), isFalse);
   });
 
   test('un relais annulé n\'occupe pas de place', () {

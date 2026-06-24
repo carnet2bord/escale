@@ -1,5 +1,6 @@
 import '../data/database.dart';
 import 'dates.dart';
+import 'distance.dart';
 
 enum Severite { bloquant, avertissement }
 
@@ -43,6 +44,7 @@ List<Conflit> analyserAffectation({
   List<PreferenceAccueil> preferences = const [],
   List<SolutionAlternative> solutions = const [],
   int? affectationExclueId,
+  double seuilDistanceKm = seuilDistanceKmDefaut,
 }) {
   final conflits = <Conflit>[];
 
@@ -305,6 +307,23 @@ List<Conflit> analyserAffectation({
         ),
       );
     }
+  }
+
+  // 13. Éloignement (avertissement) si les deux adresses sont géolocalisées.
+  final dist = distanceKm(
+    enfant.latitude,
+    enfant.longitude,
+    accueillant.latitude,
+    accueillant.longitude,
+  );
+  if (dist != null && seuilDistanceKm > 0 && dist > seuilDistanceKm) {
+    conflits.add(
+      Conflit(
+        Severite.avertissement,
+        '${accueillant.nom} est à environ ${dist.round()} km de '
+        '${_nomEnfant(enfant)} (seuil : ${seuilDistanceKm.round()} km).',
+      ),
+    );
   }
 
   return conflits;

@@ -47,6 +47,7 @@ class _PlanningData {
   final List<Fratrie> fratries;
   final List<PreferenceAccueil> preferences;
   final List<SolutionAlternative> solutions;
+  final double seuilDistanceKm;
 
   _PlanningData({
     required this.enfants,
@@ -58,6 +59,7 @@ class _PlanningData {
     required this.fratries,
     required this.preferences,
     required this.solutions,
+    required this.seuilDistanceKm,
   });
 
   static Future<_PlanningData> charger(AppDatabase db) async {
@@ -72,6 +74,7 @@ class _PlanningData {
       db.toutesPreferences(),
       db.toutesSolutions(),
     ]);
+    final seuil = await db.lireSeuilDistanceKm();
     return _PlanningData(
       enfants: res[0] as List<Enfant>,
       accueillants: res[1] as List<Accueillant>,
@@ -82,6 +85,7 @@ class _PlanningData {
       fratries: res[6] as List<Fratrie>,
       preferences: res[7] as List<PreferenceAccueil>,
       solutions: res[8] as List<SolutionAlternative>,
+      seuilDistanceKm: seuil,
     );
   }
 
@@ -142,6 +146,7 @@ class _PlanningPageState extends State<PlanningPage> {
       preferences: d.preferences,
       solutions: d.solutions,
       affectationExclueId: a.id,
+      seuilDistanceKm: d.seuilDistanceKm,
     );
   }
 
@@ -612,6 +617,7 @@ class _AffectationEditorState extends State<_AffectationEditor> {
       fratries: d.fratries,
       preferences: d.preferences,
       solutions: d.solutions,
+      seuilDistanceKm: d.seuilDistanceKm,
     );
   }
 

@@ -51,6 +51,7 @@ const String cleStructureMention = 'structure.mention';
 // Verrouillage par mot de passe (sel + empreinte SHA-256, jamais le mot de passe).
 const String cleSecuriteSel = 'securite.sel';
 const String cleSecuriteHash = 'securite.hash';
+const String cleDistanceSeuil = 'distance.seuilKm';
 
 // Les assistants familiaux qui peuvent accueillir des enfants en relais.
 @DataClassName('Accueillant')
@@ -72,6 +73,10 @@ class Accueillants extends Table {
   IntColumn get plafondJoursAn => integer().nullable()();
   // Secteur géographique (libellé saisi, ex. « Secteur Nord »).
   TextColumn get secteur => text().nullable()();
+  // Adresse postale + coordonnées (pour le calcul des distances).
+  TextColumn get adresse => text().nullable()();
+  RealColumn get latitude => real().nullable()();
+  RealColumn get longitude => real().nullable()();
   TextColumn get notes => text().nullable()();
 }
 
@@ -111,6 +116,10 @@ class Enfants extends Table {
   TextColumn get contactUrgence => text().nullable()();
   // Secteur géographique de l'enfant (pour favoriser la proximité).
   TextColumn get secteur => text().nullable()();
+  // Adresse postale + coordonnées (pour le calcul des distances).
+  TextColumn get adresse => text().nullable()();
+  RealColumn get latitude => real().nullable()();
+  RealColumn get longitude => real().nullable()();
   TextColumn get notes => text().nullable()();
 }
 
@@ -246,7 +255,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -269,6 +278,14 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(enfants, enfants.secteur);
       }
       if (from < 8) await m.addColumn(affectations, affectations.transport);
+      if (from < 9) {
+        await m.addColumn(accueillants, accueillants.adresse);
+        await m.addColumn(accueillants, accueillants.latitude);
+        await m.addColumn(accueillants, accueillants.longitude);
+        await m.addColumn(enfants, enfants.adresse);
+        await m.addColumn(enfants, enfants.latitude);
+        await m.addColumn(enfants, enfants.longitude);
+      }
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
@@ -445,6 +462,14 @@ class AppDatabase extends _$AppDatabase {
         Reglage(cle: cle, valeur: valeur),
         mode: InsertMode.insertOrReplace,
       );
+
+  // Seuil de distance (km) au-delà duquel un relais est signalé « éloigné ».
+  // Défaut 30 (= seuilDistanceKmDefaut côté domaine).
+  Future<double> lireSeuilDistanceKm() async {
+    final r = await lireReglages();
+    final n = double.tryParse(r[cleDistanceSeuil] ?? '');
+    return (n != null && n > 0) ? n : 30;
+  }
 
   // --- Verrouillage par mot de passe (local) ---
   String _hacher(String sel, String motDePasse) =>
