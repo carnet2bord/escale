@@ -1,8 +1,15 @@
 import { notFound } from 'next/navigation';
 
 import { Header } from '@/app/_components/Header';
+import { SousFichePeriodes } from '@/app/_components/SousFichePeriodes';
 import { supabaseAdmin } from '@/lib/supabase';
 import { FormAccueillant } from '../FormAccueillant';
+import {
+  ajouterDispo,
+  ajouterIndispo,
+  supprimerDispo,
+  supprimerIndispo,
+} from './actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,20 +19,43 @@ export default async function ModifierAccueillant({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { data, error } = await supabaseAdmin()
-    .from('accueillants')
-    .select('*')
-    .eq('id', Number(id))
-    .maybeSingle();
-  if (error) throw new Error(error.message);
-  if (!data) notFound();
+  const idNum = Number(id);
+  const db = supabaseAdmin();
+  const [acc, dis, ind] = await Promise.all([
+    db.from('accueillants').select('*').eq('id', idNum).maybeSingle(),
+    db.from('disponibilites_accueil').select('*').eq('accueillant_id', idNum).order('debut'),
+    db.from('indisponibilites').select('*').eq('accueillant_id', idNum).order('debut'),
+  ]);
+  if (acc.error) throw new Error(acc.error.message);
+  if (!acc.data) notFound();
 
   return (
     <>
       <Header actif="/accueillants" />
       <div className="contenu">
         <h1>Modifier l&apos;accueillant</h1>
-        <FormAccueillant a={data} />
+        <FormAccueillant a={acc.data} />
+
+        <SousFichePeriodes
+          titre="Disponibilités d'accueil"
+          description="Périodes pendant lesquelles cet accueillant peut recevoir un enfant."
+          items={dis.data ?? []}
+          ajouter={ajouterDispo}
+          supprimer={supprimerDispo}
+          parentName="accueillantId"
+          parentId={idNum}
+        />
+
+        <SousFichePeriodes
+          titre="Indisponibilités (congés, absences)"
+          items={ind.data ?? []}
+          ajouter={ajouterIndispo}
+          supprimer={supprimerIndispo}
+          parentName="accueillantId"
+          parentId={idNum}
+          avecMotif
+          motifLabel="Motif"
+        />
       </div>
     </>
   );
