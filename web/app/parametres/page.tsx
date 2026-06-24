@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import { Header } from '@/app/_components/Header';
 import { lireInfosStructure } from '@/lib/reglages';
 import { enregistrerStructure } from './actions';
@@ -52,6 +54,25 @@ export default async function Parametres({
               </button>
             </div>
           </form>
+        </div>
+
+        <h2 style={{ marginTop: 28 }}>Conformité / RGPD</h2>
+        <div className="form-bloc">
+          <p style={{ marginTop: 0 }}>
+            <Link href="/journal">Journal d&apos;audit</Link> — trace des écritures
+            sur les données (triggers PostgreSQL).
+          </p>
+          <p>
+            <a href="/api/pdf/registre" target="_blank" rel="noreferrer">
+              Registre des traitements (PDF)
+            </a>{' '}
+            — document type à compléter avec votre DPO.
+          </p>
+          <p style={{ marginBottom: 0, color: 'var(--gris)' }}>
+            Les exports planning / parcours / bilan ont une variante{' '}
+            <strong>anonymisée</strong> (initiales) pour un partage sans
+            identités.
+          </p>
         </div>
       </div>
     </>

@@ -55,6 +55,15 @@ export default async function AccueillantsPage() {
                     <a href={`/api/pdf/accueillant/${a.id}`} target="_blank" rel="noreferrer">
                       Planning PDF
                     </a>
+                    {' '}
+                    <a
+                      href={`/api/pdf/accueillant/${a.id}?anon=1`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ fontSize: 12 }}
+                    >
+                      (anon.)
+                    </a>
                     {'  ·  '}
                     <Link href={`/accueillants/${a.id}`}>Modifier</Link>
                   </td>

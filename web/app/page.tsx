@@ -21,9 +21,14 @@ export default async function DashboardPage() {
         <div className="aligne-droite">
           <h1>Tableau de bord</h1>
           {s ? (
-            <a className="bouton" href="/api/pdf/bilan" target="_blank" rel="noreferrer">
-              Bilan PDF
-            </a>
+            <span style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+              <a className="bouton" href="/api/pdf/bilan" target="_blank" rel="noreferrer">
+                Bilan PDF
+              </a>
+              <a href="/api/pdf/bilan?anon=1" target="_blank" rel="noreferrer" style={{ fontSize: 13 }}>
+                anonymisé
+              </a>
+            </span>
           ) : null}
         </div>
         {erreur ? (

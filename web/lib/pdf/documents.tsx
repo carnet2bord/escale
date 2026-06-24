@@ -318,6 +318,78 @@ export function Planning({ d }: { d: PlanningData }) {
   );
 }
 
+// --- Registre des traitements (RGPD) ---
+
+export interface RegistreData {
+  structure: Struct;
+}
+
+function BlocRegistre({ titre, texte }: { titre: string; texte: string }) {
+  return (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitre}>{titre}</Text>
+      <Text>{safe(texte)}</Text>
+    </View>
+  );
+}
+
+export function Registre({ d }: { d: RegistreData }) {
+  const responsable = d.structure.nom || 'La structure';
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        <EnTete structure={d.structure} />
+        <Text style={styles.titre}>Registre des traitements de données</Text>
+        <Text style={styles.sousTitre}>
+          Traitement « Organisation des relais d'accueil familial »
+        </Text>
+
+        <BlocRegistre
+          titre="Responsable du traitement"
+          texte={`${responsable}${d.structure.signataire ? ` — ${d.structure.signataire}` : ''}`}
+        />
+        <BlocRegistre
+          titre="Finalité"
+          texte="Organiser les accueils relais (placements temporaires d'enfants chez des assistants familiaux accueillants pendant l'indisponibilité de leur assistant familial habituel)."
+        />
+        <BlocRegistre
+          titre="Base légale"
+          texte="Mission d'intérêt public relevant de la protection de l'enfance."
+        />
+        <BlocRegistre
+          titre="Catégories de personnes concernées"
+          texte="Enfants accueillis et assistants familiaux (habituels et accueillants)."
+        />
+        <BlocRegistre
+          titre="Catégories de données"
+          texte="Identité, sexe, date de naissance, secteur géographique, périodes d'accueil et de besoin, données de santé (allergies, traitements), contacts d'urgence, liens de fratrie et incompatibilités."
+        />
+        <BlocRegistre
+          titre="Destinataires"
+          texte="Personnel habilité du service, dans la limite de ses attributions."
+        />
+        <BlocRegistre
+          titre="Durée de conservation"
+          texte={
+            d.structure.mention ||
+            "À définir par la structure selon ses obligations légales ; purge/anonymisation des dossiers clos."
+          }
+        />
+        <BlocRegistre
+          titre="Mesures de sécurité"
+          texte="Accès par mot de passe partagé, transport chiffré (HTTPS), hébergement de données de santé (HDS), chiffrement au repos de la base, journal d'audit des écritures."
+        />
+        <BlocRegistre
+          titre="Droits des personnes"
+          texte="Information des représentants légaux ; droits d'accès, de rectification et d'effacement exercés auprès du responsable du traitement."
+        />
+
+        <Pied mention={d.structure.mention} />
+      </Page>
+    </Document>
+  );
+}
+
 async function rendre(doc: ReactElement): Promise<Buffer> {
   return await renderToBuffer(doc as Parameters<typeof renderToBuffer>[0]);
 }
@@ -328,3 +400,5 @@ export const pdfFicheLiaison = (d: FicheData): Promise<Buffer> =>
 export const pdfBilan = (d: BilanData): Promise<Buffer> => rendre(<Bilan d={d} />);
 export const pdfPlanning = (d: PlanningData): Promise<Buffer> =>
   rendre(<Planning d={d} />);
+export const pdfRegistre = (d: RegistreData): Promise<Buffer> =>
+  rendre(<Registre d={d} />);

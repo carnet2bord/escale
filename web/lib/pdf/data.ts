@@ -28,6 +28,19 @@ function ageTexte(naissance: Date | null, ref: Date): string {
   return a == null ? '' : `${a} ans`;
 }
 
+// Initiales pour les exports anonymisés (« Lucas Marchand » → « L. M. »).
+function anonymiser(nom: string): string {
+  const ini = nom
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((p) => p[0].toUpperCase() + '.')
+    .join(' ');
+  return ini || '—';
+}
+
+const nomOu = (nom: string, anonyme: boolean): string =>
+  anonyme ? anonymiser(nom) : nom;
+
 export function ficheData(
   s: Snapshot,
   structure: InfosStructure,
@@ -62,13 +75,21 @@ export function ficheData(
   };
 }
 
-export function bilanData(s: Snapshot, structure: InfosStructure): BilanData {
+export function bilanData(
+  s: Snapshot,
+  structure: InfosStructure,
+  anonyme = false,
+): BilanData {
   const cov = couvertureBesoins(s);
   const charges = chargeParAccueillant(s);
   const lignes = s.accueillants
     .map((a) => {
       const c = charges.get(a.id);
-      return { nom: nomComplet(a), nbRelais: c?.nbRelais ?? 0, nbJours: c?.nbJours ?? 0 };
+      return {
+        nom: nomOu(nomComplet(a), anonyme),
+        nbRelais: c?.nbRelais ?? 0,
+        nbJours: c?.nbJours ?? 0,
+      };
     })
     .filter((l) => l.nbRelais > 0)
     .sort((a, b) => b.nbJours - a.nbJours);
@@ -87,6 +108,7 @@ export function planningAccueillantData(
   s: Snapshot,
   structure: InfosStructure,
   accId: number,
+  anonyme = false,
 ): PlanningData | null {
   const acc = s.accueillants.find((a) => a.id === accId);
   if (!acc) return null;
@@ -99,15 +121,25 @@ export function planningAccueillantData(
       const info = [STATUT[a.statut] ?? a.statut, a.transport ? `Transport : ${a.transport}` : '']
         .filter(Boolean)
         .join(' — ');
-      return { periode: periodeFr(a.debut, a.fin), lieu: enf ? nomComplet(enf) : '—', info };
+      return {
+        periode: periodeFr(a.debut, a.fin),
+        lieu: enf ? nomOu(nomComplet(enf), anonyme) : '—',
+        info,
+      };
     });
-  return { structure, titre: `Planning — ${nomComplet(acc)}`, colonneLieu: 'Enfant', lignes };
+  return {
+    structure,
+    titre: `Planning — ${nomOu(nomComplet(acc), anonyme)}`,
+    colonneLieu: 'Enfant',
+    lignes,
+  };
 }
 
 export function planningEnfantData(
   s: Snapshot,
   structure: InfosStructure,
   enfId: number,
+  anonyme = false,
 ): PlanningData | null {
   const enf = s.enfants.find((e) => e.id === enfId);
   if (!enf) return null;
@@ -119,7 +151,7 @@ export function planningEnfantData(
     items.push({
       debut: a.debut,
       periode: periodeFr(a.debut, a.fin),
-      lieu: acc ? `Relais : ${nomComplet(acc)}` : 'Relais',
+      lieu: acc ? `Relais : ${nomOu(nomComplet(acc), anonyme)}` : 'Relais',
       info: [STATUT[a.statut] ?? a.statut, a.transport ? `Transport : ${a.transport}` : '']
         .filter(Boolean)
         .join(' — '),
@@ -136,7 +168,7 @@ export function planningEnfantData(
   items.sort((a, b) => a.debut.getTime() - b.debut.getTime());
   return {
     structure,
-    titre: `Parcours — ${nomComplet(enf)}`,
+    titre: `Parcours — ${nomOu(nomComplet(enf), anonyme)}`,
     colonneLieu: 'Lieu',
     lignes: items.map(({ periode, lieu, info }) => ({ periode, lieu, info })),
   };

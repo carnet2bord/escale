@@ -97,10 +97,41 @@ create table if not exists reglages (
   valeur text not null default ''
 );
 
--- Journal d'audit (chantier web) : trace des écritures sensibles.
+-- Journal d'audit : trace des écritures sur les données sensibles.
 create table if not exists journal_audit (
   id        bigserial primary key,
   horodatage timestamptz not null default now(),
   action    text not null,
   details   text
 );
+
+-- Fonction de journalisation générique (déclenchée APRÈS chaque écriture).
+-- Trace l'opération + la table + l'id de la ligne (pas le contenu, pour ne pas
+-- recopier de données sensibles en clair dans le journal).
+create or replace function journaliser() returns trigger as $$
+begin
+  insert into journal_audit(action, details)
+  values (
+    TG_OP || ' ' || TG_TABLE_NAME,
+    case when TG_OP = 'DELETE' then 'id=' || old.id else 'id=' || new.id end
+  );
+  return null;
+end;
+$$ language plpgsql;
+
+-- Triggers idempotents sur les tables sensibles.
+do $$
+declare t text;
+begin
+  foreach t in array array[
+    'accueillants', 'enfants', 'fratries', 'affectations', 'besoins_relais',
+    'disponibilites_accueil', 'indisponibilites', 'incompatibilites',
+    'preferences_accueil', 'solutions_alternatives'
+  ]
+  loop
+    execute format('drop trigger if exists audit_%1$s on %1$s;', t);
+    execute format(
+      'create trigger audit_%1$s after insert or update or delete on %1$s '
+      'for each row execute function journaliser();', t);
+  end loop;
+end $$;

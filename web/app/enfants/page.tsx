@@ -50,6 +50,15 @@ export default async function EnfantsPage() {
                       <a href={`/api/pdf/enfant/${e.id}`} target="_blank" rel="noreferrer">
                         Parcours PDF
                       </a>
+                      {' '}
+                      <a
+                        href={`/api/pdf/enfant/${e.id}?anon=1`}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ fontSize: 12 }}
+                      >
+                        (anon.)
+                      </a>
                       {'  ·  '}
                       <Link href={`/enfants/${e.id}`}>Modifier</Link>
                     </td>
