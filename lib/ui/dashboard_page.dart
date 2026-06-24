@@ -1,13 +1,20 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:drift/drift.dart' show Value;
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:provider/provider.dart';
 
 import '../data/database.dart';
 import '../domain/conflits.dart';
+import '../domain/csv_export.dart';
 import '../domain/dates.dart';
+import '../domain/pdf_export.dart';
 import '../domain/proposition.dart';
+import 'apercu_pdf_page.dart';
 import 'planning_page.dart';
 import 'widgets.dart';
 
@@ -184,6 +191,69 @@ class _DashboardPageState extends State<DashboardPage> {
     return (total: total, couverts: couverts);
   }
 
+  Future<void> _bilanPdf() async {
+    final db = context.read<AppDatabase>();
+    final s = await _Snapshot.charger(db);
+    final reglages = await db.lireReglages();
+    final logo = (await rootBundle.load(
+      'assets/icon/logo_escale.png',
+    )).buffer.asUint8List();
+    if (!mounted) return;
+    final actifs = s.affectations.where((a) => relaisActif(a.statut)).toList();
+    final chargeMap = <int, (int, int)>{};
+    for (final a in actifs) {
+      final c = chargeMap[a.accueillantId] ?? (0, 0);
+      chargeMap[a.accueillantId] = (c.$1 + nbJours(a.debut, a.fin), c.$2 + 1);
+    }
+    final charge = <(String, int, int)>[
+      for (final acc in s.accueillants)
+        if (chargeMap[acc.id] != null)
+          (
+            nomComplet(acc.nom, acc.prenom),
+            chargeMap[acc.id]!.$1,
+            chargeMap[acc.id]!.$2,
+          ),
+    ]..sort((a, b) => b.$2.compareTo(a.$2));
+    final j = _journees(s);
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ApercuPdfPage(
+          titre: 'Bilan d\'activité',
+          fichier: 'bilan-escale.pdf',
+          builder: (format) => genererPdfBilan(
+            structure: InfosStructure.depuisReglages(reglages),
+            logo: logo,
+            date: DateTime.now(),
+            nbAccueillants: s.accueillants.length,
+            nbEnfants: s.enfants.length,
+            nbRelais: actifs.length,
+            totalJours: j.total,
+            joursCouverts: j.couverts,
+            charge: charge,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _exportCsv() async {
+    final db = context.read<AppDatabase>();
+    final s = await _Snapshot.charger(db);
+    final csv = csvRelais(
+      affectations: s.affectations,
+      enfants: {for (final e in s.enfants) e.id: e},
+      accueillants: {for (final a in s.accueillants) a.id: a},
+    );
+    final loc = await getSaveLocation(suggestedName: 'escale-relais.csv');
+    if (loc == null) return;
+    // BOM UTF-8 : Excel affiche correctement les accents.
+    await File(loc.path).writeAsBytes([0xEF, 0xBB, 0xBF, ...utf8.encode(csv)]);
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Export CSV enregistré.')));
+  }
+
   // Délai avant le début d'un besoin, en clair (urgence).
   String _urgenceFr(DateTime debut) {
     final jours = jour(debut).difference(jour(DateTime.now())).inDays;
@@ -253,7 +323,23 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Tableau de bord'), centerTitle: false),
+      appBar: AppBar(
+        title: const Text('Tableau de bord'),
+        centerTitle: false,
+        actions: [
+          IconButton(
+            tooltip: 'Bilan d\'activité (PDF)',
+            icon: const Icon(Icons.assessment_outlined),
+            onPressed: _bilanPdf,
+          ),
+          IconButton(
+            tooltip: 'Exporter les relais (CSV)',
+            icon: const Icon(Icons.table_view_outlined),
+            onPressed: _exportCsv,
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
       body: StreamBuilder<_Snapshot>(
         stream: _flux,
         builder: (context, snap) {

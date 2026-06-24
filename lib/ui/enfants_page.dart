@@ -1,9 +1,12 @@
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:provider/provider.dart';
 
 import '../data/database.dart';
 import '../domain/dates.dart';
+import '../domain/pdf_export.dart';
+import 'apercu_pdf_page.dart';
 import 'planning_page.dart';
 import 'widgets.dart';
 
@@ -33,6 +36,40 @@ class _EnfantsPageState extends State<EnfantsPage> {
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (_) => _EnfantEditor(enfant: e)));
+  }
+
+  Future<void> _parcoursPdf(Enfant e) async {
+    final db = context.read<AppDatabase>();
+    final affsAll = await db.toutesAffectations();
+    final accAll = await db.tousAccueillants();
+    final solsAll = await db.toutesSolutions();
+    final reglages = await db.lireReglages();
+    final logo = (await rootBundle.load(
+      'assets/icon/logo_escale.png',
+    )).buffer.asUint8List();
+    if (!mounted) return;
+    final affs = affsAll
+        .where((x) => x.enfantId == e.id && relaisActif(x.statut))
+        .toList();
+    final sols = solsAll.where((x) => x.enfantId == e.id).toList();
+    final accueillants = {for (final a in accAll) a.id: a};
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ApercuPdfPage(
+          titre: 'Parcours — ${nomComplet(e.nom, e.prenom)}',
+          fichier: 'parcours-${e.nom.toLowerCase()}.pdf',
+          builder: (format) => genererPdfPlanningEnfant(
+            structure: InfosStructure.depuisReglages(reglages),
+            logo: logo,
+            date: DateTime.now(),
+            enfant: e,
+            affectations: affs,
+            accueillants: accueillants,
+            solutions: sols,
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -140,6 +177,11 @@ class _EnfantsPageState extends State<EnfantsPage> {
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            IconButton(
+                              tooltip: 'Parcours (PDF)',
+                              icon: const Icon(Icons.picture_as_pdf_outlined),
+                              onPressed: () => _parcoursPdf(e),
+                            ),
                             IconButton(
                               tooltip: 'Modifier',
                               icon: const Icon(Icons.edit_outlined),

@@ -1,9 +1,12 @@
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:provider/provider.dart';
 
 import '../data/database.dart';
 import '../domain/dates.dart';
+import '../domain/pdf_export.dart';
+import 'apercu_pdf_page.dart';
 import 'widgets.dart';
 
 class AccueillantsPage extends StatefulWidget {
@@ -19,6 +22,37 @@ class _AccueillantsPageState extends State<AccueillantsPage> {
   void _ouvrirEditeur(Accueillant? a) {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => _AccueillantEditor(accueillant: a)),
+    );
+  }
+
+  Future<void> _planningPdf(Accueillant a) async {
+    final db = context.read<AppDatabase>();
+    final affsAll = await db.toutesAffectations();
+    final enfantsAll = await db.tousEnfants();
+    final reglages = await db.lireReglages();
+    final logo = (await rootBundle.load(
+      'assets/icon/logo_escale.png',
+    )).buffer.asUint8List();
+    if (!mounted) return;
+    final affs = affsAll
+        .where((x) => x.accueillantId == a.id && relaisActif(x.statut))
+        .toList();
+    final enfants = {for (final e in enfantsAll) e.id: e};
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ApercuPdfPage(
+          titre: 'Planning — ${nomComplet(a.nom, a.prenom)}',
+          fichier: 'planning-${a.nom.toLowerCase()}.pdf',
+          builder: (format) => genererPdfPlanningAccueillant(
+            structure: InfosStructure.depuisReglages(reglages),
+            logo: logo,
+            date: DateTime.now(),
+            accueillant: a,
+            affectations: affs,
+            enfants: enfants,
+          ),
+        ),
+      ),
     );
   }
 
@@ -120,6 +154,11 @@ class _AccueillantsPageState extends State<AccueillantsPage> {
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            IconButton(
+                              tooltip: 'Planning (PDF)',
+                              icon: const Icon(Icons.picture_as_pdf_outlined),
+                              onPressed: () => _planningPdf(a),
+                            ),
                             IconButton(
                               tooltip: 'Modifier',
                               icon: const Icon(Icons.edit_outlined),

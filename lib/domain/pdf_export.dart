@@ -473,6 +473,464 @@ Future<Uint8List> genererPdfConvention({
   return doc.save();
 }
 
+// Bilan d'activité institutionnel (synthèse + charge par accueillant).
+Future<Uint8List> genererPdfBilan({
+  required InfosStructure structure,
+  required Uint8List logo,
+  required DateTime date,
+  required int nbAccueillants,
+  required int nbEnfants,
+  required int nbRelais,
+  required int totalJours,
+  required int joursCouverts,
+  required List<(String, int, int)> charge,
+}) async {
+  final doc = pw.Document(
+    title: 'Escale — Bilan d\'activité',
+    author: 'Escale',
+  );
+  final logoImage = pw.MemoryImage(logo);
+  final pct = totalJours == 0
+      ? 100
+      : (joursCouverts * 100 / totalJours).round();
+
+  pw.Widget chip(String valeur, String libelle) => pw.Expanded(
+    child: pw.Container(
+      padding: const pw.EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: pw.BoxDecoration(
+        color: _tealClair,
+        borderRadius: pw.BorderRadius.circular(8),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            valeur,
+            style: pw.TextStyle(
+              fontSize: 17,
+              fontWeight: pw.FontWeight.bold,
+              color: _teal,
+            ),
+          ),
+          pw.SizedBox(height: 2),
+          pw.Text(libelle, style: pw.TextStyle(fontSize: 9, color: _gris)),
+        ],
+      ),
+    ),
+  );
+
+  doc.addPage(
+    pw.MultiPage(
+      pageFormat: PdfPageFormat.a4,
+      margin: const pw.EdgeInsets.fromLTRB(40, 40, 40, 50),
+      footer: (ctx) => pw.Container(
+        margin: const pw.EdgeInsets.only(top: 12),
+        padding: const pw.EdgeInsets.only(top: 8),
+        decoration: pw.BoxDecoration(
+          border: pw.Border(top: pw.BorderSide(color: _filet)),
+        ),
+        child: pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          children: [
+            pw.Text(
+              structure.mention.isNotEmpty
+                  ? _safe(structure.mention)
+                  : 'Escale - Coordonner les relais',
+              style: pw.TextStyle(fontSize: 8, color: _gris),
+            ),
+            pw.Text(
+              'Page ${ctx.pageNumber} / ${ctx.pagesCount}',
+              style: pw.TextStyle(fontSize: 8, color: _gris),
+            ),
+          ],
+        ),
+      ),
+      build: (ctx) => [
+        pw.Row(
+          crossAxisAlignment: pw.CrossAxisAlignment.center,
+          children: [
+            pw.Image(logoImage, height: 42),
+            if (structure.nom.isNotEmpty) ...[
+              pw.SizedBox(width: 14),
+              pw.Expanded(
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(
+                      _safe(structure.nom),
+                      style: pw.TextStyle(
+                        fontSize: 11,
+                        fontWeight: pw.FontWeight.bold,
+                        color: _texte,
+                      ),
+                    ),
+                    if (structure.adresse.isNotEmpty)
+                      pw.Text(
+                        _safe(structure.adresse),
+                        maxLines: 2,
+                        style: pw.TextStyle(fontSize: 8, color: _gris),
+                      ),
+                  ],
+                ),
+              ),
+            ] else
+              pw.Spacer(),
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.end,
+              children: [
+                pw.Text(
+                  'Bilan d\'activité',
+                  style: pw.TextStyle(
+                    fontSize: 20,
+                    fontWeight: pw.FontWeight.bold,
+                    color: _texte,
+                  ),
+                ),
+                pw.SizedBox(height: 2),
+                pw.Text(
+                  'Édité le ${dateLongueFr(date)}',
+                  style: pw.TextStyle(fontSize: 10, color: _gris),
+                ),
+              ],
+            ),
+          ],
+        ),
+        pw.SizedBox(height: 18),
+        pw.Row(
+          children: [
+            chip('$nbRelais', 'Relais'),
+            pw.SizedBox(width: 10),
+            chip('$nbEnfants', 'Enfants'),
+            pw.SizedBox(width: 10),
+            chip('$nbAccueillants', 'Accueillants'),
+            pw.SizedBox(width: 10),
+            chip('$pct %', 'Couverture des besoins'),
+          ],
+        ),
+        pw.SizedBox(height: 22),
+        _bloc('Charge par accueillant'),
+        pw.SizedBox(height: 6),
+        pw.TableHelper.fromTextArray(
+          headers: ['Accueillant', 'Relais', 'Jours d\'accueil'],
+          data: [
+            for (final (nom, jours, relais) in charge)
+              [nom, '$relais', '$jours'],
+          ],
+          headerStyle: pw.TextStyle(
+            color: _teal,
+            fontWeight: pw.FontWeight.bold,
+            fontSize: 10,
+          ),
+          headerDecoration: pw.BoxDecoration(color: _tealClair),
+          cellStyle: pw.TextStyle(fontSize: 10, color: _texte),
+          oddRowDecoration: pw.BoxDecoration(
+            color: PdfColor.fromInt(0xFFF7F8F8),
+          ),
+          cellAlignments: {
+            1: pw.Alignment.centerRight,
+            2: pw.Alignment.centerRight,
+          },
+          columnWidths: {
+            0: const pw.FlexColumnWidth(3),
+            1: const pw.FlexColumnWidth(1),
+            2: const pw.FlexColumnWidth(1.4),
+          },
+          border: pw.TableBorder.all(color: _filet, width: 0.5),
+          cellPadding: const pw.EdgeInsets.symmetric(
+            horizontal: 8,
+            vertical: 6,
+          ),
+        ),
+        if (charge.isEmpty)
+          pw.Padding(
+            padding: const pw.EdgeInsets.only(top: 8),
+            child: pw.Text(
+              'Aucun relais sur la période.',
+              style: pw.TextStyle(color: _gris),
+            ),
+          ),
+      ],
+    ),
+  );
+  return doc.save();
+}
+
+String _statutCourt(String s) => switch (s) {
+  statutPropose => 'Proposé',
+  statutRealise => 'Réalisé',
+  statutAnnule => 'Annulé',
+  _ => 'Confirmé',
+};
+
+String _libelleSol(String type) => switch (type) {
+  solColonie => 'Colonie de vacances',
+  solTiers => 'Accueil par un tiers',
+  _ => 'Autre solution',
+};
+
+// En-tête commun aux documents : logo + identité structure + titre.
+pw.Widget _enTete(
+  pw.MemoryImage logo,
+  InfosStructure structure,
+  String titre,
+  String sousTitre,
+) {
+  return pw.Row(
+    crossAxisAlignment: pw.CrossAxisAlignment.center,
+    children: [
+      pw.Image(logo, height: 40),
+      if (structure.nom.isNotEmpty) ...[
+        pw.SizedBox(width: 14),
+        pw.Expanded(
+          child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(
+                _safe(structure.nom),
+                style: pw.TextStyle(
+                  fontSize: 11,
+                  fontWeight: pw.FontWeight.bold,
+                  color: _texte,
+                ),
+              ),
+              if (structure.adresse.isNotEmpty)
+                pw.Text(
+                  _safe(structure.adresse),
+                  maxLines: 2,
+                  style: pw.TextStyle(fontSize: 8, color: _gris),
+                ),
+            ],
+          ),
+        ),
+      ] else
+        pw.Spacer(),
+      pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.end,
+        children: [
+          pw.Text(
+            titre,
+            style: pw.TextStyle(
+              fontSize: 18,
+              fontWeight: pw.FontWeight.bold,
+              color: _texte,
+            ),
+          ),
+          if (sousTitre.isNotEmpty)
+            pw.Text(sousTitre, style: pw.TextStyle(fontSize: 11, color: _teal)),
+        ],
+      ),
+    ],
+  );
+}
+
+pw.Widget _piedMention(pw.Context ctx, InfosStructure structure) =>
+    pw.Container(
+      margin: const pw.EdgeInsets.only(top: 12),
+      padding: const pw.EdgeInsets.only(top: 8),
+      decoration: pw.BoxDecoration(
+        border: pw.Border(top: pw.BorderSide(color: _filet)),
+      ),
+      child: pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text(
+            structure.mention.isNotEmpty
+                ? _safe(structure.mention)
+                : 'Escale - Coordonner les relais',
+            style: pw.TextStyle(fontSize: 8, color: _gris),
+          ),
+          pw.Text(
+            'Page ${ctx.pageNumber} / ${ctx.pagesCount}',
+            style: pw.TextStyle(fontSize: 8, color: _gris),
+          ),
+        ],
+      ),
+    );
+
+// Planning individuel d'un accueillant (ses relais sur la période).
+Future<Uint8List> genererPdfPlanningAccueillant({
+  required InfosStructure structure,
+  required Uint8List logo,
+  required DateTime date,
+  required Accueillant accueillant,
+  required List<Affectation> affectations,
+  required Map<int, Enfant> enfants,
+}) async {
+  final doc = pw.Document(
+    title: 'Escale — Planning accueillant',
+    author: 'Escale',
+  );
+  final logoImage = pw.MemoryImage(logo);
+  final tri = [...affectations]..sort((a, b) => a.debut.compareTo(b.debut));
+  final totalJours = tri.fold<int>(0, (n, a) => n + nbJours(a.debut, a.fin));
+
+  doc.addPage(
+    pw.MultiPage(
+      pageFormat: PdfPageFormat.a4,
+      margin: const pw.EdgeInsets.fromLTRB(40, 40, 40, 50),
+      footer: (ctx) => _piedMention(ctx, structure),
+      build: (ctx) => [
+        _enTete(
+          logoImage,
+          structure,
+          'Planning individuel',
+          _nom(accueillant.nom, accueillant.prenom),
+        ),
+        pw.SizedBox(height: 8),
+        pw.Divider(color: _filet),
+        pw.SizedBox(height: 10),
+        pw.Text(
+          '${tri.length} relais - $totalJours jour(s) d\'accueil - édité le ${dateLongueFr(date)}',
+          style: pw.TextStyle(fontSize: 10, color: _gris),
+        ),
+        pw.SizedBox(height: 12),
+        if (tri.isEmpty)
+          pw.Text(
+            'Aucun relais pour cet accueillant.',
+            style: pw.TextStyle(color: _gris),
+          )
+        else
+          pw.TableHelper.fromTextArray(
+            headers: ['Enfant', 'Période', 'Durée', 'Statut'],
+            data: [
+              for (final a in tri)
+                [
+                  () {
+                    final e = enfants[a.enfantId];
+                    return e == null ? '—' : _nom(e.nom, e.prenom);
+                  }(),
+                  periodeFr(a.debut, a.fin),
+                  '${nbJours(a.debut, a.fin)} j',
+                  _statutCourt(a.statut),
+                ],
+            ],
+            headerStyle: pw.TextStyle(
+              color: _teal,
+              fontWeight: pw.FontWeight.bold,
+              fontSize: 10,
+            ),
+            headerDecoration: pw.BoxDecoration(color: _tealClair),
+            cellStyle: pw.TextStyle(fontSize: 10, color: _texte),
+            oddRowDecoration: pw.BoxDecoration(
+              color: PdfColor.fromInt(0xFFF7F8F8),
+            ),
+            cellAlignments: {2: pw.Alignment.centerRight},
+            columnWidths: {
+              0: const pw.FlexColumnWidth(3),
+              1: const pw.FlexColumnWidth(3),
+              2: const pw.FlexColumnWidth(1),
+              3: const pw.FlexColumnWidth(1.4),
+            },
+            border: pw.TableBorder.all(color: _filet, width: 0.5),
+            cellPadding: const pw.EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: 6,
+            ),
+          ),
+      ],
+    ),
+  );
+  return doc.save();
+}
+
+// Parcours individuel d'un enfant : relais + solutions, dans l'ordre.
+Future<Uint8List> genererPdfPlanningEnfant({
+  required InfosStructure structure,
+  required Uint8List logo,
+  required DateTime date,
+  required Enfant enfant,
+  required List<Affectation> affectations,
+  required Map<int, Accueillant> accueillants,
+  required List<SolutionAlternative> solutions,
+}) async {
+  final doc = pw.Document(title: 'Escale — Parcours enfant', author: 'Escale');
+  final logoImage = pw.MemoryImage(logo);
+
+  // (debut, fin, prise en charge)
+  final entrees = <(DateTime, DateTime, String)>[
+    for (final a in affectations)
+      (
+        a.debut,
+        a.fin,
+        () {
+          final acc = accueillants[a.accueillantId];
+          final nom = acc == null ? '?' : _nom(acc.nom, acc.prenom);
+          final st = a.statut == statutConfirme
+              ? ''
+              : ' (${_statutCourt(a.statut)})';
+          return 'Relais chez $nom$st';
+        }(),
+      ),
+    for (final s in solutions)
+      (
+        s.debut,
+        s.fin,
+        s.details == null || s.details!.trim().isEmpty
+            ? _libelleSol(s.type)
+            : '${_libelleSol(s.type)} - ${_safe(s.details!.trim())}',
+      ),
+  ]..sort((a, b) => a.$1.compareTo(b.$1));
+
+  doc.addPage(
+    pw.MultiPage(
+      pageFormat: PdfPageFormat.a4,
+      margin: const pw.EdgeInsets.fromLTRB(40, 40, 40, 50),
+      footer: (ctx) => _piedMention(ctx, structure),
+      build: (ctx) => [
+        _enTete(
+          logoImage,
+          structure,
+          'Parcours de l\'enfant',
+          _nom(enfant.nom, enfant.prenom),
+        ),
+        pw.SizedBox(height: 8),
+        pw.Divider(color: _filet),
+        pw.SizedBox(height: 10),
+        pw.Text(
+          'Édité le ${dateLongueFr(date)}',
+          style: pw.TextStyle(fontSize: 10, color: _gris),
+        ),
+        pw.SizedBox(height: 12),
+        if (entrees.isEmpty)
+          pw.Text(
+            'Aucune prise en charge enregistrée.',
+            style: pw.TextStyle(color: _gris),
+          )
+        else
+          pw.TableHelper.fromTextArray(
+            headers: ['Période', 'Prise en charge', 'Durée'],
+            data: [
+              for (final (d, f, lieu) in entrees)
+                [periodeFr(d, f), lieu, '${nbJours(d, f)} j'],
+            ],
+            headerStyle: pw.TextStyle(
+              color: _teal,
+              fontWeight: pw.FontWeight.bold,
+              fontSize: 10,
+            ),
+            headerDecoration: pw.BoxDecoration(color: _tealClair),
+            cellStyle: pw.TextStyle(fontSize: 10, color: _texte),
+            oddRowDecoration: pw.BoxDecoration(
+              color: PdfColor.fromInt(0xFFF7F8F8),
+            ),
+            cellAlignments: {2: pw.Alignment.centerRight},
+            columnWidths: {
+              0: const pw.FlexColumnWidth(3),
+              1: const pw.FlexColumnWidth(4),
+              2: const pw.FlexColumnWidth(1),
+            },
+            border: pw.TableBorder.all(color: _filet, width: 0.5),
+            cellPadding: const pw.EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: 6,
+            ),
+          ),
+      ],
+    ),
+  );
+  return doc.save();
+}
+
 pw.Widget _bloc(String titre) => pw.Container(
   width: double.infinity,
   margin: const pw.EdgeInsets.only(bottom: 4),
