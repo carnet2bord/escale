@@ -6,8 +6,10 @@ const liens = [
   { href: '/', label: 'Tableau de bord' },
   { href: '/accueillants', label: 'Accueillants' },
   { href: '/enfants', label: 'Enfants' },
+  { href: '/fratries', label: 'Fratries' },
   { href: '/planning', label: 'Planning' },
   { href: '/proposition', label: 'Proposition' },
+  { href: '/import', label: 'Import' },
   { href: '/parametres', label: 'Paramètres' },
   { href: '/apropos', label: 'À propos' },
 ];
