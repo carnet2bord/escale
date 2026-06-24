@@ -29,7 +29,9 @@ partagé**.
 cp .env.example .env
 ```
 Renseigner dans `.env` :
-- `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (étape 1) ;
+- `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (clé de rôle, ex. `escale_api`) (étape 1) ;
+- `SUPABASE_ANON_KEY` : clé **anon**, requise comme `apikey` par la passerelle
+  **Kong** du Supabase auto-hébergé (sinon la clé de rôle est réutilisée) ;
 - `APP_PASSWORD` : le mot de passe partagé des testeurs (long, à forte entropie) ;
 - `SESSION_SECRET` : **obligatoire**, ≥ 32 caractères aléatoires (`openssl rand -hex 32`).
   Sans lui, l'app **refuse de démarrer** (pas de valeur par défaut, sinon le
