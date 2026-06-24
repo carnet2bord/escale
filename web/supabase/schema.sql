@@ -79,7 +79,8 @@ create table if not exists preferences_accueil (
   id             serial primary key,
   enfant_id      int not null references enfants(id) on delete cascade,
   accueillant_id int not null references accueillants(id) on delete cascade,
-  type           text not null   -- favori | exclu
+  type           text not null,  -- favori | exclu
+  unique (enfant_id, accueillant_id)  -- un seul choix par couple
 );
 
 create table if not exists solutions_alternatives (

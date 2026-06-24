@@ -13,7 +13,7 @@ export async function ajouterDispo(formData: FormData) {
   const accueillantId = Number(formData.get('accueillantId'));
   const debut = txt(formData.get('debut'));
   const fin = txt(formData.get('fin'));
-  if (!accueillantId || !debut || !fin) return;
+  if (!accueillantId || !debut || !fin || fin < debut) return;
   const r = await supabaseAdmin()
     .from('disponibilites_accueil')
     .insert({ accueillant_id: accueillantId, debut, fin });
@@ -34,7 +34,7 @@ export async function ajouterIndispo(formData: FormData) {
   const accueillantId = Number(formData.get('accueillantId'));
   const debut = txt(formData.get('debut'));
   const fin = txt(formData.get('fin'));
-  if (!accueillantId || !debut || !fin) return;
+  if (!accueillantId || !debut || !fin || fin < debut) return;
   const r = await supabaseAdmin()
     .from('indisponibilites')
     .insert({ accueillant_id: accueillantId, debut, fin, motif: txt(formData.get('motif')) });

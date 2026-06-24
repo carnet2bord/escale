@@ -309,7 +309,9 @@ ResultatProposition proposerAffectations({
       if (f != 0) return f;
       final pla = souPlafond(b).compareTo(souPlafond(a));
       if (pla != 0) return pla;
-      return charge(a).compareTo(charge(b));
+      final ch = charge(a).compareTo(charge(b));
+      if (ch != 0) return ch;
+      return a.id.compareTo(b.id); // départage stable (parité avec le web)
     });
     return faisables;
   }
@@ -317,10 +319,16 @@ ResultatProposition proposerAffectations({
   // Ordonner les cibles par nombre de candidats croissant (les plus contraintes
   // d'abord), évalué sur les seules affectations existantes.
   final ordre = [...cibles];
-  ordre.sort(
-    (a, b) =>
-        candidats(a, const []).length.compareTo(candidats(b, const []).length),
-  );
+  ordre.sort((a, b) {
+    final n = candidats(a, const []).length.compareTo(
+      candidats(b, const []).length,
+    );
+    if (n != 0) return n;
+    // Départage stable : besoin, puis enfant, puis début (parité avec le web).
+    if (a.besoinId != b.besoinId) return a.besoinId.compareTo(b.besoinId);
+    if (a.enfant.id != b.enfant.id) return a.enfant.id.compareTo(b.enfant.id);
+    return jour(a.debut).compareTo(jour(b.debut));
+  });
 
   final courant = <Proposition>[];
   List<Proposition> meilleur = const [];

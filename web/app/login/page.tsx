@@ -22,7 +22,13 @@ export default async function LoginPage({
             autoFocus
             required
           />
-          {erreur ? <div className="erreur">Mot de passe incorrect.</div> : null}
+          {erreur === 'bloque' ? (
+            <div className="erreur">
+              Trop de tentatives. Réessayez dans quelques minutes.
+            </div>
+          ) : erreur ? (
+            <div className="erreur">Mot de passe incorrect.</div>
+          ) : null}
           <button className="bouton" type="submit" style={{ width: '100%', marginTop: 8 }}>
             Se connecter
           </button>

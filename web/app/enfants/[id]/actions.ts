@@ -13,7 +13,7 @@ export async function ajouterBesoin(formData: FormData) {
   const enfantId = Number(formData.get('enfantId'));
   const debut = txt(formData.get('debut'));
   const fin = txt(formData.get('fin'));
-  if (!enfantId || !debut || !fin) return;
+  if (!enfantId || !debut || !fin || fin < debut) return;
   const r = await supabaseAdmin()
     .from('besoins_relais')
     .insert({ enfant_id: enfantId, debut, fin, motif: txt(formData.get('motif')) });
@@ -71,17 +71,14 @@ export async function ajouterPreference(formData: FormData) {
   const accueillantId = Number(formData.get('accueillantId'));
   const type = String(formData.get('type') ?? '').trim();
   if (!enfantId || !accueillantId || (type !== 'favori' && type !== 'exclu')) return;
-  const db = supabaseAdmin();
-  // Un seul choix par couple (favori OU exclu) : on remplace l'existant.
-  const del = await db
+  // Un seul choix par couple (favori OU exclu) : upsert atomique sur la
+  // contrainte unique (enfant_id, accueillant_id) — pas de delete+insert.
+  const r = await supabaseAdmin()
     .from('preferences_accueil')
-    .delete()
-    .eq('enfant_id', enfantId)
-    .eq('accueillant_id', accueillantId);
-  if (del.error) throw new Error(del.error.message);
-  const r = await db
-    .from('preferences_accueil')
-    .insert({ enfant_id: enfantId, accueillant_id: accueillantId, type });
+    .upsert(
+      { enfant_id: enfantId, accueillant_id: accueillantId, type },
+      { onConflict: 'enfant_id,accueillant_id' },
+    );
   if (r.error) throw new Error(r.error.message);
   revalidatePath(`/enfants/${enfantId}`);
 }
@@ -102,7 +99,7 @@ export async function ajouterSolution(formData: FormData) {
   const debut = txt(formData.get('debut'));
   const fin = txt(formData.get('fin'));
   const type = String(formData.get('type') ?? '').trim();
-  if (!enfantId || !debut || !fin || !type) return;
+  if (!enfantId || !debut || !fin || !type || fin < debut) return;
   const r = await supabaseAdmin().from('solutions_alternatives').insert({
     enfant_id: enfantId,
     debut,

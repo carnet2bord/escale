@@ -251,14 +251,21 @@ export function proposerAffectations(p: ParamsProposition): ResultatProposition 
       if (f !== 0) return f;
       const pla = souPlafond(b) - souPlafond(a);
       if (pla !== 0) return pla;
-      return charge(a) - charge(b);
+      const ch = charge(a) - charge(b);
+      if (ch !== 0) return ch;
+      return a.id - b.id; // départage stable (parité avec le desktop)
     });
     return faisables;
   };
 
-  const ordre = [...cibles].sort(
-    (a, b) => candidats(a, []).length - candidats(b, []).length,
-  );
+  const ordre = [...cibles].sort((a, b) => {
+    const n = candidats(a, []).length - candidats(b, []).length;
+    if (n !== 0) return n;
+    // Départage stable : besoin, puis enfant, puis début (parité desktop).
+    if (a.besoinId !== b.besoinId) return a.besoinId - b.besoinId;
+    if (a.enfant.id !== b.enfant.id) return a.enfant.id - b.enfant.id;
+    return jour(a.debut).getTime() - jour(b.debut).getTime();
+  });
 
   let courant: Proposition[] = [];
   let meilleur: Proposition[] = [];

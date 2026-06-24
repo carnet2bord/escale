@@ -31,8 +31,10 @@ cp .env.example .env
 ```
 Renseigner dans `.env` :
 - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (étape 1) ;
-- `APP_PASSWORD` : le mot de passe partagé des testeurs ;
-- `SESSION_SECRET` : une longue chaîne aléatoire (ex. `openssl rand -hex 32`).
+- `APP_PASSWORD` : le mot de passe partagé des testeurs (long, à forte entropie) ;
+- `SESSION_SECRET` : **obligatoire**, ≥ 32 caractères aléatoires (`openssl rand -hex 32`).
+  Sans lui, l'app **refuse de démarrer** (pas de valeur par défaut, sinon le
+  cookie de session serait forgeable).
 
 ## 3. Lancer
 
@@ -52,6 +54,11 @@ Ouvrir l'URL → saisir le mot de passe partagé → tableau de bord.
 ## Sécurité / RGPD
 
 - **HTTPS obligatoire.**
+- **Cookie de session signé + expirant** (12 h) : la signature couvre la date
+  d'expiration, donc un cookie modifié ou périmé est rejeté côté serveur.
+- **Anti-brute-force** : la connexion est limitée par IP (blocage temporaire
+  après plusieurs échecs) — en mémoire, suffisant pour un mono-poste ; pour un
+  déploiement multi-instances, prévoir un magasin partagé (Redis/DB).
 - Chiffrement au repos assuré par **PostgreSQL + l'hébergement HDS** (et le
   chiffrement disque du serveur), pas besoin de SQLCipher côté application.
 - Accès tracé : table `journal_audit` (à brancher dans les prochaines

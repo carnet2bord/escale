@@ -99,6 +99,11 @@ export function CalendrierPlanning({
   };
   const largeurTotale = jours.length * LARGEUR_JOUR;
 
+  // N'afficher que les barres qui chevauchent réellement la plage visible
+  // (sinon une période hors fenêtre serait clampée et affichée de travers).
+  const dansPlage = (d: Date, f: Date): boolean =>
+    jour(f).getTime() >= debutPlage.getTime() && jour(d).getTime() <= finPlage.getTime();
+
   // Bandeau des mois.
   const segmentsMois: { label: string; jours: number }[] = [];
   for (const d of jours) {
@@ -114,7 +119,7 @@ export function CalendrierPlanning({
     .sort((a, b) => a.nom.localeCompare(b.nom))
     .map((acc) => {
       const items = affsActives
-        .filter((a) => a.accueillantId === acc.id)
+        .filter((a) => a.accueillantId === acc.id && dansPlage(a.debut, a.fin))
         .map((a) => ({
           debut: a.debut,
           fin: a.fin,
@@ -130,8 +135,9 @@ export function CalendrierPlanning({
     });
 
   // Ligne « Hors relais » (solutions alternatives).
-  if (solutions.length > 0) {
-    const items = solutions.map((s) => ({
+  const solutionsVisibles = solutions.filter((s) => dansPlage(s.debut, s.fin));
+  if (solutionsVisibles.length > 0) {
+    const items = solutionsVisibles.map((s) => ({
       debut: s.debut,
       fin: s.fin,
       label: enfNom.get(s.enfantId) ?? '—',

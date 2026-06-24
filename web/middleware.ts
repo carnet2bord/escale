@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-import { COOKIE_SESSION, jetonSession } from '@/lib/auth';
+import { COOKIE_SESSION, jetonValide } from '@/lib/auth';
 
-// Protège toutes les routes : redirige vers /login si la session est absente/invalide.
+// Protège toutes les routes : redirige vers /login si la session est absente,
+// invalide ou expirée.
 export async function middleware(req: NextRequest) {
   const cookie = req.cookies.get(COOKIE_SESSION)?.value;
-  const attendu = await jetonSession();
-  if (cookie !== attendu) {
+  if (!(await jetonValide(cookie))) {
     const url = req.nextUrl.clone();
     url.pathname = '/login';
     return NextResponse.redirect(url);
