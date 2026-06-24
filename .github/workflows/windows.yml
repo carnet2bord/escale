@@ -1,8 +1,9 @@
 name: Build Windows
 
 # Construit Escale pour Windows sur une machine Windows dans le cloud, et produit :
-#  - Escale-windows.zip      : le dossier complet (exe + dll + data) — secours
-#  - Escale-portable.exe      : UN SEUL fichier auto-extractible qui lance l'app
+#  - Escale-portable.exe : UN SEUL fichier autonome (au double-clic il déballe
+#                          tout en temp puis lance l'app, et nettoie à la fermeture)
+#  - Escale-windows.zip   : le dossier complet (exe + dll + data) — secours
 # Se lance à chaque push sur main, ou manuellement (onglet Actions → Run workflow).
 
 on:
@@ -50,30 +51,22 @@ jobs:
         run: |
           Compress-Archive -Path "${{ steps.rel.outputs.dir }}\*" -DestinationPath "Escale-windows.zip" -Force
 
-      - name: Construire l'exe portable unique (auto-extracteur 7-Zip)
+      - name: Installer NSIS
+        run: choco install nsis -y --no-progress
+
+      - name: Construire l'exe portable unique (NSIS)
         shell: pwsh
         run: |
-          $rel = "${{ steps.rel.outputs.dir }}"
-          # 1) Archive 7z compressée du CONTENU du dossier Release (fichiers à la racine).
-          7z a -t7z -mx=9 app.7z "$rel\*" | Out-Null
-          # 2) Récupérer le module SFX auto-extractible (paquet « 7-Zip Extra »).
-          Invoke-WebRequest -Uri "https://www.7-zip.org/a/7z2301-extra.7z" -OutFile 7zextra.7z
-          7z x 7zextra.7z -oextra -y | Out-Null
-          $sfx = Get-ChildItem -Path extra -Recurse -Include 7zSD.sfx,7zS.sfx |
-            Select-Object -First 1
-          if (-not $sfx) { throw "Module SFX (7zSD.sfx/7zS.sfx) introuvable." }
-          Write-Host "Module SFX : $($sfx.FullName)"
-          # 3) Config de l'auto-extracteur : extraction silencieuse en temp + lancement.
-          $cfg = ";!@Install@!UTF-8!`r`nTitle=`"Escale`"`r`nRunProgram=`"Escale.exe`"`r`nGUIMode=`"2`"`r`n;!@InstallEnd@!`r`n"
-          $noBom = New-Object System.Text.UTF8Encoding($false)
-          [System.IO.File]::WriteAllText("$PWD\config.txt", $cfg, $noBom)
-          # 4) Concaténer : module SFX + config + archive => un seul Escale.exe.
-          $out = [System.IO.File]::Create("$PWD\Escale-portable.exe")
-          foreach ($f in @($sfx.FullName, "$PWD\config.txt", "$PWD\app.7z")) {
-            $bytes = [System.IO.File]::ReadAllBytes($f)
-            $out.Write($bytes, 0, $bytes.Length)
-          }
-          $out.Close()
+          # 1) Rassembler le contenu du dossier Release dans un dossier fixe « payload ».
+          New-Item -ItemType Directory -Force -Path payload | Out-Null
+          Copy-Item -Path "${{ steps.rel.outputs.dir }}\*" -Destination payload -Recurse -Force
+
+          # 2) Compiler le script NSIS (windows_portable.nsi) en un exe unique.
+          $mk = "C:\Program Files (x86)\NSIS\makensis.exe"
+          if (-not (Test-Path $mk)) { $mk = "makensis" }
+          & $mk windows_portable.nsi
+          if ($LASTEXITCODE -ne 0) { throw "makensis a échoué (code $LASTEXITCODE)." }
+          if (-not (Test-Path "Escale-portable.exe")) { throw "Escale-portable.exe non généré." }
           Write-Host "Créé : Escale-portable.exe ($([math]::Round((Get-Item Escale-portable.exe).Length/1MB,1)) Mo)"
 
       - name: Publier l'exe portable
