@@ -23,8 +23,8 @@ export default async function FratriesPage({
   const { erreur } = await searchParams;
   const db = supabaseAdmin();
   const [fra, enf] = await Promise.all([
-    db.from('fratries').select('*').order('nom'),
-    db.from('enfants').select('id, nom, prenom, fratrie_id').order('nom'),
+    db.from('escale_fratries').select('*').order('nom'),
+    db.from('escale_enfants').select('id, nom, prenom, fratrie_id').order('nom'),
   ]);
   if (fra.error) throw new Error(fra.error.message);
 

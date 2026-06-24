@@ -7,8 +7,8 @@ export const dynamic = 'force-dynamic';
 export default async function NouvelEnfant() {
   const db = supabaseAdmin();
   const [acc, fra] = await Promise.all([
-    db.from('accueillants').select('id, nom, prenom').order('nom'),
-    db.from('fratries').select('id, nom').order('nom'),
+    db.from('escale_accueillants').select('id, nom, prenom').order('nom'),
+    db.from('escale_fratries').select('id, nom').order('nom'),
   ]);
   return (
     <>

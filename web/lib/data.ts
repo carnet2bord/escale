@@ -95,16 +95,16 @@ export interface Snapshot {
 export async function chargerSnapshot(): Promise<Snapshot> {
   const db = supabaseAdmin();
   const [acc, enf, fra, aff, bes, dis, ind, inc, pre, sol] = await Promise.all([
-    db.from('accueillants').select('*'),
-    db.from('enfants').select('*'),
-    db.from('fratries').select('*'),
-    db.from('affectations').select('*'),
-    db.from('besoins_relais').select('*'),
-    db.from('disponibilites_accueil').select('*'),
-    db.from('indisponibilites').select('*'),
-    db.from('incompatibilites').select('*'),
-    db.from('preferences_accueil').select('*'),
-    db.from('solutions_alternatives').select('*'),
+    db.from('escale_accueillants').select('*'),
+    db.from('escale_enfants').select('*'),
+    db.from('escale_fratries').select('*'),
+    db.from('escale_affectations').select('*'),
+    db.from('escale_besoins_relais').select('*'),
+    db.from('escale_disponibilites_accueil').select('*'),
+    db.from('escale_indisponibilites').select('*'),
+    db.from('escale_incompatibilites').select('*'),
+    db.from('escale_preferences_accueil').select('*'),
+    db.from('escale_solutions_alternatives').select('*'),
   ]);
   for (const r of [acc, enf, fra, aff, bes, dis, ind, inc, pre, sol]) {
     if (r.error) throw new Error(r.error.message);

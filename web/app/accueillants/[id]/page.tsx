@@ -22,9 +22,9 @@ export default async function ModifierAccueillant({
   const idNum = Number(id);
   const db = supabaseAdmin();
   const [acc, dis, ind] = await Promise.all([
-    db.from('accueillants').select('*').eq('id', idNum).maybeSingle(),
-    db.from('disponibilites_accueil').select('*').eq('accueillant_id', idNum).order('debut'),
-    db.from('indisponibilites').select('*').eq('accueillant_id', idNum).order('debut'),
+    db.from('escale_accueillants').select('*').eq('id', idNum).maybeSingle(),
+    db.from('escale_disponibilites_accueil').select('*').eq('accueillant_id', idNum).order('debut'),
+    db.from('escale_indisponibilites').select('*').eq('accueillant_id', idNum).order('debut'),
   ]);
   if (acc.error) throw new Error(acc.error.message);
   if (!acc.data) notFound();

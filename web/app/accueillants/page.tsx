@@ -13,7 +13,7 @@ const restrictionLabel: Record<string, string> = {
 
 export default async function AccueillantsPage() {
   const { data, error } = await supabaseAdmin()
-    .from('accueillants')
+    .from('escale_accueillants')
     .select('*')
     .order('nom');
 

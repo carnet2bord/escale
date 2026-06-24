@@ -15,7 +15,7 @@ export async function ajouterDispo(formData: FormData) {
   const fin = txt(formData.get('fin'));
   if (!accueillantId || !debut || !fin || fin < debut) return;
   const r = await supabaseAdmin()
-    .from('disponibilites_accueil')
+    .from('escale_disponibilites_accueil')
     .insert({ accueillant_id: accueillantId, debut, fin });
   if (r.error) throw new Error(r.error.message);
   revalidatePath(`/accueillants/${accueillantId}`);
@@ -25,7 +25,7 @@ export async function supprimerDispo(formData: FormData) {
   const id = Number(formData.get('id'));
   const accueillantId = Number(formData.get('accueillantId'));
   if (!id) return;
-  const r = await supabaseAdmin().from('disponibilites_accueil').delete().eq('id', id);
+  const r = await supabaseAdmin().from('escale_disponibilites_accueil').delete().eq('id', id);
   if (r.error) throw new Error(r.error.message);
   revalidatePath(`/accueillants/${accueillantId}`);
 }
@@ -36,7 +36,7 @@ export async function ajouterIndispo(formData: FormData) {
   const fin = txt(formData.get('fin'));
   if (!accueillantId || !debut || !fin || fin < debut) return;
   const r = await supabaseAdmin()
-    .from('indisponibilites')
+    .from('escale_indisponibilites')
     .insert({ accueillant_id: accueillantId, debut, fin, motif: txt(formData.get('motif')) });
   if (r.error) throw new Error(r.error.message);
   revalidatePath(`/accueillants/${accueillantId}`);
@@ -46,7 +46,7 @@ export async function supprimerIndispo(formData: FormData) {
   const id = Number(formData.get('id'));
   const accueillantId = Number(formData.get('accueillantId'));
   if (!id) return;
-  const r = await supabaseAdmin().from('indisponibilites').delete().eq('id', id);
+  const r = await supabaseAdmin().from('escale_indisponibilites').delete().eq('id', id);
   if (r.error) throw new Error(r.error.message);
   revalidatePath(`/accueillants/${accueillantId}`);
 }

@@ -9,12 +9,11 @@ partagé**.
 > ligne de vraies données.
 
 > Domaine prévu : **https://escale.carnet2bord.fr** (réutilise l'infra du portail
-> référent). ⚠️ **Base dédiée recommandée** : utilisez un **projet/instance
-> Supabase distinct** pour Escale (ou au minimum un **schéma PostgreSQL séparé**)
-> afin d'éviter toute collision avec les tables du portail référent
-> (`enfants`, `accueillants`, `reglages`…). Renseignez `SUPABASE_URL` /
-> `SUPABASE_SERVICE_ROLE_KEY` avec ces identifiants — eux seuls (jamais partagés
-> dans le dépôt).
+> référent). **Toutes les tables Escale sont préfixées `escale_`** : elles peuvent
+> donc cohabiter sans collision dans un **projet Supabase partagé** (avec Carnet
+> de Bord, par ex.). La fonction et les triggers d'audit sont aussi préfixés
+> (`escale_journaliser`). Renseignez `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`
+> avec les identifiants du projet — eux seuls (jamais partagés dans le dépôt).
 
 ## 1. Base de données (Supabase auto-hébergé)
 

@@ -60,8 +60,8 @@ export async function enregistrerAccueillant(formData: FormData) {
     notes: txt(formData.get('notes')),
   };
   const r = id
-    ? await db.from('accueillants').update(row).eq('id', id)
-    : await db.from('accueillants').insert(row);
+    ? await db.from('escale_accueillants').update(row).eq('id', id)
+    : await db.from('escale_accueillants').insert(row);
   if (r.error) throw new Error(r.error.message);
   revalidatePath('/accueillants');
   redirect('/accueillants');
@@ -70,7 +70,7 @@ export async function enregistrerAccueillant(formData: FormData) {
 export async function supprimerAccueillant(formData: FormData) {
   const id = num(formData.get('id'));
   if (!id) return;
-  const r = await supabaseAdmin().from('accueillants').delete().eq('id', id);
+  const r = await supabaseAdmin().from('escale_accueillants').delete().eq('id', id);
   if (r.error) throw new Error(r.error.message);
   revalidatePath('/accueillants');
   redirect('/accueillants');

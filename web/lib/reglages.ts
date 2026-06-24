@@ -18,7 +18,7 @@ export interface InfosStructure {
 }
 
 export async function lireInfosStructure(): Promise<InfosStructure> {
-  const { data, error } = await supabaseAdmin().from('reglages').select('cle, valeur');
+  const { data, error } = await supabaseAdmin().from('escale_reglages').select('cle, valeur');
   if (error) throw new Error(error.message);
   const m = new Map((data ?? []).map((r) => [r.cle, r.valeur]));
   return {
@@ -32,7 +32,7 @@ export async function lireInfosStructure(): Promise<InfosStructure> {
 // Seuil de distance (km) au-delà duquel un relais est signalé « éloigné ».
 export async function lireSeuilDistanceKm(): Promise<number> {
   const { data } = await supabaseAdmin()
-    .from('reglages')
+    .from('escale_reglages')
     .select('valeur')
     .eq('cle', CLE_DISTANCE_SEUIL)
     .maybeSingle();

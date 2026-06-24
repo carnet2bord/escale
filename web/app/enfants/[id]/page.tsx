@@ -32,17 +32,17 @@ export default async function ModifierEnfant({
   const idNum = Number(id);
   const db = supabaseAdmin();
   const [enf, acc, fra, bes, tousEnf, inc, pref, sol] = await Promise.all([
-    db.from('enfants').select('*').eq('id', idNum).maybeSingle(),
-    db.from('accueillants').select('id, nom, prenom').order('nom'),
-    db.from('fratries').select('id, nom').order('nom'),
-    db.from('besoins_relais').select('*').eq('enfant_id', idNum).order('debut'),
-    db.from('enfants').select('id, nom, prenom').order('nom'),
+    db.from('escale_enfants').select('*').eq('id', idNum).maybeSingle(),
+    db.from('escale_accueillants').select('id, nom, prenom').order('nom'),
+    db.from('escale_fratries').select('id, nom').order('nom'),
+    db.from('escale_besoins_relais').select('*').eq('enfant_id', idNum).order('debut'),
+    db.from('escale_enfants').select('id, nom, prenom').order('nom'),
     db
-      .from('incompatibilites')
+      .from('escale_incompatibilites')
       .select('*')
       .or(`enfant_a_id.eq.${idNum},enfant_b_id.eq.${idNum}`),
-    db.from('preferences_accueil').select('*').eq('enfant_id', idNum),
-    db.from('solutions_alternatives').select('*').eq('enfant_id', idNum).order('debut'),
+    db.from('escale_preferences_accueil').select('*').eq('enfant_id', idNum),
+    db.from('escale_solutions_alternatives').select('*').eq('enfant_id', idNum).order('debut'),
   ]);
   if (enf.error) throw new Error(enf.error.message);
   if (!enf.data) notFound();

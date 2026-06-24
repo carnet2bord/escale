@@ -24,7 +24,7 @@ export async function importerAccueillants(formData: FormData) {
   const db = supabaseAdmin();
   const vus = new Set<string>();
   if (dedupe) {
-    const { data } = await db.from('accueillants').select('nom, prenom');
+    const { data } = await db.from('escale_accueillants').select('nom, prenom');
     for (const r of data ?? []) vus.add(cleNom({ nom: r.nom, prenom: r.prenom ?? '' }));
   }
   const aInserer = [];
@@ -39,7 +39,7 @@ export async function importerAccueillants(formData: FormData) {
     aInserer.push(c);
   }
   if (aInserer.length > 0) {
-    const r = await db.from('accueillants').insert(aInserer);
+    const r = await db.from('escale_accueillants').insert(aInserer);
     if (r.error) redirect('/import?erreur=insert');
   }
   redirect(`/import?type=accueillants&importes=${aInserer.length}&ignores=${ignores}`);
@@ -55,7 +55,7 @@ export async function importerEnfants(formData: FormData) {
   const db = supabaseAdmin();
   const vus = new Set<string>();
   if (dedupe) {
-    const { data } = await db.from('enfants').select('nom, prenom, date_naissance');
+    const { data } = await db.from('escale_enfants').select('nom, prenom, date_naissance');
     for (const r of data ?? []) {
       vus.add(
         cleEnfant({ nom: r.nom, prenom: r.prenom ?? '', date_naissance: r.date_naissance ?? null }),
@@ -74,7 +74,7 @@ export async function importerEnfants(formData: FormData) {
     aInserer.push(c);
   }
   if (aInserer.length > 0) {
-    const r = await db.from('enfants').insert(aInserer);
+    const r = await db.from('escale_enfants').insert(aInserer);
     if (r.error) redirect('/import?erreur=insert');
   }
   redirect(`/import?type=enfants&importes=${aInserer.length}&ignores=${ignores}`);

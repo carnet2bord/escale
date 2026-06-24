@@ -23,15 +23,16 @@ const TABLE: Record<string, string> = {
 };
 
 function decrire(action: string): string {
-  const [op, table] = action.split(' ');
-  return `${OP[op] ?? op} — ${TABLE[table] ?? table ?? ''}`;
+  const [op, tableBrute] = action.split(' ');
+  const table = (tableBrute ?? '').replace(/^escale_/, '');
+  return `${OP[op] ?? op} — ${TABLE[table] ?? table}`;
 }
 
 export default async function JournalPage() {
   // Tri par id (bigserial monotone) : reflète l'ordre d'insertion réel, même
   // pour des lignes d'une même transaction qui partagent le même horodatage.
   const { data, error } = await supabaseAdmin()
-    .from('journal_audit')
+    .from('escale_journal_audit')
     .select('*')
     .order('id', { ascending: false })
     .limit(300);

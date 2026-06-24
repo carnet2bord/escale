@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function EnfantsPage() {
   const { data, error } = await supabaseAdmin()
-    .from('enfants')
+    .from('escale_enfants')
     .select('*')
     .order('nom');
 

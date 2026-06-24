@@ -100,7 +100,7 @@ export async function creerRelais(formData: FormData) {
   if (!ligne) return;
   const valides = await lignesValides([ligne]);
   if (valides.length === 0) return;
-  const r = await supabaseAdmin().from('affectations').insert(valides.map(toRow));
+  const r = await supabaseAdmin().from('escale_affectations').insert(valides.map(toRow));
   if (r.error) throw new Error(r.error.message);
   revalidatePath('/proposition');
   revalidatePath('/planning');
@@ -117,7 +117,7 @@ export async function creerToutes(formData: FormData) {
   const candidats = brut.map(ligneDepuis).filter((l): l is Ligne => l !== null);
   const valides = await lignesValides(candidats);
   if (valides.length === 0) return;
-  const r = await supabaseAdmin().from('affectations').insert(valides.map(toRow));
+  const r = await supabaseAdmin().from('escale_affectations').insert(valides.map(toRow));
   if (r.error) throw new Error(r.error.message);
   revalidatePath('/proposition');
   revalidatePath('/planning');

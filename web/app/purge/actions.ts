@@ -27,7 +27,7 @@ export async function anonymiserEnfants(formData: FormData) {
   const db = supabaseAdmin();
   for (const id of valides) {
     const r = await db
-      .from('enfants')
+      .from('escale_enfants')
       .update({
         nom: `Dossier ${id}`,
         prenom: '',

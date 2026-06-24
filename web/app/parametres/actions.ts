@@ -29,7 +29,7 @@ export async function enregistrerStructure(formData: FormData) {
     },
   ];
   const r = await supabaseAdmin()
-    .from('reglages')
+    .from('escale_reglages')
     .upsert(lignes, { onConflict: 'cle' });
   if (r.error) throw new Error(r.error.message);
   revalidatePath('/parametres');

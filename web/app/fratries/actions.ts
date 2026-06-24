@@ -15,13 +15,13 @@ export async function enregistrerFratrie(formData: FormData) {
   if (!nom) redirect('/fratries?erreur=nom');
   const db = supabaseAdmin();
   // Évite les fratries de même nom (ambiguës dans le select de la fiche enfant).
-  let doublon = db.from('fratries').select('id').ilike('nom', nom);
+  let doublon = db.from('escale_fratries').select('id').ilike('nom', nom);
   if (id) doublon = doublon.neq('id', id);
   const { data: existant } = await doublon.limit(1);
   if ((existant ?? []).length > 0) redirect('/fratries?erreur=doublon');
   const r = id
-    ? await db.from('fratries').update({ nom, regroupement }).eq('id', id)
-    : await db.from('fratries').insert({ nom, regroupement });
+    ? await db.from('escale_fratries').update({ nom, regroupement }).eq('id', id)
+    : await db.from('escale_fratries').insert({ nom, regroupement });
   if (r.error) throw new Error(r.error.message);
   revalidatePath('/fratries');
   redirect('/fratries');
@@ -31,7 +31,7 @@ export async function supprimerFratrie(formData: FormData) {
   const id = Number(formData.get('id'));
   if (!id) return;
   // Les enfants liés sont détachés (fratrie_id → null), pas supprimés.
-  const r = await supabaseAdmin().from('fratries').delete().eq('id', id);
+  const r = await supabaseAdmin().from('escale_fratries').delete().eq('id', id);
   if (r.error) throw new Error(r.error.message);
   revalidatePath('/fratries');
   redirect('/fratries');

@@ -57,8 +57,8 @@ export async function enregistrerEnfant(formData: FormData) {
     notes: txt(formData.get('notes')),
   };
   const r = id
-    ? await db.from('enfants').update(row).eq('id', id)
-    : await db.from('enfants').insert(row);
+    ? await db.from('escale_enfants').update(row).eq('id', id)
+    : await db.from('escale_enfants').insert(row);
   if (r.error) throw new Error(r.error.message);
   revalidatePath('/enfants');
   redirect('/enfants');
@@ -67,7 +67,7 @@ export async function enregistrerEnfant(formData: FormData) {
 export async function supprimerEnfant(formData: FormData) {
   const id = num(formData.get('id'));
   if (!id) return;
-  const r = await supabaseAdmin().from('enfants').delete().eq('id', id);
+  const r = await supabaseAdmin().from('escale_enfants').delete().eq('id', id);
   if (r.error) throw new Error(r.error.message);
   revalidatePath('/enfants');
   redirect('/enfants');
