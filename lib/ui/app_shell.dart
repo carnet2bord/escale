@@ -1,11 +1,14 @@
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:provider/provider.dart';
 
 import '../data/database.dart';
 import '../data/demo.dart';
 import '../data/excel_import.dart';
+import '../domain/pdf_export.dart';
 import 'accueillants_page.dart';
+import 'apercu_pdf_page.dart';
 import 'dashboard_page.dart';
 import 'enfants_page.dart';
 import 'import_excel_page.dart';
@@ -144,6 +147,8 @@ class _AppShellState extends State<AppShell> {
             ),
           );
         }
+      case 'registre':
+        _registreRgpd();
       case 'demo':
         _chargerDemo();
       case 'sauver':
@@ -194,6 +199,28 @@ class _AppShellState extends State<AppShell> {
       SnackBar(
         content: Text(
           n == 0 ? 'Aucun doublon trouvé.' : '$n doublon(s) supprimé(s).',
+        ),
+      ),
+    );
+  }
+
+  Future<void> _registreRgpd() async {
+    final db = context.read<AppDatabase>();
+    final reglages = await db.lireReglages();
+    final logo = (await rootBundle.load(
+      'assets/icon/logo_escale.png',
+    )).buffer.asUint8List();
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ApercuPdfPage(
+          titre: 'Registre RGPD',
+          fichier: 'registre-rgpd-escale.pdf',
+          builder: (format) => genererPdfRegistre(
+            structure: InfosStructure.depuisReglages(reglages),
+            logo: logo,
+            date: DateTime.now(),
+          ),
         ),
       ),
     );
@@ -324,6 +351,13 @@ class _Sidebar extends StatelessWidget {
                         child: _ItemMenu(
                           Icons.lock_outline,
                           'Verrouiller l\'application',
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'registre',
+                        child: _ItemMenu(
+                          Icons.policy_outlined,
+                          'Registre RGPD (PDF)',
                         ),
                       ),
                       PopupMenuDivider(),

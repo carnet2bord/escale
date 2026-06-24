@@ -52,6 +52,19 @@ String _safe(String s) => s
 String _nom(String nom, String prenom) =>
     _safe(prenom.isEmpty ? nom : '$prenom $nom');
 
+// Initiales seules (pour les exports anonymisés).
+String _initiales(String nom, String prenom) {
+  final p = prenom.trim();
+  final n = nom.trim();
+  final s =
+      '${p.isNotEmpty ? '${p[0]}.' : ''} ${n.isNotEmpty ? '${n[0]}.' : ''}'
+          .trim();
+  return s.isEmpty ? '—' : s;
+}
+
+String _etiquette(String nom, String prenom, bool anon) =>
+    anon ? _initiales(nom, prenom) : _nom(nom, prenom);
+
 String _restrictionCourt(String r) {
   switch (r) {
     case restrictionGarcon:
@@ -73,6 +86,7 @@ Future<Uint8List> genererPdfRelais({
   required DateTime date,
   List<SolutionAlternative> solutions = const [],
   InfosStructure structure = const InfosStructure(),
+  bool anonymiser = false,
 }) async {
   final doc = pw.Document(
     title: 'Escale — Planning des relais',
@@ -203,8 +217,8 @@ Future<Uint8List> genererPdfRelais({
           )
         else
           for (final acc in accueillantsTries) ...[
-            _sectionAccueillant(acc),
-            _tableRelais(groupes[acc.id]!, parEnfant),
+            _sectionAccueillant(acc, anonymiser),
+            _tableRelais(groupes[acc.id]!, parEnfant, anonymiser),
             pw.SizedBox(height: 18),
           ],
 
@@ -228,7 +242,11 @@ Future<Uint8List> genererPdfRelais({
             headers: ['Enfant', 'Période', 'Durée'],
             data: [
               for (final (e, d, f) in aPlanifier)
-                [_nom(e.nom, e.prenom), periodeFr(d, f), '${nbJours(d, f)} j'],
+                [
+                  _etiquette(e.nom, e.prenom, anonymiser),
+                  periodeFr(d, f),
+                  '${nbJours(d, f)} j',
+                ],
             ],
             headerStyle: pw.TextStyle(
               color: PdfColors.white,
@@ -838,6 +856,114 @@ Future<Uint8List> genererPdfPlanningEnfant({
   return doc.save();
 }
 
+// Registre des traitements (modèle RGPD pré-rempli, à valider par le DPO).
+Future<Uint8List> genererPdfRegistre({
+  required InfosStructure structure,
+  required Uint8List logo,
+  required DateTime date,
+}) async {
+  final doc = pw.Document(title: 'Escale — Registre RGPD', author: 'Escale');
+  final logoImage = pw.MemoryImage(logo);
+
+  pw.Widget section(String titre, String contenu) => pw.Column(
+    crossAxisAlignment: pw.CrossAxisAlignment.start,
+    children: [
+      pw.SizedBox(height: 10),
+      _bloc(titre),
+      pw.SizedBox(height: 4),
+      pw.Text(_safe(contenu), style: pw.TextStyle(fontSize: 10, color: _texte)),
+    ],
+  );
+
+  final resp = structure.nom.isEmpty ? '[Nom du service]' : structure.nom;
+  final dpo = structure.signataire.isEmpty
+      ? '[Responsable / DPO]'
+      : structure.signataire;
+
+  doc.addPage(
+    pw.MultiPage(
+      pageFormat: PdfPageFormat.a4,
+      margin: const pw.EdgeInsets.fromLTRB(40, 40, 40, 50),
+      footer: (ctx) => _piedMention(ctx, structure),
+      build: (ctx) => [
+        _enTete(
+          logoImage,
+          structure,
+          'Registre des traitements',
+          'Édité le ${dateLongueFr(date)}',
+        ),
+        pw.SizedBox(height: 6),
+        pw.Divider(color: _filet),
+        section(
+          'Traitement',
+          'Organisation et planification des relais d\'accueil familial '
+              '(placement temporaire d\'enfants confiés chez un autre assistant '
+              'familial).',
+        ),
+        section('Responsable du traitement', '$resp — $dpo.'),
+        section(
+          'Finalités',
+          'Coordonner les relais, détecter les conflits, proposer des '
+              'affectations, éditer les plannings et documents de liaison.',
+        ),
+        section(
+          'Catégories de personnes concernées',
+          'Enfants accueillis ; assistants familiaux ; personnes à prévenir / '
+              'contacts d\'urgence.',
+        ),
+        section(
+          'Catégories de données',
+          'Identité (nom, prénom, sexe, date de naissance) ; assistant familial '
+              'habituel ; périodes de besoin et d\'accueil ; préférences et '
+              'incompatibilités ; le cas échéant, données de santé (allergies, '
+              'traitements) — catégorie particulière (art. 9 RGPD).',
+        ),
+        section(
+          'Base légale',
+          'Mission d\'intérêt public / obligation légale liée à la protection '
+              'de l\'enfance (art. 6 RGPD), et art. 9-2 pour les données de '
+              'santé. À CONFIRMER par le DPO selon le cadre de la structure.',
+        ),
+        section(
+          'Destinataires',
+          'Personnels habilités du service ; assistants familiaux concernés '
+              '(informations strictement nécessaires au relais).',
+        ),
+        section(
+          'Hébergement & localisation',
+          'Application locale (données sur le poste) ou serveur interne / '
+              'hébergeur de données de santé (HDS) selon le déploiement retenu.',
+        ),
+        section(
+          'Durée de conservation',
+          'À définir par la structure (ex. N mois après le dernier relais), '
+              'puis suppression ou anonymisation.',
+        ),
+        section(
+          'Mesures de sécurité',
+          'Accès protégé par mot de passe ; sauvegardes ; chiffrement du disque '
+              'du poste recommandé (FileVault / BitLocker) ; en version web, '
+              'chiffrement assuré par la base et l\'hébergement HDS.',
+        ),
+        pw.SizedBox(height: 16),
+        pw.Container(
+          padding: const pw.EdgeInsets.all(10),
+          decoration: pw.BoxDecoration(
+            color: _tealClair,
+            borderRadius: pw.BorderRadius.circular(6),
+          ),
+          child: pw.Text(
+            'Modèle à compléter et à faire valider par le délégué à la '
+            'protection des données (DPO). Ne constitue pas un avis juridique.',
+            style: pw.TextStyle(fontSize: 9, color: _teal),
+          ),
+        ),
+      ],
+    ),
+  );
+  return doc.save();
+}
+
 pw.Widget _bloc(String titre) => pw.Container(
   width: double.infinity,
   margin: const pw.EdgeInsets.only(bottom: 4),
@@ -876,7 +1002,7 @@ pw.Widget _signature(String role, String nom) => pw.Column(
   ],
 );
 
-pw.Widget _sectionAccueillant(Accueillant a) {
+pw.Widget _sectionAccueillant(Accueillant a, bool anon) {
   return pw.Container(
     width: double.infinity,
     margin: const pw.EdgeInsets.only(bottom: 6),
@@ -888,7 +1014,7 @@ pw.Widget _sectionAccueillant(Accueillant a) {
     child: pw.Row(
       children: [
         pw.Text(
-          _nom(a.nom, a.prenom),
+          _etiquette(a.nom, a.prenom, anon),
           style: pw.TextStyle(
             fontWeight: pw.FontWeight.bold,
             fontSize: 12,
@@ -905,7 +1031,11 @@ pw.Widget _sectionAccueillant(Accueillant a) {
   );
 }
 
-pw.Widget _tableRelais(List<Affectation> affs, Map<int, Enfant> parEnfant) {
+pw.Widget _tableRelais(
+  List<Affectation> affs,
+  Map<int, Enfant> parEnfant,
+  bool anon,
+) {
   affs.sort((a, b) => a.debut.compareTo(b.debut));
   return pw.TableHelper.fromTextArray(
     headers: ['Enfant', 'Période', 'Durée'],
@@ -914,7 +1044,7 @@ pw.Widget _tableRelais(List<Affectation> affs, Map<int, Enfant> parEnfant) {
         [
           () {
             final e = parEnfant[a.enfantId];
-            return e == null ? '—' : _nom(e.nom, e.prenom);
+            return e == null ? '—' : _etiquette(e.nom, e.prenom, anon);
           }(),
           periodeFr(a.debut, a.fin),
           '${nbJours(a.debut, a.fin)} j',

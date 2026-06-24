@@ -36,6 +36,7 @@ class ExportPdfPage extends StatefulWidget {
 
 class _ExportPdfPageState extends State<ExportPdfPage> {
   late final Future<_Donnees> _future;
+  bool _anonymiser = false;
 
   @override
   void initState() {
@@ -78,25 +79,47 @@ class _ExportPdfPageState extends State<ExportPdfPage> {
             return const Center(child: CircularProgressIndicator());
           }
           final d = snap.data!;
-          return PdfPreview(
-            build: (format) => genererPdfRelais(
-              enfants: d.enfants,
-              accueillants: d.accueillants,
-              // Le planning officiel ignore les relais annulés.
-              affectations: d.affectations
-                  .where((a) => relaisActif(a.statut))
-                  .toList(),
-              besoins: d.besoins,
-              solutions: d.solutions,
-              logo: d.logo,
-              date: DateTime.now(),
-              structure: d.structure,
-            ),
-            canChangePageFormat: false,
-            canChangeOrientation: false,
-            canDebug: false,
-            pdfFileName: 'planning-escale.pdf',
-            pdfPreviewPageDecoration: const BoxDecoration(color: Colors.white),
+          return Column(
+            children: [
+              SwitchListTile(
+                value: _anonymiser,
+                onChanged: (v) => setState(() => _anonymiser = v),
+                secondary: const Icon(Icons.visibility_off_outlined),
+                title: const Text('Anonymiser (initiales)'),
+                subtitle: const Text(
+                  'Pour partager le planning en réunion sans diffuser les noms.',
+                ),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: PdfPreview(
+                  key: ValueKey(_anonymiser),
+                  build: (format) => genererPdfRelais(
+                    enfants: d.enfants,
+                    accueillants: d.accueillants,
+                    // Le planning officiel ignore les relais annulés.
+                    affectations: d.affectations
+                        .where((a) => relaisActif(a.statut))
+                        .toList(),
+                    besoins: d.besoins,
+                    solutions: d.solutions,
+                    logo: d.logo,
+                    date: DateTime.now(),
+                    structure: d.structure,
+                    anonymiser: _anonymiser,
+                  ),
+                  canChangePageFormat: false,
+                  canChangeOrientation: false,
+                  canDebug: false,
+                  pdfFileName: _anonymiser
+                      ? 'planning-escale-anonymise.pdf'
+                      : 'planning-escale.pdf',
+                  pdfPreviewPageDecoration: const BoxDecoration(
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
           );
         },
       ),
