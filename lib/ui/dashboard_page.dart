@@ -254,6 +254,13 @@ class _DashboardPageState extends State<DashboardPage> {
     ).showSnackBar(const SnackBar(content: Text('Export CSV enregistré.')));
   }
 
+  // Sous-périodes non couvertes d'un besoin (les « trous »), en clair.
+  String _trousFr(_Snapshot s, BesoinRelais b) {
+    final cov = couverturesEnfant(b.enfantId, s.affectations, s.solutions);
+    final trous = trousNonCouverts(b.debut, b.fin, cov);
+    return trous.map((t) => periodeFr(t.$1, t.$2)).join(', ');
+  }
+
   // Délai avant le début d'un besoin, en clair (urgence).
   String _urgenceFr(DateTime debut) {
     final jours = jour(debut).difference(jour(DateTime.now())).inDays;
@@ -521,6 +528,8 @@ class _DashboardPageState extends State<DashboardPage> {
                       subtitle: Text(
                         cov == Couverture.incoherente
                             ? 'Dates incohérentes (fin avant début) : ${periodeFr(b.debut, b.fin)}'
+                            : cov == Couverture.partielle
+                            ? '${_urgenceFr(b.debut)} · non couvert : ${_trousFr(s, b)}'
                             : '${_urgenceFr(b.debut)} · ${periodeFr(b.debut, b.fin)}',
                       ),
                       trailing: Row(

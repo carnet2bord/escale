@@ -163,6 +163,8 @@ class Affectations extends Table {
   )();
   // 'propose' | 'confirme' | 'realise' | 'annule'
   TextColumn get statut => text().withDefault(const Constant(statutConfirme))();
+  // Transport du jour J : point/heure de RDV, qui amène/récupère (texte libre).
+  TextColumn get transport => text().nullable()();
 }
 
 // Paires d'enfants à ne jamais réunir.
@@ -244,7 +246,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -266,6 +268,7 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(accueillants, accueillants.secteur);
         await m.addColumn(enfants, enfants.secteur);
       }
+      if (from < 8) await m.addColumn(affectations, affectations.transport);
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
@@ -410,6 +413,18 @@ class AppDatabase extends _$AppDatabase {
   Future<void> majStatutAffectation(int id, String statut) =>
       (update(affectations)..where((t) => t.id.equals(id))).write(
         AffectationsCompanion(statut: Value(statut)),
+      );
+
+  // Met à jour le transport (point/heure de RDV) d'un relais.
+  Future<void> majTransportAffectation(int id, String? transport) =>
+      (update(affectations)..where((t) => t.id.equals(id))).write(
+        AffectationsCompanion(
+          transport: Value(
+            (transport == null || transport.trim().isEmpty)
+                ? null
+                : transport.trim(),
+          ),
+        ),
       );
 
   // Ré-insère une ligne supprimée (pour l'annulation « Annuler » après suppression).

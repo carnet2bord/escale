@@ -298,6 +298,30 @@ class _PlanningPageState extends State<PlanningPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(periodeFr(a.debut, a.fin)),
+            if (a.transport != null && a.transport!.trim().isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.directions_car_outlined,
+                      size: 14,
+                      color: cs.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        a.transport!.trim(),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: cs.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             if (conflits.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 6),
@@ -331,6 +355,13 @@ class _PlanningPageState extends State<PlanningPage> {
                 value: 'retablir',
                 child: _ItemAction(Icons.restore, 'Rétablir'),
               ),
+            const PopupMenuItem(
+              value: 'transport',
+              child: _ItemAction(
+                Icons.directions_car_outlined,
+                'Transport / RDV',
+              ),
+            ),
             const PopupMenuItem(
               value: 'fiche',
               child: _ItemAction(
@@ -383,6 +414,37 @@ class _PlanningPageState extends State<PlanningPage> {
       );
       return;
     }
+    if (v == 'transport') {
+      final ctrl = TextEditingController(text: a.transport ?? '');
+      final res = await showDialog<String?>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Transport / RDV'),
+          content: TextField(
+            controller: ctrl,
+            autofocus: true,
+            minLines: 2,
+            maxLines: 4,
+            decoration: const InputDecoration(
+              labelText: 'Modalités du jour J',
+              hintText: 'Point et heure de RDV, qui amène / récupère…',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Annuler'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, ctrl.text),
+              child: const Text('Enregistrer'),
+            ),
+          ],
+        ),
+      );
+      if (res != null) await db.majTransportAffectation(a.id, res);
+      return;
+    }
     if (v == 'fiche') {
       final enfant = d.enfant(a.enfantId);
       final accueillant = d.accueillant(a.accueillantId);
@@ -409,6 +471,7 @@ class _PlanningPageState extends State<PlanningPage> {
               afHabituel: afHab,
               debut: a.debut,
               fin: a.fin,
+              transport: a.transport,
             ),
           ),
         ),

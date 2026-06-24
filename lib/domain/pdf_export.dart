@@ -265,6 +265,7 @@ Future<Uint8List> genererPdfConvention({
   required DateTime debut,
   required DateTime fin,
   String? motif,
+  String? transport,
 }) async {
   final doc = pw.Document(title: 'Escale — Fiche de liaison', author: 'Escale');
   final logoImage = pw.MemoryImage(logo);
@@ -376,6 +377,8 @@ Future<Uint8List> genererPdfConvention({
           ),
           if (motif != null && motif.trim().isNotEmpty)
             ligne('Motif', _safe(motif.trim())),
+          if (transport != null && transport.trim().isNotEmpty)
+            ligne('Transport / RDV', _safe(transport.trim())),
           pw.SizedBox(height: 18),
           pw.Container(
             padding: const pw.EdgeInsets.all(10),
