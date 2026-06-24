@@ -1,6 +1,8 @@
 name: Build Windows
 
-# Construit l'exécutable Windows d'Escale sur une machine Windows dans le cloud.
+# Construit Escale pour Windows sur une machine Windows dans le cloud, et produit :
+#  - Escale-windows.zip      : le dossier complet (exe + dll + data) — secours
+#  - Escale-portable.exe      : UN SEUL fichier auto-extractible qui lance l'app
 # Se lance à chaque push sur main, ou manuellement (onglet Actions → Run workflow).
 
 on:
@@ -32,7 +34,8 @@ jobs:
       - name: Compiler (release)
         run: flutter build windows --release
 
-      - name: Empaqueter en .zip
+      - name: Localiser le dossier Release
+        id: rel
         shell: pwsh
         run: |
           $release = Get-ChildItem -Path build/windows -Recurse -Directory -Filter Release |
@@ -40,9 +43,47 @@ jobs:
             Select-Object -First 1
           if (-not $release) { throw "Dossier Release (contenant Escale.exe) introuvable." }
           Write-Host "Dossier trouvé : $($release.FullName)"
-          Compress-Archive -Path "$($release.FullName)\*" -DestinationPath "Escale-windows.zip" -Force
+          "dir=$($release.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
-      - name: Publier l'artefact téléchargeable
+      - name: Empaqueter le dossier en .zip (secours)
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "${{ steps.rel.outputs.dir }}\*" -DestinationPath "Escale-windows.zip" -Force
+
+      - name: Construire l'exe portable unique (auto-extracteur 7-Zip)
+        shell: pwsh
+        run: |
+          $rel = "${{ steps.rel.outputs.dir }}"
+          # 1) Archive 7z compressée du CONTENU du dossier Release (fichiers à la racine).
+          7z a -t7z -mx=9 app.7z "$rel\*" | Out-Null
+          # 2) Récupérer le module SFX auto-extractible (paquet « 7-Zip Extra »).
+          Invoke-WebRequest -Uri "https://www.7-zip.org/a/7z2301-extra.7z" -OutFile 7zextra.7z
+          7z x 7zextra.7z -oextra -y | Out-Null
+          $sfx = Get-ChildItem -Path extra -Recurse -Include 7zSD.sfx,7zS.sfx |
+            Select-Object -First 1
+          if (-not $sfx) { throw "Module SFX (7zSD.sfx/7zS.sfx) introuvable." }
+          Write-Host "Module SFX : $($sfx.FullName)"
+          # 3) Config de l'auto-extracteur : extraction silencieuse en temp + lancement.
+          $cfg = ";!@Install@!UTF-8!`r`nTitle=`"Escale`"`r`nRunProgram=`"Escale.exe`"`r`nGUIMode=`"2`"`r`n;!@InstallEnd@!`r`n"
+          $noBom = New-Object System.Text.UTF8Encoding($false)
+          [System.IO.File]::WriteAllText("$PWD\config.txt", $cfg, $noBom)
+          # 4) Concaténer : module SFX + config + archive => un seul Escale.exe.
+          $out = [System.IO.File]::Create("$PWD\Escale-portable.exe")
+          foreach ($f in @($sfx.FullName, "$PWD\config.txt", "$PWD\app.7z")) {
+            $bytes = [System.IO.File]::ReadAllBytes($f)
+            $out.Write($bytes, 0, $bytes.Length)
+          }
+          $out.Close()
+          Write-Host "Créé : Escale-portable.exe ($([math]::Round((Get-Item Escale-portable.exe).Length/1MB,1)) Mo)"
+
+      - name: Publier l'exe portable
+        uses: actions/upload-artifact@v4
+        with:
+          name: Escale-portable
+          path: Escale-portable.exe
+          if-no-files-found: error
+
+      - name: Publier le dossier complet (secours)
         uses: actions/upload-artifact@v4
         with:
           name: Escale-windows
