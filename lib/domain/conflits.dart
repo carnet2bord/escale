@@ -128,10 +128,12 @@ List<Conflit> analyserAffectation({
   }
 
   // Affectations existantes qui chevauchent la période proposée.
+  // Un relais annulé n'occupe plus de place et ne crée aucun conflit.
   final chevauchantes = affectations
       .where(
         (a) =>
             a.id != affectationExclueId &&
+            relaisActif(a.statut) &&
             periodesSeChevauchent(debut, fin, a.debut, a.fin),
       )
       .toList();

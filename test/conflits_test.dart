@@ -39,6 +39,7 @@ Affectation affectation({
   required int accueillantId,
   required DateTime debut,
   required DateTime fin,
+  String statut = statutConfirme,
 }) => Affectation(
   id: id,
   enfantId: enfantId,
@@ -46,6 +47,7 @@ Affectation affectation({
   debut: debut,
   fin: fin,
   besoinId: null,
+  statut: statut,
 );
 
 DateTime d(int jour) => DateTime(2026, 7, jour);
@@ -399,5 +401,31 @@ void main() {
       ],
     );
     expect(conflits.any((c) => c.estBloquant), isTrue);
+  });
+
+  test('un relais annulé n\'occupe pas de place', () {
+    final e1 = enfant(id: 1);
+    final e2 = enfant(id: 2, nom: 'Durand');
+    final conflits = analyserAffectation(
+      enfant: e2,
+      accueillant: accueillant(id: 10, nbPlaces: 1),
+      debut: d(1),
+      fin: d(7),
+      affectations: [
+        affectation(
+          id: 100,
+          enfantId: 1,
+          accueillantId: 10,
+          debut: d(3),
+          fin: d(5),
+          statut: statutAnnule,
+        ),
+      ],
+      disponibilites: const [],
+      indisponibilites: const [],
+      incompatibilites: const [],
+      enfants: [e1, e2],
+    );
+    expect(conflits.any((c) => c.estBloquant), isFalse);
   });
 }

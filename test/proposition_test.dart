@@ -50,6 +50,7 @@ Affectation affectation({
   required int accueillantId,
   required DateTime debut,
   required DateTime fin,
+  String statut = statutConfirme,
 }) => Affectation(
   id: id,
   enfantId: enfantId,
@@ -57,6 +58,7 @@ Affectation affectation({
   debut: debut,
   fin: fin,
   besoinId: null,
+  statut: statut,
 );
 
 SolutionAlternative solution({
@@ -228,4 +230,27 @@ void main() {
       expect(r.propositions.first.fin, d(10));
     },
   );
+
+  test('un relais annulé ne couvre pas : le besoin est re-proposé', () {
+    final r = proposerAffectations(
+      enfants: [enfant(id: 1)],
+      accueillants: [accueillant(id: 10)],
+      affectationsExistantes: [
+        affectation(
+          id: 100,
+          enfantId: 1,
+          accueillantId: 20,
+          debut: d(1),
+          fin: d(7),
+          statut: statutAnnule,
+        ),
+      ],
+      besoins: [besoin(id: 1, enfantId: 1, debut: d(1), fin: d(7))],
+      dispos: const [],
+      indispos: const [],
+      incompatibilites: const [],
+    );
+    expect(r.propositions.length, 1);
+    expect(r.nonPlaces, isEmpty);
+  });
 }

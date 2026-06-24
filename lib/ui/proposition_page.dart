@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -71,6 +72,9 @@ class _PropositionPageState extends State<PropositionPage> {
               accueillantId: p.accueillant.id,
               debut: p.debut,
               fin: p.fin,
+              besoinId: Value(p.besoinId),
+              // Une proposition automatique reste « à confirmer » par défaut.
+              statut: const Value(statutPropose),
             ),
           );
           n++;

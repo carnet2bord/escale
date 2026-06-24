@@ -78,7 +78,10 @@ class _ExportPdfPageState extends State<ExportPdfPage> {
             build: (format) => genererPdfRelais(
               enfants: d.enfants,
               accueillants: d.accueillants,
-              affectations: d.affectations,
+              // Le planning officiel ignore les relais annulés.
+              affectations: d.affectations
+                  .where((a) => relaisActif(a.statut))
+                  .toList(),
               besoins: d.besoins,
               solutions: d.solutions,
               logo: d.logo,

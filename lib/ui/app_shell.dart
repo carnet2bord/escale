@@ -58,6 +58,18 @@ class _AppShellState extends State<AppShell> {
 
   Future<void> _sauvegarder() async {
     final db = context.read<AppDatabase>();
+    if (!await confirmer(
+      context,
+      titre: 'Sauvegarder les données ?',
+      message:
+          'Le fichier de sauvegarde (.sqlite) contient les données des enfants '
+          'et des accueillants EN CLAIR (non chiffrées). Conservez-le dans un '
+          'endroit sécurisé et ne le transmettez pas par un canal non protégé.',
+      confirmer: 'Continuer',
+    )) {
+      return;
+    }
+    if (!mounted) return;
     final loc = await getSaveLocation(
       suggestedName: 'escale-sauvegarde.sqlite',
     );

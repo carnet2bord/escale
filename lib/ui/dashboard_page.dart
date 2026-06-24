@@ -194,6 +194,7 @@ class _DashboardPageState extends State<DashboardPage> {
     final parEnfant = {for (final e in s.enfants) e.id: e};
     final parAcc = {for (final a in s.accueillants) a.id: a};
     for (final a in s.affectations) {
+      if (!relaisActif(a.statut)) continue;
       final e = parEnfant[a.enfantId];
       final acc = parAcc[a.accueillantId];
       if (e == null || acc == null) continue;
@@ -260,7 +261,8 @@ class _DashboardPageState extends State<DashboardPage> {
                   ),
                   _StatCard(
                     icone: Icons.calendar_month,
-                    valeur: '${s.affectations.length}',
+                    valeur:
+                        '${s.affectations.where((a) => relaisActif(a.statut)).length}',
                     libelle: 'Relais planifiés',
                   ),
                   _StatCard(

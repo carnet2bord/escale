@@ -259,23 +259,37 @@ class _PlanningPageState extends State<PlanningPage> {
   Widget _carteAffectation(_PlanningData d, Affectation a) {
     final enfant = d.enfant(a.enfantId);
     final accueillant = d.accueillant(a.accueillantId);
-    final conflits = _conflitsDe(d, a);
+    final annule = a.statut == statutAnnule;
+    // Un relais annulé n'occupe plus de place : on n'affiche pas ses conflits.
+    final conflits = annule ? const <Conflit>[] : _conflitsDe(d, a);
     final bloquants = conflits.where((c) => c.estBloquant).length;
     final avert = conflits.length - bloquants;
-    return Card(
+    final cs = Theme.of(context).colorScheme;
+    final carte = Card(
       child: ListTile(
         leading: Icon(
           bloquants > 0
               ? Icons.error
               : (avert > 0 ? Icons.warning_amber_rounded : Icons.check_circle),
           color: bloquants > 0
-              ? Theme.of(context).colorScheme.error
+              ? cs.error
               : (avert > 0 ? Colors.orange.shade700 : Colors.green.shade600),
         ),
-        title: Text(
-          '${enfant == null ? '?' : nomComplet(enfant.nom, enfant.prenom)}'
-          '  →  '
-          '${accueillant == null ? '?' : nomComplet(accueillant.nom, accueillant.prenom)}',
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                '${enfant == null ? '?' : nomComplet(enfant.nom, enfant.prenom)}'
+                '  →  '
+                '${accueillant == null ? '?' : nomComplet(accueillant.nom, accueillant.prenom)}',
+                style: annule
+                    ? const TextStyle(decoration: TextDecoration.lineThrough)
+                    : null,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Pastille(libelleStatut(a.statut), couleur: couleurStatut(a.statut)),
+          ],
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -289,24 +303,76 @@ class _PlanningPageState extends State<PlanningPage> {
           ],
         ),
         isThreeLine: conflits.isNotEmpty,
-        trailing: IconButton(
-          tooltip: 'Supprimer',
-          icon: const Icon(Icons.delete_outline),
-          onPressed: () async {
-            final db = context.read<AppDatabase>();
-            if (await confirmer(
-              context,
-              titre: 'Supprimer ce relais ?',
-              message: 'L\'affectation sera retirée du planning.',
-            )) {
-              await (db.delete(
-                db.affectations,
-              )..where((t) => t.id.equals(a.id))).go();
-            }
-          },
+        trailing: PopupMenuButton<String>(
+          tooltip: 'Actions',
+          icon: const Icon(Icons.more_vert),
+          onSelected: (v) => _actionRelais(d, a, v),
+          itemBuilder: (_) => [
+            if (a.statut == statutPropose)
+              const PopupMenuItem(
+                value: 'confirme',
+                child: _ItemAction(Icons.check_circle_outline, 'Confirmer'),
+              ),
+            if (a.statut != statutRealise && a.statut != statutAnnule)
+              const PopupMenuItem(
+                value: 'realise',
+                child: _ItemAction(Icons.task_alt, 'Marquer réalisé'),
+              ),
+            if (a.statut != statutAnnule)
+              const PopupMenuItem(
+                value: 'annule',
+                child: _ItemAction(Icons.block, 'Annuler'),
+              ),
+            if (a.statut == statutAnnule)
+              const PopupMenuItem(
+                value: 'retablir',
+                child: _ItemAction(Icons.restore, 'Rétablir'),
+              ),
+            const PopupMenuItem(
+              value: 'dupliquer',
+              child: _ItemAction(Icons.copy_all_outlined, 'Dupliquer'),
+            ),
+            const PopupMenuDivider(),
+            const PopupMenuItem(
+              value: 'supprimer',
+              child: _ItemAction(Icons.delete_outline, 'Supprimer'),
+            ),
+          ],
         ),
       ),
     );
+    return annule ? Opacity(opacity: 0.6, child: carte) : carte;
+  }
+
+  Future<void> _actionRelais(_PlanningData d, Affectation a, String v) async {
+    final db = context.read<AppDatabase>();
+    if (v == 'supprimer') {
+      if (await confirmer(
+        context,
+        titre: 'Supprimer ce relais ?',
+        message: 'L\'affectation sera retirée du planning.',
+      )) {
+        await (db.delete(
+          db.affectations,
+        )..where((t) => t.id.equals(a.id))).go();
+      }
+      return;
+    }
+    if (v == 'dupliquer') {
+      await Navigator.of(context).push<bool>(
+        MaterialPageRoute(
+          builder: (_) => _AffectationEditor(
+            data: d,
+            enfantInitial: a.enfantId,
+            accueillantInitial: a.accueillantId,
+            periodeInitiale: DateTimeRange(start: a.debut, end: a.fin),
+          ),
+        ),
+      );
+      return;
+    }
+    // Changement de statut.
+    await db.majStatutAffectation(a.id, v == 'retablir' ? statutConfirme : v);
   }
 
   Widget _carteSolution(_PlanningData d, SolutionAlternative sol) {
@@ -378,10 +444,12 @@ class _PlanningPageState extends State<PlanningPage> {
 class _AffectationEditor extends StatefulWidget {
   final _PlanningData data;
   final int? enfantInitial;
+  final int? accueillantInitial;
   final DateTimeRange? periodeInitiale;
   const _AffectationEditor({
     required this.data,
     this.enfantInitial,
+    this.accueillantInitial,
     this.periodeInitiale,
   });
 
@@ -401,6 +469,7 @@ class _AffectationEditorState extends State<_AffectationEditor> {
   void initState() {
     super.initState();
     _enfantId = widget.enfantInitial;
+    _accueillantId = widget.accueillantInitial;
     _periode = widget.periodeInitiale;
     _conflits = _calculer();
   }
@@ -596,6 +665,18 @@ IconData _iconeSolution(String type) {
   }
 }
 
+class _ItemAction extends StatelessWidget {
+  final IconData icone;
+  final String texte;
+  const _ItemAction(this.icone, this.texte);
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [Icon(icone, size: 20), const SizedBox(width: 12), Text(texte)],
+    );
+  }
+}
+
 // Un créneau à afficher sur la frise (relais ou solution alternative).
 class _BarreCal {
   final DateTime debut;
@@ -721,7 +802,9 @@ class _VueCalendrierState extends State<_VueCalendrier> {
     final lignes = <_LigneCal>[];
     for (final acc in accs) {
       final barres = <_BarreCal>[];
-      for (final a in affs.where((x) => x.accueillantId == acc.id)) {
+      for (final a in affs.where(
+        (x) => x.accueillantId == acc.id && relaisActif(x.statut),
+      )) {
         final e = d.enfant(a.enfantId);
         final nom = e == null ? '?' : nomComplet(e.nom, e.prenom);
         barres.add(

@@ -77,7 +77,7 @@ List<(DateTime, DateTime)> couverturesEnfant(
   List<SolutionAlternative> solutions,
 ) => [
   for (final a in affectations)
-    if (a.enfantId == enfantId) (a.debut, a.fin),
+    if (a.enfantId == enfantId && relaisActif(a.statut)) (a.debut, a.fin),
   for (final s in solutions)
     if (s.enfantId == enfantId) (s.debut, s.fin),
 ];
@@ -136,6 +136,10 @@ ResultatProposition proposerAffectations({
   for (final i in indispos) {
     (indispoParAcc[i.accueillantId] ??= []).add(i);
   }
+  // Les relais annulés n'occupent plus de place : on les ignore partout.
+  final affsActives = affectationsExistantes
+      .where((a) => relaisActif(a.statut))
+      .toList();
 
   // 1. Construire les cibles (trous à combler), en fusionnant d'abord les
   //    besoins de chaque enfant pour ne jamais produire deux cibles qui se
@@ -178,7 +182,7 @@ ResultatProposition proposerAffectations({
   // affectations existantes et des propositions déjà retenues.
   bool sansBloquant(Cible c, Accueillant acc, List<Proposition> retenues) {
     final affs = [
-      ...affectationsExistantes,
+      ...affsActives,
       // ids négatifs DISTINCTS pour les propositions retenues : aucune ne peut
       // être confondue avec une vraie affectation (id >= 1), et même si un
       // affectationExclueId était transmis, il n'en exclurait jamais plusieurs.
@@ -190,6 +194,7 @@ ResultatProposition proposerAffectations({
           debut: p.debut,
           fin: p.fin,
           besoinId: null,
+          statut: statutConfirme,
         ),
     ];
     final conflits = analyserAffectation(
@@ -226,7 +231,7 @@ ResultatProposition proposerAffectations({
           .map((e) => e.id)
           .toSet();
       // Un frère est-il chez cet accueillant sur la période ?
-      final viaExistant = affectationsExistantes.any(
+      final viaExistant = affsActives.any(
         (x) =>
             x.accueillantId == a.id &&
             freres.contains(x.enfantId) &&
@@ -243,7 +248,7 @@ ResultatProposition proposerAffectations({
 
     int charge(Accueillant a) {
       var n = 0;
-      for (final x in affectationsExistantes) {
+      for (final x in affsActives) {
         if (x.accueillantId == a.id &&
             periodesSeChevauchent(c.debut, c.fin, x.debut, x.fin)) {
           n++;
@@ -315,7 +320,7 @@ ResultatProposition proposerAffectations({
                 freres.contains(q.enfant.id) &&
                 periodesSeChevauchent(p.debut, p.fin, q.debut, q.fin),
           ) ||
-          affectationsExistantes.any(
+          affsActives.any(
             (x) =>
                 x.accueillantId == p.accueillant.id &&
                 freres.contains(x.enfantId) &&

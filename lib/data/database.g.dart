@@ -2249,6 +2249,16 @@ class $AffectationsTable extends Affectations
       'REFERENCES besoins_relais (id) ON DELETE SET NULL',
     ),
   );
+  static const VerificationMeta _statutMeta = const VerificationMeta('statut');
+  @override
+  late final GeneratedColumn<String> statut = GeneratedColumn<String>(
+    'statut',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(statutConfirme),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2257,6 +2267,7 @@ class $AffectationsTable extends Affectations
     debut,
     fin,
     besoinId,
+    statut,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2314,6 +2325,12 @@ class $AffectationsTable extends Affectations
         besoinId.isAcceptableOrUnknown(data['besoin_id']!, _besoinIdMeta),
       );
     }
+    if (data.containsKey('statut')) {
+      context.handle(
+        _statutMeta,
+        statut.isAcceptableOrUnknown(data['statut']!, _statutMeta),
+      );
+    }
     return context;
   }
 
@@ -2347,6 +2364,10 @@ class $AffectationsTable extends Affectations
         DriftSqlType.int,
         data['${effectivePrefix}besoin_id'],
       ),
+      statut: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}statut'],
+      )!,
     );
   }
 
@@ -2363,6 +2384,7 @@ class Affectation extends DataClass implements Insertable<Affectation> {
   final DateTime debut;
   final DateTime fin;
   final int? besoinId;
+  final String statut;
   const Affectation({
     required this.id,
     required this.enfantId,
@@ -2370,6 +2392,7 @@ class Affectation extends DataClass implements Insertable<Affectation> {
     required this.debut,
     required this.fin,
     this.besoinId,
+    required this.statut,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2382,6 +2405,7 @@ class Affectation extends DataClass implements Insertable<Affectation> {
     if (!nullToAbsent || besoinId != null) {
       map['besoin_id'] = Variable<int>(besoinId);
     }
+    map['statut'] = Variable<String>(statut);
     return map;
   }
 
@@ -2395,6 +2419,7 @@ class Affectation extends DataClass implements Insertable<Affectation> {
       besoinId: besoinId == null && nullToAbsent
           ? const Value.absent()
           : Value(besoinId),
+      statut: Value(statut),
     );
   }
 
@@ -2410,6 +2435,7 @@ class Affectation extends DataClass implements Insertable<Affectation> {
       debut: serializer.fromJson<DateTime>(json['debut']),
       fin: serializer.fromJson<DateTime>(json['fin']),
       besoinId: serializer.fromJson<int?>(json['besoinId']),
+      statut: serializer.fromJson<String>(json['statut']),
     );
   }
   @override
@@ -2422,6 +2448,7 @@ class Affectation extends DataClass implements Insertable<Affectation> {
       'debut': serializer.toJson<DateTime>(debut),
       'fin': serializer.toJson<DateTime>(fin),
       'besoinId': serializer.toJson<int?>(besoinId),
+      'statut': serializer.toJson<String>(statut),
     };
   }
 
@@ -2432,6 +2459,7 @@ class Affectation extends DataClass implements Insertable<Affectation> {
     DateTime? debut,
     DateTime? fin,
     Value<int?> besoinId = const Value.absent(),
+    String? statut,
   }) => Affectation(
     id: id ?? this.id,
     enfantId: enfantId ?? this.enfantId,
@@ -2439,6 +2467,7 @@ class Affectation extends DataClass implements Insertable<Affectation> {
     debut: debut ?? this.debut,
     fin: fin ?? this.fin,
     besoinId: besoinId.present ? besoinId.value : this.besoinId,
+    statut: statut ?? this.statut,
   );
   Affectation copyWithCompanion(AffectationsCompanion data) {
     return Affectation(
@@ -2450,6 +2479,7 @@ class Affectation extends DataClass implements Insertable<Affectation> {
       debut: data.debut.present ? data.debut.value : this.debut,
       fin: data.fin.present ? data.fin.value : this.fin,
       besoinId: data.besoinId.present ? data.besoinId.value : this.besoinId,
+      statut: data.statut.present ? data.statut.value : this.statut,
     );
   }
 
@@ -2461,14 +2491,15 @@ class Affectation extends DataClass implements Insertable<Affectation> {
           ..write('accueillantId: $accueillantId, ')
           ..write('debut: $debut, ')
           ..write('fin: $fin, ')
-          ..write('besoinId: $besoinId')
+          ..write('besoinId: $besoinId, ')
+          ..write('statut: $statut')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode =>
-      Object.hash(id, enfantId, accueillantId, debut, fin, besoinId);
+      Object.hash(id, enfantId, accueillantId, debut, fin, besoinId, statut);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2478,7 +2509,8 @@ class Affectation extends DataClass implements Insertable<Affectation> {
           other.accueillantId == this.accueillantId &&
           other.debut == this.debut &&
           other.fin == this.fin &&
-          other.besoinId == this.besoinId);
+          other.besoinId == this.besoinId &&
+          other.statut == this.statut);
 }
 
 class AffectationsCompanion extends UpdateCompanion<Affectation> {
@@ -2488,6 +2520,7 @@ class AffectationsCompanion extends UpdateCompanion<Affectation> {
   final Value<DateTime> debut;
   final Value<DateTime> fin;
   final Value<int?> besoinId;
+  final Value<String> statut;
   const AffectationsCompanion({
     this.id = const Value.absent(),
     this.enfantId = const Value.absent(),
@@ -2495,6 +2528,7 @@ class AffectationsCompanion extends UpdateCompanion<Affectation> {
     this.debut = const Value.absent(),
     this.fin = const Value.absent(),
     this.besoinId = const Value.absent(),
+    this.statut = const Value.absent(),
   });
   AffectationsCompanion.insert({
     this.id = const Value.absent(),
@@ -2503,6 +2537,7 @@ class AffectationsCompanion extends UpdateCompanion<Affectation> {
     required DateTime debut,
     required DateTime fin,
     this.besoinId = const Value.absent(),
+    this.statut = const Value.absent(),
   }) : enfantId = Value(enfantId),
        accueillantId = Value(accueillantId),
        debut = Value(debut),
@@ -2514,6 +2549,7 @@ class AffectationsCompanion extends UpdateCompanion<Affectation> {
     Expression<DateTime>? debut,
     Expression<DateTime>? fin,
     Expression<int>? besoinId,
+    Expression<String>? statut,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2522,6 +2558,7 @@ class AffectationsCompanion extends UpdateCompanion<Affectation> {
       if (debut != null) 'debut': debut,
       if (fin != null) 'fin': fin,
       if (besoinId != null) 'besoin_id': besoinId,
+      if (statut != null) 'statut': statut,
     });
   }
 
@@ -2532,6 +2569,7 @@ class AffectationsCompanion extends UpdateCompanion<Affectation> {
     Value<DateTime>? debut,
     Value<DateTime>? fin,
     Value<int?>? besoinId,
+    Value<String>? statut,
   }) {
     return AffectationsCompanion(
       id: id ?? this.id,
@@ -2540,6 +2578,7 @@ class AffectationsCompanion extends UpdateCompanion<Affectation> {
       debut: debut ?? this.debut,
       fin: fin ?? this.fin,
       besoinId: besoinId ?? this.besoinId,
+      statut: statut ?? this.statut,
     );
   }
 
@@ -2564,6 +2603,9 @@ class AffectationsCompanion extends UpdateCompanion<Affectation> {
     if (besoinId.present) {
       map['besoin_id'] = Variable<int>(besoinId.value);
     }
+    if (statut.present) {
+      map['statut'] = Variable<String>(statut.value);
+    }
     return map;
   }
 
@@ -2575,7 +2617,8 @@ class AffectationsCompanion extends UpdateCompanion<Affectation> {
           ..write('accueillantId: $accueillantId, ')
           ..write('debut: $debut, ')
           ..write('fin: $fin, ')
-          ..write('besoinId: $besoinId')
+          ..write('besoinId: $besoinId, ')
+          ..write('statut: $statut')
           ..write(')'))
         .toString();
   }
@@ -6553,6 +6596,7 @@ typedef $$AffectationsTableCreateCompanionBuilder =
       required DateTime debut,
       required DateTime fin,
       Value<int?> besoinId,
+      Value<String> statut,
     });
 typedef $$AffectationsTableUpdateCompanionBuilder =
     AffectationsCompanion Function({
@@ -6562,6 +6606,7 @@ typedef $$AffectationsTableUpdateCompanionBuilder =
       Value<DateTime> debut,
       Value<DateTime> fin,
       Value<int?> besoinId,
+      Value<String> statut,
     });
 
 final class $$AffectationsTableReferences
@@ -6643,6 +6688,11 @@ class $$AffectationsTableFilterComposer
 
   ColumnFilters<DateTime> get fin => $composableBuilder(
     column: $table.fin,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get statut => $composableBuilder(
+    column: $table.statut,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6740,6 +6790,11 @@ class $$AffectationsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get statut => $composableBuilder(
+    column: $table.statut,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$EnfantsTableOrderingComposer get enfantId {
     final $$EnfantsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -6827,6 +6882,9 @@ class $$AffectationsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get fin =>
       $composableBuilder(column: $table.fin, builder: (column) => column);
+
+  GeneratedColumn<String> get statut =>
+      $composableBuilder(column: $table.statut, builder: (column) => column);
 
   $$EnfantsTableAnnotationComposer get enfantId {
     final $$EnfantsTableAnnotationComposer composer = $composerBuilder(
@@ -6936,6 +6994,7 @@ class $$AffectationsTableTableManager
                 Value<DateTime> debut = const Value.absent(),
                 Value<DateTime> fin = const Value.absent(),
                 Value<int?> besoinId = const Value.absent(),
+                Value<String> statut = const Value.absent(),
               }) => AffectationsCompanion(
                 id: id,
                 enfantId: enfantId,
@@ -6943,6 +7002,7 @@ class $$AffectationsTableTableManager
                 debut: debut,
                 fin: fin,
                 besoinId: besoinId,
+                statut: statut,
               ),
           createCompanionCallback:
               ({
@@ -6952,6 +7012,7 @@ class $$AffectationsTableTableManager
                 required DateTime debut,
                 required DateTime fin,
                 Value<int?> besoinId = const Value.absent(),
+                Value<String> statut = const Value.absent(),
               }) => AffectationsCompanion.insert(
                 id: id,
                 enfantId: enfantId,
@@ -6959,6 +7020,7 @@ class $$AffectationsTableTableManager
                 debut: debut,
                 fin: fin,
                 besoinId: besoinId,
+                statut: statut,
               ),
           withReferenceMapper: (p0) => p0
               .map(

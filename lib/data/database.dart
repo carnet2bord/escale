@@ -30,6 +30,15 @@ const String solColonie = 'colonie'; // colonie de vacances
 const String solTiers = 'tiers'; // accueil par un tiers
 const String solAutre = 'autre';
 
+// Statut d'un relais (affectation) dans son cycle de vie.
+const String statutPropose = 'propose'; // pressenti, à confirmer
+const String statutConfirme = 'confirme'; // verrouillé
+const String statutRealise = 'realise'; // accueil effectué
+const String statutAnnule = 'annule'; // annulé — n'occupe plus de place
+
+// Un relais annulé ne compte ni dans la couverture, ni dans l'occupation/conflits.
+bool relaisActif(String statut) => statut != statutAnnule;
+
 // Les assistants familiaux qui peuvent accueillir des enfants en relais.
 @DataClassName('Accueillant')
 class Accueillants extends Table {
@@ -124,6 +133,8 @@ class Affectations extends Table {
     #id,
     onDelete: KeyAction.setNull,
   )();
+  // 'propose' | 'confirme' | 'realise' | 'annule'
+  TextColumn get statut => text().withDefault(const Constant(statutConfirme))();
 }
 
 // Paires d'enfants à ne jamais réunir.
@@ -195,7 +206,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -203,6 +214,7 @@ class AppDatabase extends _$AppDatabase {
     onUpgrade: (m, from, to) async {
       if (from < 2) await m.createTable(preferencesAccueil);
       if (from < 3) await m.createTable(solutionsAlternatives);
+      if (from < 4) await m.addColumn(affectations, affectations.statut);
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
@@ -339,6 +351,12 @@ class AppDatabase extends _$AppDatabase {
   Future<List<Enfant>> tousEnfants() => select(enfants).get();
   Future<List<Fratrie>> toutesFratries() => select(fratries).get();
   Future<List<Affectation>> toutesAffectations() => select(affectations).get();
+
+  // Met à jour le statut d'un relais (proposé/confirmé/réalisé/annulé).
+  Future<void> majStatutAffectation(int id, String statut) =>
+      (update(affectations)..where((t) => t.id.equals(id))).write(
+        AffectationsCompanion(statut: Value(statut)),
+      );
   Future<List<BesoinRelais>> tousBesoins() => select(besoinsRelais).get();
   Future<List<Incompatibilite>> toutesIncompatibilites() =>
       select(incompatibilites).get();

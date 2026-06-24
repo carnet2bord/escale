@@ -5,6 +5,21 @@ import '../domain/conflits.dart';
 
 String libelleSexe(String s) => s == sexeFille ? 'Fille' : 'Garçon';
 
+// Libellé et couleur du statut d'un relais (affectation).
+String libelleStatut(String s) => switch (s) {
+  statutPropose => 'Proposé',
+  statutRealise => 'Réalisé',
+  statutAnnule => 'Annulé',
+  _ => 'Confirmé',
+};
+
+Color couleurStatut(String s) => switch (s) {
+  statutPropose => const Color(0xFFC2710C), // ambre
+  statutRealise => const Color(0xFF4B5563), // gris ardoise
+  statutAnnule => const Color(0xFF9CA3AF), // gris
+  _ => const Color(0xFF156F6C), // teal = confirmé
+};
+
 // Couleur conventionnelle par sexe (utilisée pour les fiches et le calendrier).
 const Color couleurGarcon = Color(0xFF2F6BB2);
 const Color couleurFille = Color(0xFFB23A6B);
