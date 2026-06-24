@@ -36,6 +36,9 @@ export interface Accueillant {
   agrementEcheance: Date | null;
   plafondJoursAn: number | null;
   secteur: string | null;
+  adresse: string | null;
+  latitude: number | null;
+  longitude: number | null;
   notes: string | null;
 }
 
@@ -56,6 +59,9 @@ export interface Enfant {
   sante: string | null;
   contactUrgence: string | null;
   secteur: string | null;
+  adresse: string | null;
+  latitude: number | null;
+  longitude: number | null;
   notes: string | null;
 }
 

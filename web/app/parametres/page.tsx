@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 import { Header } from '@/app/_components/Header';
-import { lireInfosStructure } from '@/lib/reglages';
+import { lireInfosStructure, lireSeuilDistanceKm } from '@/lib/reglages';
 import { enregistrerStructure } from './actions';
 
 export const dynamic = 'force-dynamic';
@@ -13,6 +13,7 @@ export default async function Parametres({
 }) {
   const { enregistre } = await searchParams;
   const s = await lireInfosStructure();
+  const seuilDistance = await lireSeuilDistanceKm();
 
   return (
     <>
@@ -47,6 +48,14 @@ export default async function Parametres({
               name="mention"
               defaultValue={s.mention}
               placeholder="Ex. Document confidentiel — usage interne"
+            />
+            <label>Seuil de distance (km) — alerte « relais éloigné »</label>
+            <input
+              name="seuilDistance"
+              type="number"
+              min={1}
+              defaultValue={seuilDistance}
+              placeholder="Ex. 30"
             />
             <div className="actions-form">
               <button className="bouton" type="submit">

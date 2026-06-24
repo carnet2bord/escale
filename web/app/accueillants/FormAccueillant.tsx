@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { BlocAdresse } from '@/app/_components/BlocAdresse';
 import { enregistrerAccueillant, supprimerAccueillant } from './actions';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -56,6 +57,7 @@ export function FormAccueillant({ a }: { a?: any }) {
             <input name="agrementEcheance" type="date" defaultValue={a?.agrement_echeance ?? ''} />
           </div>
         </div>
+        <BlocAdresse entite={a} />
         <label>Notes</label>
         <textarea name="notes" rows={2} defaultValue={a?.notes ?? ''} />
         <div className="actions-form">

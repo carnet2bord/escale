@@ -12,6 +12,9 @@ create table if not exists accueillants (
   agrement_echeance date,
   plafond_jours_an  int,
   secteur           text,
+  adresse           text,
+  latitude          double precision,
+  longitude         double precision,
   notes             text
 );
 
@@ -32,8 +35,19 @@ create table if not exists enfants (
   sante            text,
   contact_urgence  text,
   secteur          text,
+  adresse          text,
+  latitude         double precision,
+  longitude        double precision,
   notes            text
 );
+
+-- Colonnes adresse/géo ajoutées après coup : idempotent pour bases existantes.
+alter table accueillants add column if not exists adresse text;
+alter table accueillants add column if not exists latitude double precision;
+alter table accueillants add column if not exists longitude double precision;
+alter table enfants add column if not exists adresse text;
+alter table enfants add column if not exists latitude double precision;
+alter table enfants add column if not exists longitude double precision;
 
 create table if not exists disponibilites_accueil (
   id             serial primary key,

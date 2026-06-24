@@ -4,8 +4,10 @@ import { Header } from '@/app/_components/Header';
 import { analyserAffectation } from '@/lib/domain/conflits';
 import { dateFr } from '@/lib/domain/dates';
 import { relaisActif } from '@/lib/domain/types';
+import { distanceKm } from '@/lib/domain/distance';
 import { chargerSnapshot } from '@/lib/data';
 import { nomComplet } from '@/lib/format';
+import { lireSeuilDistanceKm } from '@/lib/reglages';
 import { CalendrierPlanning } from './CalendrierPlanning';
 import { majStatut, supprimerAffectation } from './actions';
 
@@ -33,6 +35,7 @@ export default async function Planning({
   const { vue } = await searchParams;
   const calendrier = vue === 'calendrier';
   const snap = await chargerSnapshot();
+  const seuilDistanceKm = await lireSeuilDistanceKm();
   const accById = new Map(snap.accueillants.map((a) => [a.id, a]));
   const enfById = new Map(snap.enfants.map((e) => [e.id, e]));
 
@@ -59,9 +62,12 @@ export default async function Planning({
         preferences: snap.preferences,
         solutions: snap.solutions,
         affectationExclueId: a.id,
+        seuilDistanceKm,
       });
     }
-    return { a, enfant, accueillant, conflits };
+    const dist =
+      enfant && accueillant ? distanceKm(enfant, accueillant) : null;
+    return { a, enfant, accueillant, conflits, dist };
   });
 
   return (
@@ -105,6 +111,7 @@ export default async function Planning({
                 <th>Période</th>
                 <th>Enfant</th>
                 <th>Accueillant</th>
+                <th>Distance</th>
                 <th>Transport</th>
                 <th>Statut</th>
                 <th>Alertes</th>
@@ -112,13 +119,14 @@ export default async function Planning({
               </tr>
             </thead>
             <tbody>
-              {lignes.map(({ a, enfant, accueillant, conflits }) => (
+              {lignes.map(({ a, enfant, accueillant, conflits, dist }) => (
                 <tr key={a.id}>
                   <td>
                     {dateFr(a.debut)} → {dateFr(a.fin)}
                   </td>
                   <td>{enfant ? nomComplet(enfant) : '—'}</td>
                   <td>{accueillant ? nomComplet(accueillant) : '—'}</td>
+                  <td>{dist == null ? '—' : `${Math.round(dist)} km`}</td>
                   <td>{a.transport ?? ''}</td>
                   <td>
                     <form action={majStatut} style={{ display: 'flex', gap: 6 }}>

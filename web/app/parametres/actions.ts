@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 import {
+  CLE_DISTANCE_SEUIL,
   CLE_STRUCTURE_ADRESSE,
   CLE_STRUCTURE_MENTION,
   CLE_STRUCTURE_NOM,
@@ -16,11 +17,16 @@ function txt(v: FormDataEntryValue | null): string {
 }
 
 export async function enregistrerStructure(formData: FormData) {
+  const seuil = Number(formData.get('seuilDistance'));
   const lignes = [
     { cle: CLE_STRUCTURE_NOM, valeur: txt(formData.get('nom')) },
     { cle: CLE_STRUCTURE_ADRESSE, valeur: txt(formData.get('adresse')) },
     { cle: CLE_STRUCTURE_SIGNATAIRE, valeur: txt(formData.get('signataire')) },
     { cle: CLE_STRUCTURE_MENTION, valeur: txt(formData.get('mention')) },
+    {
+      cle: CLE_DISTANCE_SEUIL,
+      valeur: Number.isFinite(seuil) && seuil > 0 ? String(seuil) : '',
+    },
   ];
   const r = await supabaseAdmin()
     .from('reglages')

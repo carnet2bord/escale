@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
+import { geocoderBAN } from '@/lib/geo';
 import { supabaseAdmin } from '@/lib/supabase';
 
 function num(v: FormDataEntryValue | null): number | null {
@@ -16,11 +17,30 @@ function txt(v: FormDataEntryValue | null): string | null {
   return s ? s : null;
 }
 
+async function resoudreCoords(
+  formData: FormData,
+  adresse: string | null,
+): Promise<{ latitude: number | null; longitude: number | null }> {
+  let latitude = num(formData.get('latitude'));
+  let longitude = num(formData.get('longitude'));
+  const geocoder = formData.get('geocoder') != null;
+  if (adresse && (geocoder || (latitude == null && longitude == null))) {
+    const c = await geocoderBAN(adresse);
+    if (c) {
+      latitude = c.latitude;
+      longitude = c.longitude;
+    }
+  }
+  return { latitude, longitude };
+}
+
 export async function enregistrerEnfant(formData: FormData) {
   const db = supabaseAdmin();
   const id = num(formData.get('id'));
   const nom = String(formData.get('nom') ?? '').trim();
   if (!nom) redirect(id ? `/enfants/${id}?erreur=nom` : '/enfants/nouveau?erreur=nom');
+  const adresse = txt(formData.get('adresse'));
+  const { latitude, longitude } = await resoudreCoords(formData, adresse);
   const row = {
     nom,
     prenom: txt(formData.get('prenom')) ?? '',
@@ -31,6 +51,9 @@ export async function enregistrerEnfant(formData: FormData) {
     secteur: txt(formData.get('secteur')),
     contact_urgence: txt(formData.get('contactUrgence')),
     sante: txt(formData.get('sante')),
+    adresse,
+    latitude,
+    longitude,
     notes: txt(formData.get('notes')),
   };
   const r = id

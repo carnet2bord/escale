@@ -18,6 +18,7 @@ import {
 } from './types';
 import { jour, nbJours, periodesSeChevauchent } from './dates';
 import { analyserAffectation, estBloquant } from './conflits';
+import { distanceKm } from './distance';
 
 const JOUR_MS = 86400000;
 
@@ -251,6 +252,10 @@ export function proposerAffectations(p: ParamsProposition): ResultatProposition 
       if (f !== 0) return f;
       const pla = souPlafond(b) - souPlafond(a);
       if (pla !== 0) return pla;
+      // Plus proche d'abord (si les deux adresses sont géolocalisées).
+      const da = distanceKm(c.enfant, a);
+      const db = distanceKm(c.enfant, b);
+      if (da != null && db != null && da !== db) return da - db;
       const ch = charge(a) - charge(b);
       if (ch !== 0) return ch;
       return a.id - b.id; // départage stable (parité avec le desktop)

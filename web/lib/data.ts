@@ -27,7 +27,9 @@ function mapAccueillant(r: any): Accueillant {
     id: r.id, nom: r.nom, prenom: r.prenom ?? '', nbPlaces: r.nb_places ?? 1,
     restrictionSexe: r.restriction_sexe ?? 'aucune', ageMin: r.age_min,
     ageMax: r.age_max, agrementEcheance: dDate(r.agrement_echeance),
-    plafondJoursAn: r.plafond_jours_an, secteur: r.secteur, notes: r.notes,
+    plafondJoursAn: r.plafond_jours_an, secteur: r.secteur,
+    adresse: r.adresse ?? null, latitude: r.latitude ?? null,
+    longitude: r.longitude ?? null, notes: r.notes,
   };
 }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -36,7 +38,8 @@ function mapEnfant(r: any): Enfant {
     id: r.id, nom: r.nom, prenom: r.prenom ?? '', sexe: r.sexe ?? 'garcon',
     dateNaissance: dDate(r.date_naissance), afHabituelId: r.af_habituel_id,
     fratrieId: r.fratrie_id, sante: r.sante, contactUrgence: r.contact_urgence,
-    secteur: r.secteur, notes: r.notes,
+    secteur: r.secteur, adresse: r.adresse ?? null, latitude: r.latitude ?? null,
+    longitude: r.longitude ?? null, notes: r.notes,
   };
 }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

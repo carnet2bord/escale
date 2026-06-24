@@ -26,14 +26,16 @@ function enfant(o: Partial<Enfant> & { id: number }): Enfant {
   return {
     nom: 'Dupont', prenom: '', sexe: 'garcon', dateNaissance: null,
     afHabituelId: null, fratrieId: null, sante: null, contactUrgence: null,
-    secteur: null, notes: null, ...o,
+    secteur: null, adresse: null, latitude: null, longitude: null,
+    notes: null, ...o,
   };
 }
 function acc(o: Partial<Accueillant> & { id: number }): Accueillant {
   return {
     nom: 'Martin', prenom: '', nbPlaces: 1, restrictionSexe: 'aucune',
     ageMin: null, ageMax: null, agrementEcheance: null, plafondJoursAn: null,
-    secteur: null, notes: null, ...o,
+    secteur: null, adresse: null, latitude: null, longitude: null,
+    notes: null, ...o,
   };
 }
 function aff(o: Partial<Affectation> & { id: number; enfantId: number; accueillantId: number; debut: Date; fin: Date }): Affectation {
@@ -100,6 +102,33 @@ const base = {
     dispos: [], indispos: [], incompatibilites: [],
   });
   check('AF habituel seul → non placé', r.propositions.length === 0 && r.nonPlaces.length === 1);
+}
+
+// Distance : relais éloigné → avertissement (Paris ↔ Lyon ≈ 390 km).
+{
+  const e = enfant({ id: 1, latitude: 48.8566, longitude: 2.3522 });
+  const a = acc({ id: 10, latitude: 45.7578, longitude: 4.832 });
+  const c = analyserAffectation({ ...base, enfant: e, accueillant: a, debut: d(1), fin: d(3), enfants: [e], seuilDistanceKm: 30 });
+  check('relais éloigné avertit', avert(c) && !bloq(c));
+}
+// Distance : sans coordonnées, pas d'avertissement d'éloignement.
+{
+  const e = enfant({ id: 1 });
+  const c = analyserAffectation({ ...base, enfant: e, accueillant: acc({ id: 10 }), debut: d(1), fin: d(3), enfants: [e], seuilDistanceKm: 30 });
+  check('pas de distance sans coords', !avert(c));
+}
+// Distance : la proposition préfère l'accueillant le plus proche.
+{
+  const r = proposerAffectations({
+    enfants: [enfant({ id: 1, latitude: 48.85, longitude: 2.35 })],
+    accueillants: [
+      acc({ id: 10, latitude: 45.75, longitude: 4.83 }), // loin (Lyon)
+      acc({ id: 11, latitude: 48.86, longitude: 2.34 }), // proche (Paris)
+    ],
+    affectationsExistantes: [], besoins: [{ id: 1, enfantId: 1, debut: d(1), fin: d(7), motif: null }],
+    dispos: [], indispos: [], incompatibilites: [],
+  });
+  check('proposition préfère le plus proche', r.propositions[0]?.accueillant.id === 11);
 }
 
 console.log(`\nDomaine web : ${ok} ok, ${ko} ko`);

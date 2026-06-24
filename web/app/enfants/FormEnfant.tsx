@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { BlocAdresse } from '@/app/_components/BlocAdresse';
 import { enregistrerEnfant, supprimerEnfant } from './actions';
 
 interface Option {
@@ -71,6 +72,7 @@ export function FormEnfant({
         <input name="secteur" defaultValue={e?.secteur ?? ''} placeholder="Ex. Secteur Nord" />
         <label>Contact d&apos;urgence</label>
         <input name="contactUrgence" defaultValue={e?.contact_urgence ?? ''} placeholder="Nom et téléphone à prévenir" />
+        <BlocAdresse entite={e} />
         <label>Santé (allergies, traitements…) — donnée sensible</label>
         <textarea name="sante" rows={2} defaultValue={e?.sante ?? ''} />
         <label>Notes</label>

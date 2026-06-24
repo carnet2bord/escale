@@ -20,6 +20,7 @@ import {
   solTiers,
 } from './types';
 import { ageAnnees, dateFr, jour, nbJours, periodeFr, periodesSeChevauchent } from './dates';
+import { SEUIL_DISTANCE_KM, distanceKm } from './distance';
 
 export type Severite = 'bloquant' | 'avertissement';
 
@@ -91,6 +92,7 @@ export interface ParamsConflit {
   preferences?: PreferenceAccueil[];
   solutions?: SolutionAlternative[];
   affectationExclueId?: number | null;
+  seuilDistanceKm?: number;
 }
 
 export function analyserAffectation(p: ParamsConflit): Conflit[] {
@@ -108,6 +110,7 @@ export function analyserAffectation(p: ParamsConflit): Conflit[] {
     preferences = [],
     solutions = [],
     affectationExclueId = null,
+    seuilDistanceKm = SEUIL_DISTANCE_KM,
   } = p;
   const conflits: Conflit[] = [];
 
@@ -290,6 +293,15 @@ export function analyserAffectation(p: ParamsConflit): Conflit[] {
         message: `Plafond de jours dépassé pour ${accueillant.nom} : ${cumul} / ${accueillant.plafondJoursAn} jour(s) en ${annee}.`,
       });
     }
+  }
+
+  // 13. Éloignement (avertissement) si les deux adresses sont géolocalisées.
+  const d = distanceKm(enfant, accueillant);
+  if (d != null && seuilDistanceKm > 0 && d > seuilDistanceKm) {
+    conflits.push({
+      severite: 'avertissement',
+      message: `${accueillant.nom} est à environ ${Math.round(d)} km de ${nomEnfant(enfant)} (seuil : ${seuilDistanceKm} km).`,
+    });
   }
 
   return conflits;
