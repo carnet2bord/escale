@@ -163,55 +163,11 @@ Future<Uint8List> genererPdfRelais({
         ),
       ),
       build: (ctx) => [
-        // En-tête : logo + titre + date.
-        pw.Row(
-          crossAxisAlignment: pw.CrossAxisAlignment.center,
-          children: [
-            pw.Image(logoImage, height: 42),
-            if (structure.nom.isNotEmpty) ...[
-              pw.SizedBox(width: 14),
-              pw.Expanded(
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text(
-                      _safe(structure.nom),
-                      style: pw.TextStyle(
-                        fontSize: 11,
-                        fontWeight: pw.FontWeight.bold,
-                        color: _texte,
-                      ),
-                    ),
-                    if (structure.adresse.isNotEmpty)
-                      pw.Text(
-                        _safe(structure.adresse),
-                        maxLines: 2,
-                        style: pw.TextStyle(fontSize: 8, color: _gris),
-                      ),
-                  ],
-                ),
-              ),
-            ] else
-              pw.Spacer(),
-            pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.end,
-              children: [
-                pw.Text(
-                  'Planning des relais',
-                  style: pw.TextStyle(
-                    fontSize: 20,
-                    fontWeight: pw.FontWeight.bold,
-                    color: _texte,
-                  ),
-                ),
-                pw.SizedBox(height: 2),
-                pw.Text(
-                  'Édité le ${dateLongueFr(date)}',
-                  style: pw.TextStyle(fontSize: 10, color: _gris),
-                ),
-              ],
-            ),
-          ],
+        _enTete(
+          logoImage,
+          structure,
+          'Planning des relais',
+          'Édité le ${dateLongueFr(date)}',
         ),
         pw.SizedBox(height: 18),
         // Bandeau de synthèse.
@@ -348,53 +304,11 @@ Future<Uint8List> genererPdfConvention({
       build: (ctx) => pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          pw.Row(
-            crossAxisAlignment: pw.CrossAxisAlignment.center,
-            children: [
-              pw.Image(logoImage, height: 38),
-              if (structure.nom.isNotEmpty) ...[
-                pw.SizedBox(width: 14),
-                pw.Expanded(
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text(
-                        _safe(structure.nom),
-                        style: pw.TextStyle(
-                          fontSize: 11,
-                          fontWeight: pw.FontWeight.bold,
-                          color: _texte,
-                        ),
-                      ),
-                      if (structure.adresse.isNotEmpty)
-                        pw.Text(
-                          _safe(structure.adresse),
-                          maxLines: 2,
-                          style: pw.TextStyle(fontSize: 8, color: _gris),
-                        ),
-                    ],
-                  ),
-                ),
-              ] else
-                pw.Spacer(),
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.end,
-                children: [
-                  pw.Text(
-                    'Fiche de liaison',
-                    style: pw.TextStyle(
-                      fontSize: 18,
-                      fontWeight: pw.FontWeight.bold,
-                      color: _texte,
-                    ),
-                  ),
-                  pw.Text(
-                    'Relais d\'accueil',
-                    style: pw.TextStyle(fontSize: 11, color: _teal),
-                  ),
-                ],
-              ),
-            ],
+          _enTete(
+            logoImage,
+            structure,
+            'Fiche de liaison',
+            'Relais d\'accueil',
           ),
           pw.SizedBox(height: 8),
           pw.Divider(color: _filet),
@@ -578,54 +492,11 @@ Future<Uint8List> genererPdfBilan({
         ),
       ),
       build: (ctx) => [
-        pw.Row(
-          crossAxisAlignment: pw.CrossAxisAlignment.center,
-          children: [
-            pw.Image(logoImage, height: 42),
-            if (structure.nom.isNotEmpty) ...[
-              pw.SizedBox(width: 14),
-              pw.Expanded(
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text(
-                      _safe(structure.nom),
-                      style: pw.TextStyle(
-                        fontSize: 11,
-                        fontWeight: pw.FontWeight.bold,
-                        color: _texte,
-                      ),
-                    ),
-                    if (structure.adresse.isNotEmpty)
-                      pw.Text(
-                        _safe(structure.adresse),
-                        maxLines: 2,
-                        style: pw.TextStyle(fontSize: 8, color: _gris),
-                      ),
-                  ],
-                ),
-              ),
-            ] else
-              pw.Spacer(),
-            pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.end,
-              children: [
-                pw.Text(
-                  'Bilan d\'activité',
-                  style: pw.TextStyle(
-                    fontSize: 20,
-                    fontWeight: pw.FontWeight.bold,
-                    color: _texte,
-                  ),
-                ),
-                pw.SizedBox(height: 2),
-                pw.Text(
-                  'Édité le ${dateLongueFr(date)}',
-                  style: pw.TextStyle(fontSize: 10, color: _gris),
-                ),
-              ],
-            ),
-          ],
+        _enTete(
+          logoImage,
+          structure,
+          'Bilan d\'activité',
+          'Édité le ${dateLongueFr(date)}',
         ),
         pw.SizedBox(height: 18),
         pw.Row(
@@ -700,57 +571,58 @@ String _libelleSol(String type) => switch (type) {
   _ => 'Autre solution',
 };
 
-// En-tête commun aux documents : logo + identité structure + titre.
+// En-tête commun aux documents : ligne logo + titre, puis le nom de la
+// structure sur sa propre ligne pleine largeur (jamais tronqué).
 pw.Widget _enTete(
   pw.MemoryImage logo,
   InfosStructure structure,
   String titre,
   String sousTitre,
 ) {
-  return pw.Row(
-    crossAxisAlignment: pw.CrossAxisAlignment.center,
+  return pw.Column(
+    crossAxisAlignment: pw.CrossAxisAlignment.start,
     children: [
-      pw.Image(logo, height: 40),
-      if (structure.nom.isNotEmpty) ...[
-        pw.SizedBox(width: 14),
-        pw.Expanded(
-          child: pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
+      pw.Row(
+        crossAxisAlignment: pw.CrossAxisAlignment.center,
+        children: [
+          pw.Image(logo, height: 40),
+          pw.Spacer(),
+          pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.end,
             children: [
               pw.Text(
-                _safe(structure.nom),
+                titre,
                 style: pw.TextStyle(
-                  fontSize: 11,
+                  fontSize: 20,
                   fontWeight: pw.FontWeight.bold,
                   color: _texte,
                 ),
               ),
-              if (structure.adresse.isNotEmpty)
+              if (sousTitre.isNotEmpty)
                 pw.Text(
-                  _safe(structure.adresse),
-                  maxLines: 2,
-                  style: pw.TextStyle(fontSize: 8, color: _gris),
+                  sousTitre,
+                  style: pw.TextStyle(fontSize: 11, color: _teal),
                 ),
             ],
           ),
-        ),
-      ] else
-        pw.Spacer(),
-      pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.end,
-        children: [
-          pw.Text(
-            titre,
-            style: pw.TextStyle(
-              fontSize: 18,
-              fontWeight: pw.FontWeight.bold,
-              color: _texte,
-            ),
-          ),
-          if (sousTitre.isNotEmpty)
-            pw.Text(sousTitre, style: pw.TextStyle(fontSize: 11, color: _teal)),
         ],
       ),
+      if (structure.nom.isNotEmpty) ...[
+        pw.SizedBox(height: 10),
+        pw.Text(
+          _safe(structure.nom),
+          style: pw.TextStyle(
+            fontSize: 12,
+            fontWeight: pw.FontWeight.bold,
+            color: _texte,
+          ),
+        ),
+        if (structure.adresse.isNotEmpty)
+          pw.Text(
+            _safe(structure.adresse),
+            style: pw.TextStyle(fontSize: 9, color: _gris),
+          ),
+      ],
     ],
   );
 }
