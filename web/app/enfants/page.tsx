@@ -2,14 +2,14 @@ import Link from 'next/link';
 
 import { Header } from '@/app/_components/Header';
 import { supabaseAdmin } from '@/lib/supabase';
-import { ageAnnees } from '@/lib/domain/dates';
+import { ListeEnfants } from './ListeEnfants';
 
 export const dynamic = 'force-dynamic';
 
 export default async function EnfantsPage() {
   const { data, error } = await supabaseAdmin()
     .from('escale_enfants')
-    .select('*')
+    .select('id, nom, prenom, sexe, date_naissance')
     .order('nom');
 
   return (
@@ -18,55 +18,16 @@ export default async function EnfantsPage() {
       <div className="contenu">
         <div className="aligne-droite">
           <h1>Enfants</h1>
-          <Link className="bouton" href="/enfants/nouveau">Nouvel enfant</Link>
+          <Link className="bouton" href="/enfants/nouveau">
+            Nouvel enfant
+          </Link>
         </div>
         {error ? (
           <div className="banniere" style={{ background: '#fbeaea', color: '#b3261e' }}>
             {error.message}
           </div>
-        ) : (data ?? []).length === 0 ? (
-          <div className="banniere">Aucun enfant pour l&apos;instant.</div>
         ) : (
-          <table className="liste">
-            <thead>
-              <tr>
-                <th>Nom</th>
-                <th>Sexe</th>
-                <th>Âge</th>
-                <th>Secteur</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {(data ?? []).map((e) => {
-                const age = ageAnnees(e.date_naissance ? new Date(`${e.date_naissance}T00:00:00`) : null);
-                return (
-                  <tr key={e.id}>
-                    <td>{[e.prenom, e.nom].filter(Boolean).join(' ')}</td>
-                    <td>{e.sexe === 'fille' ? 'Fille' : 'Garçon'}</td>
-                    <td>{age != null ? `${age} ans` : '—'}</td>
-                    <td>{e.secteur ?? '—'}</td>
-                    <td style={{ textAlign: 'right' }}>
-                      <a href={`/api/pdf/enfant/${e.id}`} target="_blank" rel="noreferrer">
-                        Parcours PDF
-                      </a>
-                      {' '}
-                      <a
-                        href={`/api/pdf/enfant/${e.id}?anon=1`}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{ fontSize: 12 }}
-                      >
-                        (anon.)
-                      </a>
-                      {'  ·  '}
-                      <Link href={`/enfants/${e.id}`}>Modifier</Link>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <ListeEnfants enfants={data ?? []} />
         )}
       </div>
     </>

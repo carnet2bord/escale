@@ -247,3 +247,55 @@ table.liste tr:last-child td { border-bottom: none; }
 .form-bloc .ligne { display: flex; gap: 12px; }
 .form-bloc .ligne > div { flex: 1; }
 .actions-form { display: flex; gap: 12px; align-items: center; margin-top: 20px; }
+
+/* ---------- Listes en cartes (façon ListTile desktop) ---------- */
+.recherche {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--filet);
+  border-radius: 12px;
+  padding: 0 12px;
+  margin-bottom: 14px;
+  color: var(--gris);
+}
+.recherche input {
+  flex: 1;
+  border: none;
+  background: none;
+  outline: none;
+  padding: 11px 0;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--texte);
+}
+.carte-liste {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--filet);
+  border-radius: var(--rayon);
+  padding: 12px 16px;
+  margin-bottom: 10px;
+}
+.cl-corps { flex: 1; min-width: 0; }
+.cl-titre { font-weight: 600; }
+.cl-pastilles { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.cl-actions { display: flex; align-items: center; gap: 2px; }
+.cl-actions a,
+.cl-actions button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: none;
+  background: none;
+  color: var(--gris);
+  border-radius: 9px;
+  cursor: pointer;
+}
+.cl-actions a:hover,
+.cl-actions button:hover { background: var(--hover); color: var(--teal); }
