@@ -299,3 +299,28 @@ table.liste tr:last-child td { border-bottom: none; }
 }
 .cl-actions a:hover,
 .cl-actions button:hover { background: var(--hover); color: var(--teal); }
+
+.relais-actions { position: relative; }
+
+/* Sélecteur de vue façon SegmentedButton Material */
+.segmented {
+  display: inline-flex;
+  gap: 3px;
+  background: var(--surface);
+  border: 1px solid var(--filet);
+  border-radius: 11px;
+  padding: 3px;
+  margin-bottom: 16px;
+}
+.segmented a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--gris);
+  font-size: 14px;
+  font-weight: 600;
+}
+.segmented a.actif { background: var(--teal-clair); color: var(--teal); }

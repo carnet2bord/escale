@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 
 import { analyserAffectation, estBloquant } from '@/lib/domain/conflits';
 import type { Affectation } from '@/lib/domain/types';
@@ -97,13 +98,22 @@ export async function creerRelais(formData: FormData) {
     fin: formData.get('fin'),
     besoin_id: formData.get('besoinId'),
   });
-  if (!ligne) return;
+  const apres = String(formData.get('apres') ?? '');
+  if (!ligne) {
+    if (apres) redirect(`${apres}?erreur=invalide`);
+    return;
+  }
   const valides = await lignesValides([ligne]);
-  if (valides.length === 0) return;
+  if (valides.length === 0) {
+    if (apres) redirect(`${apres}?erreur=conflit`);
+    return;
+  }
   const r = await supabaseAdmin().from('escale_affectations').insert(valides.map(toRow));
   if (r.error) throw new Error(r.error.message);
   revalidatePath('/proposition');
+  revalidatePath('/');
   revalidatePath('/planning');
+  if (apres) redirect(apres);
 }
 
 export async function creerToutes(formData: FormData) {
