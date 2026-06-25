@@ -180,3 +180,25 @@ export function planningEnfantData(
     lignes: items.map(({ periode, lieu, info }) => ({ periode, lieu, info })),
   };
 }
+
+// Planning global (tous les relais) — équivalent du « Exporter en PDF » desktop.
+export function planningGlobalData(s: Snapshot, structure: InfosStructure): PlanningData {
+  const enfById = new Map(s.enfants.map((e) => [e.id, e]));
+  const accById = new Map(s.accueillants.map((a) => [a.id, a]));
+  const lignes = [...s.affectations]
+    .filter((a) => relaisActif(a.statut))
+    .sort((a, b) => a.debut.getTime() - b.debut.getTime())
+    .map((a) => {
+      const enf = enfById.get(a.enfantId);
+      const acc = accById.get(a.accueillantId);
+      const info = [STATUT[a.statut] ?? a.statut, a.transport ? `Transport : ${a.transport}` : '']
+        .filter(Boolean)
+        .join(' — ');
+      return {
+        periode: periodeFr(a.debut, a.fin),
+        lieu: `${enf ? nomComplet(enf) : '—'} -> ${acc ? nomComplet(acc) : '—'}`,
+        info,
+      };
+    });
+  return { structure, titre: 'Planning des relais', colonneLieu: 'Enfant / Accueillant', lignes };
+}

@@ -160,22 +160,22 @@ function Contenu({ s }: { s: Awaited<ReturnType<typeof chargerSnapshot>> }) {
         />
       </div>
 
-      <div className="kpi">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <strong>Couverture des besoins</strong>
-          <span style={{ fontSize: 26, fontWeight: 700, color: vert ? '#2e7d32' : 'var(--teal)' }}>
-            {c.pct == null ? '—' : `${c.pct} %`}
-          </span>
+      {s.besoins.length > 0 ? (
+        <div className="kpi">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <strong>Couverture des besoins</strong>
+            <span style={{ fontSize: 26, fontWeight: 700, color: vert ? '#2e7d32' : 'var(--teal)' }}>
+              {c.pct == null ? '—' : `${c.pct} %`}
+            </span>
+          </div>
+          <div className="jauge">
+            <div style={{ width: `${c.pct ?? 0}%`, background: vert ? '#2e7d32' : 'var(--teal)' }} />
+          </div>
+          <div style={{ color: 'var(--gris)', fontSize: 13 }}>
+            {`${c.couverts} / ${c.total} journées de besoin assurées`}
+          </div>
         </div>
-        <div className="jauge">
-          <div style={{ width: `${c.pct ?? 0}%`, background: vert ? '#2e7d32' : 'var(--teal)' }} />
-        </div>
-        <div style={{ color: 'var(--gris)', fontSize: 13 }}>
-          {c.pct == null
-            ? 'Aucun besoin recensé'
-            : `${c.couverts} / ${c.total} journées de besoin assurées`}
-        </div>
-      </div>
+      ) : null}
 
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 24, alignItems: 'flex-start' }}>
         <section className="form-bloc" style={{ flex: '1 1 360px', maxWidth: 'none' }}>

@@ -36,3 +36,32 @@ export async function supprimerFratrie(formData: FormData) {
   revalidatePath('/fratries');
   redirect('/fratries');
 }
+
+// Création rapide depuis l'éditeur enfant : renvoie la fratrie créée.
+export async function creerFratrieRapide(
+  nom: string,
+): Promise<{ id: number; nom: string; regroupement: string } | null> {
+  const n = nom.trim();
+  if (!n) return null;
+  const db = supabaseAdmin();
+  const exist = await db.from('escale_fratries').select('id, nom, regroupement').ilike('nom', n).limit(1);
+  if ((exist.data ?? []).length > 0) return exist.data![0];
+  const r = await db
+    .from('escale_fratries')
+    .insert({ nom: n, regroupement: 'ensemble' })
+    .select('id, nom, regroupement')
+    .single();
+  if (r.error) throw new Error(r.error.message);
+  revalidatePath('/fratries');
+  return r.data;
+}
+
+export async function majRegroupement(fratrieId: number, regroupement: string) {
+  if (!REGROUPEMENTS.includes(regroupement)) return;
+  const r = await supabaseAdmin()
+    .from('escale_fratries')
+    .update({ regroupement })
+    .eq('id', fratrieId);
+  if (r.error) throw new Error(r.error.message);
+  revalidatePath('/fratries');
+}

@@ -1,12 +1,18 @@
 import Link from 'next/link';
 
 import { BlocAdresse } from '@/app/_components/BlocAdresse';
-import { enregistrerEnfant, supprimerEnfant } from './actions';
+import { ChampFratrie } from './ChampFratrie';
+import { enregistrerEnfant } from './actions';
 
 interface Option {
   id: number;
   nom: string;
   prenom?: string;
+}
+interface Fra {
+  id: number;
+  nom: string;
+  regroupement?: string;
 }
 
 export function FormEnfant({
@@ -17,7 +23,7 @@ export function FormEnfant({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   e?: any;
   accueillants: Option[];
-  fratries: Option[];
+  fratries: Fra[];
 }) {
   return (
     <div className="form-bloc">
@@ -59,13 +65,7 @@ export function FormEnfant({
             </select>
           </div>
           <div>
-            <label>Fratrie</label>
-            <select name="fratrieId" defaultValue={e?.fratrie_id ?? ''}>
-              <option value="">— Aucune —</option>
-              {fratries.map((f) => (
-                <option key={f.id} value={f.id}>{f.nom}</option>
-              ))}
-            </select>
+            <ChampFratrie fratries={fratries} defaultId={e?.fratrie_id ?? null} />
           </div>
         </div>
         <label>Secteur</label>
@@ -82,12 +82,6 @@ export function FormEnfant({
           <Link className="bouton-secondaire" href="/enfants">Annuler</Link>
         </div>
       </form>
-      {e ? (
-        <form action={supprimerEnfant} style={{ marginTop: 16 }}>
-          <input type="hidden" name="id" value={e.id} />
-          <button className="bouton-danger" type="submit">Supprimer cet enfant</button>
-        </form>
-      ) : null}
     </div>
   );
 }

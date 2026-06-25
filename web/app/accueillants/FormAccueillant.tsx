@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 import { BlocAdresse } from '@/app/_components/BlocAdresse';
-import { enregistrerAccueillant, supprimerAccueillant } from './actions';
+import { enregistrerAccueillant } from './actions';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function FormAccueillant({ a }: { a?: any }) {
@@ -65,12 +65,6 @@ export function FormAccueillant({ a }: { a?: any }) {
           <Link className="bouton-secondaire" href="/accueillants">Annuler</Link>
         </div>
       </form>
-      {a ? (
-        <form action={supprimerAccueillant} style={{ marginTop: 16 }}>
-          <input type="hidden" name="id" value={a.id} />
-          <button className="bouton-danger" type="submit">Supprimer cet accueillant</button>
-        </form>
-      ) : null}
     </div>
   );
 }

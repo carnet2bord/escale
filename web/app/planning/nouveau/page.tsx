@@ -7,7 +7,13 @@ import { supabaseAdmin } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
-export default async function NouveauRelais() {
+export default async function NouveauRelais({
+  searchParams,
+}: {
+  searchParams: Promise<{ enfant?: string; debut?: string; fin?: string }>;
+}) {
+  const sp = await searchParams;
+  const enfantPre = sp.enfant ?? '';
   const db = supabaseAdmin();
   const [enf, acc] = await Promise.all([
     db.from('escale_enfants').select('id, nom, prenom').order('nom'),
@@ -28,7 +34,7 @@ export default async function NouveauRelais() {
             <div className="ligne">
               <div>
                 <label>Enfant *</label>
-                <select name="enfantId" defaultValue="" required>
+                <select name="enfantId" defaultValue={enfantPre} required>
                   <option value="" disabled>
                     — Choisir —
                   </option>
@@ -56,11 +62,11 @@ export default async function NouveauRelais() {
             <div className="ligne">
               <div>
                 <label>Début *</label>
-                <input type="date" name="debut" required />
+                <input type="date" name="debut" defaultValue={sp.debut ?? ''} required />
               </div>
               <div>
                 <label>Fin *</label>
-                <input type="date" name="fin" required />
+                <input type="date" name="fin" defaultValue={sp.fin ?? ''} required />
               </div>
             </div>
             <div className="actions-form">

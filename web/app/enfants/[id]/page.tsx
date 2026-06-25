@@ -34,7 +34,7 @@ export default async function ModifierEnfant({
   const [enf, acc, fra, bes, tousEnf, inc, pref, sol] = await Promise.all([
     db.from('escale_enfants').select('*').eq('id', idNum).maybeSingle(),
     db.from('escale_accueillants').select('id, nom, prenom').order('nom'),
-    db.from('escale_fratries').select('id, nom').order('nom'),
+    db.from('escale_fratries').select('id, nom, regroupement').order('nom'),
     db.from('escale_besoins_relais').select('*').eq('enfant_id', idNum).order('debut'),
     db.from('escale_enfants').select('id, nom, prenom').order('nom'),
     db
@@ -80,6 +80,7 @@ export default async function ModifierEnfant({
         <SousFichePeriodes
           titre="Besoins de relais"
           description="Périodes pendant lesquelles l'enfant doit être accueilli."
+          planifierBase="/planning/nouveau"
           items={bes.data ?? []}
           ajouter={ajouterBesoin}
           supprimer={supprimerBesoin}

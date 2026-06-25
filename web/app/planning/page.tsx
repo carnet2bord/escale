@@ -93,6 +93,9 @@ export default async function Planning({
         <div className="aligne-droite">
           <h1>Planning des relais</h1>
           <span style={{ display: 'flex', gap: 10 }}>
+            <a className="bouton-secondaire" href="/api/pdf/planning" target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <IcoPdf /> Export PDF
+            </a>
             <Link className="bouton-secondaire" href="/proposition" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
               <IcoSparkles /> Proposer
             </Link>

@@ -1,12 +1,13 @@
 import { jour } from '@/lib/domain/dates';
 import type { Affectation, SolutionAlternative } from '@/lib/domain/types';
 import { relaisActif } from '@/lib/domain/types';
+import { CalScroll } from './CalScroll';
 
 const JOUR_MS = 86400000;
-const LARGEUR_JOUR = 30; // px par jour
-const LARGEUR_LIBELLE = 180; // colonne accueillant
+const LARGEUR_JOUR = 40; // px par jour (comme le desktop)
+const LARGEUR_LIBELLE = 190; // colonne accueillant
 const HAUTEUR_LANE = 26;
-const MAX_JOURS = 400;
+const MAX_JOURS = 900; // garde-fou silencieux
 
 const MOIS = [
   'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
@@ -77,13 +78,17 @@ export function CalendrierPlanning({
   if (toutes.length === 0) {
     return <p>Aucun relais à afficher dans le calendrier.</p>;
   }
-  let debutPlage = new Date(Math.min(...toutes.map((d) => d.getTime())));
-  let finPlage = new Date(Math.max(...toutes.map((d) => d.getTime())));
-  let tronque = false;
+  // Frise étendue : 6 mois avant le min, 12 mois après le max, toujours autour
+  // d'aujourd'hui (comme le desktop).
+  const aujourdhui = jour(new Date());
+  toutes.push(aujourdhui);
+  const dataMin = new Date(Math.min(...toutes.map((d) => d.getTime())));
+  const dataMax = new Date(Math.max(...toutes.map((d) => d.getTime())));
+  let debutPlage = jour(new Date(dataMin.getFullYear(), dataMin.getMonth() - 6, 1));
+  let finPlage = jour(new Date(dataMax.getFullYear(), dataMax.getMonth() + 13, 0));
   const nbJoursTotal = Math.round((finPlage.getTime() - debutPlage.getTime()) / JOUR_MS) + 1;
   if (nbJoursTotal > MAX_JOURS) {
     finPlage = new Date(debutPlage.getTime() + (MAX_JOURS - 1) * JOUR_MS);
-    tronque = true;
   }
 
   const jours: Date[] = [];
@@ -151,28 +156,17 @@ export function CalendrierPlanning({
     });
   }
 
+  const idxToday = indexParJour.get(aujourdhui.getTime()) ?? -1;
+
   return (
     <div>
-      {tronque ? (
-        <p style={{ color: '#b26a00' }}>
-          Affichage limité à {MAX_JOURS} jours à partir du premier relais.
-        </p>
-      ) : null}
-
       <div style={{ display: 'flex', gap: 16, margin: '8px 0 12px', fontSize: 13 }}>
         <Legende couleur={COULEUR_TYPE.relais} texte="Relais" />
         <Legende couleur={COULEUR_TYPE.colonie} texte="Colonie de vacances" />
         <Legende couleur={COULEUR_TYPE.tiers} texte="Accueil par un tiers" />
       </div>
 
-      <div
-        style={{
-          overflowX: 'auto',
-          border: '1px solid var(--filet)',
-          borderRadius: 12,
-          background: '#fff',
-        }}
-      >
+      <CalScroll scrollTo={idxToday >= 0 ? LARGEUR_LIBELLE + idxToday * LARGEUR_JOUR : 0}>
         <div style={{ minWidth: LARGEUR_LIBELLE + largeurTotale }}>
           {/* Bandeau mois */}
           <div style={{ display: 'flex', borderBottom: '1px solid var(--filet)' }}>
@@ -203,6 +197,7 @@ export function CalendrierPlanning({
             <div style={{ display: 'flex' }}>
               {jours.map((d, i) => {
                 const we = d.getDay() === 0 || d.getDay() === 6;
+                const today = i === idxToday;
                 return (
                   <div
                     key={i}
@@ -211,9 +206,10 @@ export function CalendrierPlanning({
                       flexShrink: 0,
                       textAlign: 'center',
                       fontSize: 10,
-                      color: we ? '#aab0b5' : 'var(--gris)',
-                      background: we ? '#f6f8f8' : '#fff',
-                      borderLeft: '1px solid #eef1f2',
+                      fontWeight: today ? 700 : 400,
+                      color: today ? 'var(--teal)' : we ? '#aab0b5' : 'var(--gris)',
+                      background: today ? 'var(--teal-clair)' : we ? 'var(--hover)' : 'var(--surface)',
+                      borderLeft: '1px solid var(--filet)',
                       padding: '2px 0',
                     }}
                   >
@@ -232,7 +228,7 @@ export function CalendrierPlanning({
               style={{
                 display: 'flex',
                 borderBottom: '1px solid var(--filet)',
-                background: ligne.titre === 'Hors relais' ? '#fafbfb' : '#fff',
+                background: ligne.titre === 'Hors relais' ? 'var(--hover)' : 'var(--surface)',
               }}
             >
               <div
@@ -258,9 +254,12 @@ export function CalendrierPlanning({
                   height: ligne.nbLanes * HAUTEUR_LANE + 8,
                 }}
               >
-                {/* Colonnes week-end */}
-                {jours.map((d, i) =>
-                  d.getDay() === 0 || d.getDay() === 6 ? (
+                {/* Colonnes week-end + repère aujourd'hui */}
+                {jours.map((d, i) => {
+                  const today = i === idxToday;
+                  const we = d.getDay() === 0 || d.getDay() === 6;
+                  if (!today && !we) return null;
+                  return (
                     <div
                       key={i}
                       style={{
@@ -269,11 +268,12 @@ export function CalendrierPlanning({
                         top: 0,
                         bottom: 0,
                         width: LARGEUR_JOUR,
-                        background: '#f6f8f8',
+                        background: today ? 'var(--teal-clair)' : 'var(--hover)',
+                        borderLeft: today ? '2px solid var(--teal)' : undefined,
                       }}
                     />
-                  ) : null,
-                )}
+                  );
+                })}
                 {ligne.barres.map((b, bi) => {
                   const gauche = idx(b.debut) * LARGEUR_JOUR;
                   const largeur =
@@ -307,7 +307,7 @@ export function CalendrierPlanning({
             </div>
           ))}
         </div>
-      </div>
+      </CalScroll>
     </div>
   );
 }
