@@ -10,9 +10,9 @@ export const dynamic = 'force-dynamic';
 export default async function Parametres({
   searchParams,
 }: {
-  searchParams: Promise<{ enregistre?: string; demo?: string }>;
+  searchParams: Promise<{ enregistre?: string; demo?: string; vide?: string; doublons?: string }>;
 }) {
-  const { enregistre, demo } = await searchParams;
+  const { enregistre, demo, vide, doublons } = await searchParams;
   const s = await lireInfosStructure();
   const seuilDistance = await lireSeuilDistanceKm();
 
@@ -29,6 +29,14 @@ export default async function Parametres({
         {enregistre ? (
           <p style={{ color: 'var(--teal)', fontWeight: 600 }}>
             ✓ Paramètres enregistrés.
+          </p>
+        ) : null}
+        {vide === 'ok' ? (
+          <p style={{ color: 'var(--teal)', fontWeight: 600 }}>✓ Données vidées.</p>
+        ) : null}
+        {doublons != null ? (
+          <p style={{ color: 'var(--teal)', fontWeight: 600 }}>
+            ✓ {doublons} doublon(s) supprimé(s).
           </p>
         ) : null}
 

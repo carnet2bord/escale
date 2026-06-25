@@ -6,7 +6,22 @@
   --filet: #e6e8eb;
   --fond: #f6f7f8;
   --surface: #ffffff;
+  --hover: #f0f2f3;
+  --jauge: #eceef0;
   --rayon: 14px;
+}
+
+/* Mode nuit (mêmes teintes que l'app desktop). */
+:root[data-theme='sombre'] {
+  --teal: #2bb5a6;
+  --teal-clair: #213a37;
+  --texte: #e7e9ec;
+  --gris: #9aa1a8;
+  --filet: #31353a;
+  --fond: #151719;
+  --surface: #1e2123;
+  --hover: #262a2d;
+  --jauge: #2a2e31;
 }
 
 * { box-sizing: border-box; }
@@ -25,7 +40,7 @@ a { color: var(--teal); }
   position: fixed;
   top: 0;
   left: 0;
-  width: 248px;
+  width: 268px;
   height: 100vh;
   background: var(--surface);
   border-right: 1px solid var(--filet);
@@ -34,8 +49,8 @@ a { color: var(--teal); }
   padding: 22px 16px;
   z-index: 10;
 }
-.sidebar-logo { padding: 8px 8px 4px; }
-.sidebar-logo img { height: 54px; width: auto; display: block; }
+.sidebar-logo { padding: 8px 6px 4px; }
+.sidebar-logo img { height: 78px; width: auto; display: block; }
 .sidebar-version { font-size: 11px; color: var(--gris); padding: 4px 8px 16px; }
 
 .sidebar-nav { display: flex; flex-direction: column; gap: 4px; }
@@ -47,12 +62,62 @@ a { color: var(--teal); }
   border-radius: 11px;
   text-decoration: none;
   color: var(--texte);
-  font-weight: 600;
+  font-weight: 500;
   font-size: 14.5px;
 }
-.sidebar-nav a:hover { background: #f0f2f3; }
-.sidebar-nav a.actif { background: var(--teal-clair); color: var(--teal); }
+.sidebar-nav a:hover { background: var(--hover); }
+.sidebar-nav a.actif { background: var(--teal-clair); color: var(--teal); font-weight: 600; }
 .sidebar-nav a svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+/* Rangée Outils (libellé + bascule thème + menu …) */
+.outils-row { position: relative; display: flex; align-items: center; gap: 4px; padding: 4px 8px; }
+.outils-bouton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: none;
+  background: none;
+  color: var(--gris);
+  border-radius: 9px;
+  cursor: pointer;
+}
+.outils-bouton:hover { background: var(--hover); color: var(--texte); }
+.outils-popup {
+  position: absolute;
+  bottom: 44px;
+  left: 4px;
+  right: 4px;
+  background: var(--surface);
+  border: 1px solid var(--filet);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  padding: 6px;
+  z-index: 30;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+.outils-item a,
+.outils-item button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 9px 10px;
+  border-radius: 9px;
+  border: none;
+  background: none;
+  color: var(--texte);
+  font-size: 13.5px;
+  font-family: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+.outils-item a:hover,
+.outils-item button:hover { background: var(--hover); }
+.outils-item.danger a,
+.outils-item.danger button { color: #c62828; }
+.outils-sep { height: 1px; background: var(--filet); margin: 6px 4px; }
 
 .sidebar-groupe {
   font-size: 11px;
@@ -66,10 +131,10 @@ a { color: var(--teal); }
 .sidebar-bas { margin-top: auto; }
 .sidebar-bas .lien-deco { display: block; padding: 10px 12px; width: 100%; text-align: left; }
 
-.contenu { margin-left: 248px; max-width: 1040px; padding: 28px 32px; }
+.contenu { margin-left: 268px; max-width: 1040px; padding: 28px 32px; }
 
 /* ---------- En-têtes de page ---------- */
-h1 { font-size: 24px; font-weight: 700; margin: 0 0 18px; }
+h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.4px; margin: 0 0 18px; }
 h2 { font-size: 17px; font-weight: 600; }
 .marque { font-size: 20px; font-weight: 700; color: var(--teal); }
 .aligne-droite { display: flex; justify-content: space-between; align-items: center; }
@@ -94,7 +159,7 @@ h2 { font-size: 17px; font-weight: 600; }
   padding: 20px;
   margin-top: 24px;
 }
-.jauge { height: 10px; background: #eceef0; border-radius: 6px; overflow: hidden; margin: 12px 0 8px; }
+.jauge { height: 10px; background: var(--jauge); border-radius: 6px; overflow: hidden; margin: 12px 0 8px; }
 .jauge > div { height: 100%; background: var(--teal); }
 
 .banniere {
@@ -112,9 +177,9 @@ h2 { font-size: 17px; font-weight: 600; }
   background: var(--teal);
   color: #fff;
   border: none;
-  border-radius: 11px;
-  padding: 11px 18px;
-  font-size: 14.5px;
+  border-radius: 12px;
+  padding: 12px 20px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
@@ -172,7 +237,10 @@ table.liste tr:last-child td { border-bottom: none; }
 .form-bloc { background: var(--surface); border: 1px solid var(--filet); border-radius: var(--rayon); padding: 20px; max-width: 760px; }
 .form-bloc label { display: block; font-size: 13px; color: var(--gris); margin: 12px 0 4px; }
 .form-bloc input, .form-bloc select, .form-bloc textarea {
-  width: 100%; padding: 10px 12px; border: 1px solid var(--filet); border-radius: 10px; font-size: 14px; font-family: inherit; background: var(--surface);
+  width: 100%; padding: 11px 12px; border: 1px solid var(--filet); border-radius: 12px; font-size: 14px; font-family: inherit; background: var(--surface); color: var(--texte);
+}
+.form-bloc input:focus, .form-bloc select:focus, .form-bloc textarea:focus, .champ:focus {
+  outline: none; border-color: var(--teal); border-width: 1.6px;
 }
 .form-bloc .ligne { display: flex; gap: 12px; }
 .form-bloc .ligne > div { flex: 1; }

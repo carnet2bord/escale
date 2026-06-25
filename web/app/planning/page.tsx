@@ -21,10 +21,10 @@ const STATUTS = [
 ];
 
 const COULEUR_STATUT: Record<string, string> = {
-  propose: '#b26a00',
+  propose: '#c2710c',
   confirme: '#156f6c',
-  realise: '#2e7d32',
-  annule: '#8a8f94',
+  realise: '#4b5563',
+  annule: '#9ca3af',
 };
 
 export default async function Planning({

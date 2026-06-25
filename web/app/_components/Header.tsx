@@ -1,7 +1,8 @@
+import { cookies } from 'next/headers';
 import Link from 'next/link';
 
-import { deconnexion } from '@/app/actions';
 import { VERSION_ESCALE } from '@/lib/changelog';
+import { OutilsMenu } from './OutilsMenu';
 
 // Icônes (outline simple, façon Material) pour la nav principale.
 const ICONES: Record<string, React.ReactNode> = {
@@ -40,15 +41,8 @@ const principaux = [
   { href: '/planning', label: 'Planning', icone: 'planning' },
 ];
 
-const outils = [
-  { href: '/proposition', label: 'Proposition' },
-  { href: '/fratries', label: 'Fratries' },
-  { href: '/import', label: 'Import' },
-  { href: '/parametres', label: 'Paramètres' },
-  { href: '/apropos', label: 'À propos' },
-];
-
-export function Header({ actif }: { actif?: string }) {
+export async function Header({ actif }: { actif?: string }) {
+  const sombre = (await cookies()).get('escale_theme')?.value === 'sombre';
   return (
     <nav className="sidebar">
       <div className="sidebar-logo">
@@ -66,21 +60,8 @@ export function Header({ actif }: { actif?: string }) {
         ))}
       </div>
 
-      <div className="sidebar-groupe">Outils</div>
-      <div className="sidebar-nav">
-        {outils.map((l) => (
-          <Link key={l.href} href={l.href} className={actif === l.href ? 'actif' : ''}>
-            {l.label}
-          </Link>
-        ))}
-      </div>
-
       <div className="sidebar-bas">
-        <form action={deconnexion}>
-          <button className="lien-deco" type="submit">
-            Se déconnecter
-          </button>
-        </form>
+        <OutilsMenu initialSombre={sombre} />
       </div>
     </nav>
   );

@@ -155,3 +155,22 @@ begin
       'for each row execute function escale_journaliser();', t);
   end loop;
 end $$;
+
+-- Réaligne les séquences id après une restauration (insertion avec ids explicites).
+create or replace function escale_reset_sequences() returns void as $$
+declare t text;
+begin
+  foreach t in array array[
+    'escale_accueillants', 'escale_enfants', 'escale_fratries',
+    'escale_affectations', 'escale_besoins_relais',
+    'escale_disponibilites_accueil', 'escale_indisponibilites',
+    'escale_incompatibilites', 'escale_preferences_accueil',
+    'escale_solutions_alternatives', 'escale_journal_audit'
+  ]
+  loop
+    execute format(
+      'select setval(pg_get_serial_sequence(%L, ''id''), coalesce((select max(id) from %I), 1))',
+      t, t);
+  end loop;
+end;
+$$ language plpgsql;

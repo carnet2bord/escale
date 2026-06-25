@@ -1,6 +1,7 @@
 import { Header } from './_components/Header';
+import { analyserAffectation, estBloquant } from '@/lib/domain/conflits';
 import { chargerSnapshot } from '@/lib/data';
-import { dateFr, jour, periodeFr } from '@/lib/domain/dates';
+import { jour, periodeFr } from '@/lib/domain/dates';
 import { couverturesEnfant, trousNonCouverts } from '@/lib/domain/proposition';
 import { relaisActif, statutPropose } from '@/lib/domain/types';
 import { nomComplet } from '@/lib/format';
@@ -15,8 +16,38 @@ function urgence(debut: Date): { texte: string; couleur: string } {
   const j = Math.round((jour(debut).getTime() - jour(new Date()).getTime()) / JOUR_MS);
   if (j < 0) return { texte: 'En retard', couleur: '#c62828' };
   if (j === 0) return { texte: "Aujourd'hui", couleur: '#c62828' };
+  if (j === 1) return { texte: 'Demain', couleur: '#b26a00' };
   if (j <= 7) return { texte: `Dans ${j} j`, couleur: '#b26a00' };
   return { texte: `Dans ${j} j`, couleur: 'var(--gris)' };
+}
+
+function nbConflitsBloquants(s: Awaited<ReturnType<typeof chargerSnapshot>>): number {
+  const enfById = new Map(s.enfants.map((e) => [e.id, e]));
+  const accById = new Map(s.accueillants.map((a) => [a.id, a]));
+  let n = 0;
+  for (const a of s.affectations) {
+    if (!relaisActif(a.statut)) continue;
+    const e = enfById.get(a.enfantId);
+    const acc = accById.get(a.accueillantId);
+    if (!e || !acc) continue;
+    const conflits = analyserAffectation({
+      enfant: e,
+      accueillant: acc,
+      debut: a.debut,
+      fin: a.fin,
+      affectations: s.affectations,
+      disponibilites: s.disponibilites,
+      indisponibilites: s.indisponibilites,
+      incompatibilites: s.incompatibilites,
+      enfants: s.enfants,
+      fratries: s.fratries,
+      preferences: s.preferences,
+      solutions: s.solutions,
+      affectationExclueId: a.id,
+    });
+    if (conflits.some(estBloquant)) n++;
+  }
+  return n;
 }
 
 function Pastille({ u }: { u: { texte: string; couleur: string } }) {
@@ -60,6 +91,9 @@ export default async function DashboardPage() {
               <a href="/api/pdf/bilan?anon=1" target="_blank" rel="noreferrer" style={{ fontSize: 13 }}>
                 anonymisé
               </a>
+              <a className="bouton-secondaire" href="/api/csv-relais">
+                Export CSV
+              </a>
             </span>
           ) : null}
         </div>
@@ -88,6 +122,8 @@ function Contenu({ s }: { s: Awaited<ReturnType<typeof chargerSnapshot>> }) {
   const enfById = new Map(s.enfants.map((e) => [e.id, e]));
   const accById = new Map(s.accueillants.map((a) => [a.id, a]));
   const c = couvertureBesoins(s);
+  const vert = c.pct != null && c.pct >= 100;
+  const nbConflits = nbConflitsBloquants(s);
 
   // Relais à confirmer (statut « proposé »), triés par début.
   const aConfirmer = s.affectations
@@ -114,18 +150,22 @@ function Contenu({ s }: { s: Awaited<ReturnType<typeof chargerSnapshot>> }) {
           valeur={s.affectations.filter((a) => relaisActif(a.statut)).length}
           libelle="Relais planifiés"
         />
-        <Carte valeur={s.besoins.length} libelle="Besoins" />
+        <Carte
+          valeur={nbConflits}
+          libelle="Relais en conflit"
+          couleur={nbConflits > 0 ? '#c62828' : '#2e7d32'}
+        />
       </div>
 
       <div className="kpi">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <strong>Couverture des besoins</strong>
-          <span style={{ fontSize: 24, fontWeight: 700, color: 'var(--teal)' }}>
+          <span style={{ fontSize: 26, fontWeight: 700, color: vert ? '#2e7d32' : 'var(--teal)' }}>
             {c.pct == null ? '—' : `${c.pct} %`}
           </span>
         </div>
         <div className="jauge">
-          <div style={{ width: `${c.pct ?? 0}%` }} />
+          <div style={{ width: `${c.pct ?? 0}%`, background: vert ? '#2e7d32' : 'var(--teal)' }} />
         </div>
         <div style={{ color: 'var(--gris)', fontSize: 13 }}>
           {c.pct == null
@@ -213,10 +253,10 @@ function Contenu({ s }: { s: Awaited<ReturnType<typeof chargerSnapshot>> }) {
   );
 }
 
-function Carte({ valeur, libelle }: { valeur: number; libelle: string }) {
+function Carte({ valeur, libelle, couleur }: { valeur: number; libelle: string; couleur?: string }) {
   return (
     <div className="carte">
-      <div className="valeur">{valeur}</div>
+      <div className="valeur" style={couleur ? { color: couleur } : undefined}>{valeur}</div>
       <div className="libelle">{libelle}</div>
     </div>
   );
