@@ -11,6 +11,7 @@ export async function majStatut(formData: FormData) {
   const r = await supabaseAdmin().from('escale_affectations').update({ statut }).eq('id', id);
   if (r.error) throw new Error(r.error.message);
   revalidatePath('/planning');
+  revalidatePath('/');
 }
 
 export async function supprimerAffectation(formData: FormData) {

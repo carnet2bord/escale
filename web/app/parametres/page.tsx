@@ -3,15 +3,16 @@ import Link from 'next/link';
 import { Header } from '@/app/_components/Header';
 import { lireInfosStructure, lireSeuilDistanceKm } from '@/lib/reglages';
 import { enregistrerStructure } from './actions';
+import { chargerDemo } from './demo';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Parametres({
   searchParams,
 }: {
-  searchParams: Promise<{ enregistre?: string }>;
+  searchParams: Promise<{ enregistre?: string; demo?: string }>;
 }) {
-  const { enregistre } = await searchParams;
+  const { enregistre, demo } = await searchParams;
   const s = await lireInfosStructure();
   const seuilDistance = await lireSeuilDistanceKm();
 
@@ -86,6 +87,31 @@ export default async function Parametres({
             <strong>anonymisée</strong> (initiales) pour un partage sans
             identités.
           </p>
+        </div>
+
+        <h2 style={{ marginTop: 28 }}>Données de démonstration</h2>
+        {demo === 'ok' ? (
+          <p style={{ color: 'var(--teal)', fontWeight: 600 }}>
+            ✓ Jeu de démonstration chargé.
+          </p>
+        ) : null}
+        {demo === 'existe' ? (
+          <p className="erreur">
+            Des données existent déjà : la démo ne s&apos;ajoute que sur une base
+            vide.
+          </p>
+        ) : null}
+        <div className="form-bloc">
+          <p style={{ marginTop: 0 }}>
+            Charge un jeu <strong>fictif</strong> (4 accueillants, 6 enfants,
+            fratries, besoins, adresses) pour découvrir tous les écrans et le
+            calcul de distance. Uniquement si la base est vide.
+          </p>
+          <form action={chargerDemo}>
+            <button className="bouton-secondaire" type="submit">
+              Charger des données de démo
+            </button>
+          </form>
         </div>
       </div>
     </>

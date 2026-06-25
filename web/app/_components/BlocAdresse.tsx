@@ -11,7 +11,8 @@ interface AvecAdresse {
 export function BlocAdresse({ entite }: { entite?: AvecAdresse }) {
   const aCoords = entite?.latitude != null && entite?.longitude != null;
   return (
-    <div style={{ marginTop: 4 }}>
+    <div style={{ marginTop: 16, borderTop: '1px solid var(--filet)', paddingTop: 12 }}>
+      <h2 style={{ margin: '0 0 4px', fontSize: 15 }}>Adresse &amp; localisation</h2>
       <label>Adresse</label>
       <input
         name="adresse"
