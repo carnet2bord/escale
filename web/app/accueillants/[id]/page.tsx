@@ -37,8 +37,8 @@ export default async function ModifierAccueillant({
         <FormAccueillant a={acc.data} />
 
         <SousFichePeriodes
-          titre="Disponibilités d'accueil"
-          description="Périodes pendant lesquelles cet accueillant peut recevoir un enfant."
+          titre="Périodes où il/elle peut accueillir"
+          description="Si vide, l'accueillant est considéré disponible sauf pendant ses vacances."
           items={dis.data ?? []}
           ajouter={ajouterDispo}
           supprimer={supprimerDispo}
@@ -47,7 +47,8 @@ export default async function ModifierAccueillant({
         />
 
         <SousFichePeriodes
-          titre="Indisponibilités (congés, absences)"
+          titre="Vacances / indisponibilités"
+          description="L'accueillant ne peut recevoir personne sur ces périodes."
           items={ind.data ?? []}
           ajouter={ajouterIndispo}
           supprimer={supprimerIndispo}

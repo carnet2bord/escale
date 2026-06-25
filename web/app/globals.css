@@ -151,7 +151,16 @@ h2 { font-size: 17px; font-weight: 600; }
   border-radius: var(--rayon);
   padding: 18px;
 }
-.carte .valeur { font-size: 30px; font-weight: 700; color: var(--teal); }
+.carte-icone {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+.carte .valeur { font-size: 28px; font-weight: 700; color: var(--teal); }
 .carte .libelle { color: var(--gris); font-size: 14px; margin-top: 2px; }
 
 .kpi {

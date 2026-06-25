@@ -79,7 +79,7 @@ export default async function ModifierEnfant({
 
         <SousFichePeriodes
           titre="Besoins de relais"
-          description="Périodes pendant lesquelles cet enfant a besoin d'un accueil relais."
+          description="Périodes pendant lesquelles l'enfant doit être accueilli."
           items={bes.data ?? []}
           ajouter={ajouterBesoin}
           supprimer={supprimerBesoin}

@@ -1,4 +1,5 @@
 import { Header } from './_components/Header';
+import { IcoCalendar, IcoChild, IcoHome, IcoWarning } from './_components/icons';
 import { analyserAffectation, estBloquant } from '@/lib/domain/conflits';
 import { chargerSnapshot } from '@/lib/data';
 import { jour, periodeFr } from '@/lib/domain/dates';
@@ -144,16 +145,18 @@ function Contenu({ s }: { s: Awaited<ReturnType<typeof chargerSnapshot>> }) {
   return (
     <>
       <div className="cartes">
-        <Carte valeur={s.accueillants.length} libelle="Accueillants" />
-        <Carte valeur={s.enfants.length} libelle="Enfants" />
+        <Carte valeur={s.accueillants.length} libelle="Accueillants" icone={<IcoHome size={22} />} />
+        <Carte valeur={s.enfants.length} libelle="Enfants" icone={<IcoChild size={22} />} />
         <Carte
           valeur={s.affectations.filter((a) => relaisActif(a.statut)).length}
           libelle="Relais planifiés"
+          icone={<IcoCalendar size={22} />}
         />
         <Carte
           valeur={nbConflits}
           libelle="Relais en conflit"
           couleur={nbConflits > 0 ? '#c62828' : '#2e7d32'}
+          icone={<IcoWarning size={22} />}
         />
       </div>
 
@@ -253,9 +256,30 @@ function Contenu({ s }: { s: Awaited<ReturnType<typeof chargerSnapshot>> }) {
   );
 }
 
-function Carte({ valeur, libelle, couleur }: { valeur: number; libelle: string; couleur?: string }) {
+function Carte({
+  valeur,
+  libelle,
+  couleur,
+  icone,
+}: {
+  valeur: number;
+  libelle: string;
+  couleur?: string;
+  icone?: React.ReactNode;
+}) {
   return (
     <div className="carte">
+      {icone ? (
+        <div
+          className="carte-icone"
+          style={{
+            color: couleur ?? 'var(--teal)',
+            background: `color-mix(in srgb, ${couleur ?? 'var(--teal)'} 12%, transparent)`,
+          }}
+        >
+          {icone}
+        </div>
+      ) : null}
       <div className="valeur" style={couleur ? { color: couleur } : undefined}>{valeur}</div>
       <div className="libelle">{libelle}</div>
     </div>
