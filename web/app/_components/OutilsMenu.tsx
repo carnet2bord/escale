@@ -63,7 +63,7 @@ export function OutilsMenu({ initialSombre }: { initialSombre: boolean }) {
       </button>
 
       {ouvert ? (
-        <div className="outils-popup" onClick={() => setOuvert(false)}>
+        <div className="outils-popup">
           <Item icone={I.tune}>
             <Link href="/parametres">Paramètres de la structure</Link>
           </Item>
