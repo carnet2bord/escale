@@ -219,7 +219,7 @@ function Contenu({ s }: { s: Awaited<ReturnType<typeof chargerSnapshot>> }) {
         <section className="form-bloc" style={{ flex: '1 1 360px', maxWidth: 'none' }}>
           <h2 style={{ marginTop: 0 }}>À traiter — besoins non couverts ({aTraiter.length})</h2>
           {aTraiter.length === 0 ? (
-            <p style={{ color: 'var(--gris)' }}>Tous les besoins sont couverts. 🎉</p>
+            <p style={{ color: 'var(--gris)' }}>Tous les besoins saisis sont couverts.</p>
           ) : (
             aTraiter.map((t, i) => (
               <div

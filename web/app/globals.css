@@ -98,10 +98,13 @@ a { color: var(--teal); }
   max-height: 70vh;
   overflow-y: auto;
 }
+.outils-item { display: flex; align-items: center; border-radius: 9px; }
+.outils-item:hover { background: var(--hover); }
+.outils-icone { display: flex; align-items: center; color: var(--gris); padding-left: 10px; }
+.outils-item form { flex: 1; display: flex; }
 .outils-item a,
 .outils-item button {
-  display: block;
-  width: 100%;
+  flex: 1;
   text-align: left;
   padding: 9px 10px;
   border-radius: 9px;
@@ -113,8 +116,7 @@ a { color: var(--teal); }
   text-decoration: none;
   cursor: pointer;
 }
-.outils-item a:hover,
-.outils-item button:hover { background: var(--hover); }
+.outils-item.danger .outils-icone,
 .outils-item.danger a,
 .outils-item.danger button { color: #c62828; }
 .outils-sep { height: 1px; background: var(--filet); margin: 6px 4px; }

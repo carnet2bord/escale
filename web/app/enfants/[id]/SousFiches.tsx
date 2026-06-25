@@ -2,6 +2,19 @@ import { frDate } from '@/lib/format';
 
 type Action = (fd: FormData) => void | Promise<void>;
 
+// Icônes outline (Material : block / star) — pas d'émoji.
+const IcoBlock = (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" style={{ verticalAlign: '-3px' }}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M5.6 5.6l12.8 12.8" />
+  </svg>
+);
+const IcoStar = (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style={{ verticalAlign: '-3px' }}>
+    <path d="M12 3l2.7 5.5 6 .9-4.3 4.2 1 6-5.4-2.8L6.3 19.6l1-6L3 9.4l6-.9z" />
+  </svg>
+);
+
 interface OptionNom {
   id: number;
   nom: string;
@@ -37,7 +50,7 @@ export function IncompatibilitesEnfant({
               key={l.id}
               style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0' }}
             >
-              <span>⛔ {l.autreNom}</span>
+              <span style={{ color: '#c62828' }}>{IcoBlock} {l.autreNom}</span>
               <form action={supprimer}>
                 <input type="hidden" name="id" value={l.id} />
                 <input type="hidden" name="enfantId" value={enfantId} />
@@ -106,7 +119,10 @@ export function PreferencesEnfant({
               style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0' }}
             >
               <span>
-                {p.type === 'favori' ? '★' : '⛔'} {p.accueillantNom}{' '}
+                <span style={{ color: p.type === 'favori' ? '#b8860b' : '#c62828' }}>
+                  {p.type === 'favori' ? IcoStar : IcoBlock}
+                </span>{' '}
+                {p.accueillantNom}{' '}
                 <span style={{ color: 'var(--gris)' }}>
                   ({p.type === 'favori' ? 'favori' : 'à éviter'})
                 </span>
